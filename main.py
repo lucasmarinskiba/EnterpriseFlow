@@ -139,7 +139,7 @@ class EnterpriseFlowApp:
         return True  # Implementar lógica real aquí
 
     def _show_wellness(self):
-    """Módulo de Bienestar Laboral"""
+       """Módulo de Bienestar Laboral"""
        with st.expander("😌 Bienestar del Equipo", expanded=True):
            st.subheader("Predicción de Burnout")
            hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
