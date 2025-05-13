@@ -148,9 +148,9 @@ class EnterpriseFlowApp:
             prediction = self._predict_burnout(np.array([[hours_worked, 0, 0, 0, 0]]))
             st.metric("Riesgo de Burnout", f"{prediction}%")
 
-        st.subheader("Sistema de Reconocimiento")
-        colleague = st.text_input("Nombre del Colega")
-        recognition = st.text_area("Mensaje de Reconocimiento")
+       st.subheader("Sistema de Reconocimiento")
+       colleague = st.text_input("Nombre del Colega")
+       recognition = st.text_area("Mensaje de Reconocimiento")
         
         if st.button("Enviar 🏆"):
             self.db.save_recognition(st.session_state.current_user, colleague, recognition)
