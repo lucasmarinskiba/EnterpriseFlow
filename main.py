@@ -20,17 +20,24 @@ st.set_page_config(
 
 class EnterpriseFlowApp:
     def __init__(self):
-        self.db = DatabaseManager()  # <-- Inicialización correcta de 'self.db'
+        self.db = DatabaseManager()
         self.payment = PaymentHandler()
-        self.current_user = None
         self.nlp = spacy.load("es_core_news_sm")
-        self._setup_ui()  # Llama a la configuración inicial
+        
+        # Inicializar estado de sesión
+        if 'logged_in' not in st.session_state:
+            st.session_state.logged_in = False
+        if 'current_user' not in st.session_state:
+            st.session_state.current_user = None
+            
+        self._setup_ui()
 
     def _setup_ui(self):
         """Configura la interfaz principal"""
         st.sidebar.image("https://via.placeholder.com/200x50.png?text=EnterpriseFlow", width=200)
-        if not self.current_user:
-            self._show_login()  # <-- Método que contiene la lógica de login/registro
+        
+        if not st.session_state.logged_in:
+            self._show_login()
         else:
             self._show_main_interface()
 
@@ -46,8 +53,9 @@ class EnterpriseFlowApp:
                 password_login = st.text_input("Contraseña", type="password")
                 if st.button("Ingresar"):
                     if self.db.verify_user(email_login, password_login):
-                        self.current_user = email_login
-                        st.rerun()  # <-- Cambio aquí
+                        st.session_state.logged_in = True
+                        st.session_state.current_user = email_login
+                        st.rerun()
                     else:
                         st.error("Credenciales incorrectas")
             
@@ -61,8 +69,6 @@ class EnterpriseFlowApp:
                         st.success("¡Cuenta creada exitosamente!")
                     except sqlite3.IntegrityError:
                         st.error("Este correo ya está registrado")
-
-    # ... (resto de métodos como _show_main_interface, etc)
 
     def _show_main_interface(self):
         """Interfaz principal"""
@@ -85,7 +91,7 @@ class EnterpriseFlowApp:
     def _show_dashboard(self):
         """Muestra el dashboard principal"""
         st.title("Panel de Control")
-        st.write(f"Bienvenido: {self.current_user}")
+        st.write(f"Bienvenido: {st.session_state.current_user}")
 
     def _show_automation(self):
         """Módulo de Automatización"""
@@ -113,7 +119,7 @@ class EnterpriseFlowApp:
                 schedule_time = st.time_input("Hora de Ejecución")
                 
                 if st.button("Programar Tarea"):
-                    self.db.save_automation_task(self.current_user, {
+                    self.db.save_automation_task(st.session_state.current_user, {
                         'type': task_type,
                         'schedule': schedule_time.strftime("%H:%M")
                     })
