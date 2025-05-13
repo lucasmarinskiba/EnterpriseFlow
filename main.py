@@ -144,7 +144,7 @@ class EnterpriseFlowApp:
            st.subheader("Predicción de Burnout")
            hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
         
-        if st.button("Calcular Riesgo"):
+       if st.button("Calcular Riesgo"):
             prediction = self._predict_burnout(np.array([[hours_worked, 0, 0, 0, 0]]))
             st.metric("Riesgo de Burnout", f"{prediction}%")
 
