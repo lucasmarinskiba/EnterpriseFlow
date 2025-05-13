@@ -156,7 +156,7 @@ class EnterpriseFlowApp:
            self.db.save_recognition(st.session_state.current_user, colleague, recognition)
            st.success("Reconocimiento enviado!")
 
-   def _predict_burnout(self, input_data):
+    def _predict_burnout(self, input_data):
        """Predicción usando modelo de IA (versión simulada para pruebas)"""
        try:
            # Modelo real: load_model('models/burnout_model.h5')
