@@ -8,14 +8,11 @@ class DatabaseManager:
         self._create_tables()
 
     def _create_tables(self):
-        """Crea estructura inicial de la base de datos"""
         tables = [
             '''CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
                 email TEXT UNIQUE,
-                password TEXT,
-                plan TEXT DEFAULT 'free',
-                trial_end DATE
+                password TEXT
             )''',
             '''CREATE TABLE IF NOT EXISTS automation_tasks (
                 id INTEGER PRIMARY KEY,
@@ -34,8 +31,6 @@ class DatabaseManager:
         for table in tables:
             self.conn.execute(table)
         self.conn.commit()
-   
-    # ... otros métodos ...
 
     def verify_user(self, email, password):
         hashed_pw = hashlib.sha256(password.encode()).hexdigest()
@@ -45,25 +40,27 @@ class DatabaseManager:
         )
         return cursor.fetchone() is not None
 
-    # En database.py
-   def create_company(self, company_name, admin_email):
-       # Crea una empresa y su administrador
-       company_id = self.conn.execute('INSERT INTO companies (name) VALUES (?)', (company_name,)).lastrowid
-       self.create_user(admin_email, "temp_password", company_id, is_admin=True)
-       self.conn.commit()
-
-   def create_user(self, email, password, company_id, is_admin=False):
-       # Usuarios vinculados a una empresa
-       hashed_pw = hashlib.sha256(password.encode()).hexdigest()
-       self.conn.execute('''
-           INSERT INTO users (email, password, company_id, is_admin) 
-           VALUES (?, ?, ?, ?)
-       ''', (email, hashed_pw, company_id, is_admin))
+    def create_user(self, email, password):
+        hashed_pw = hashlib.sha256(password.encode()).hexdigest()
+        try:
+            self.conn.execute(
+                'INSERT INTO users (email, password) VALUES (?, ?)',
+                (email, hashed_pw)
+            )
+            self.conn.commit()
+        except sqlite3.IntegrityError as e:
+            raise e
 
     def save_automation_task(self, user_email, task_data):
-        """Guarda tareas automatizadas"""
         self.conn.execute(
             'INSERT INTO automation_tasks (user_email, task_type, schedule) VALUES (?, ?, ?)',
             (user_email, task_data['type'], task_data['schedule'])
+        )
+        self.conn.commit()
+
+    def save_recognition(self, sender, receiver, message):
+        self.conn.execute(
+            'INSERT INTO recognitions (sender, receiver, message, date) VALUES (?, ?, ?, ?)',
+            (sender, receiver, message, datetime.now().date())
         )
         self.conn.commit()
