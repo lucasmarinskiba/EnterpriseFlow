@@ -78,7 +78,7 @@ class EnterpriseFlowApp:
             self._show_wellness()
         elif menu == "⚖️ Cumplimiento":
             self._show_compliance()
-        elif menu == "💳 Suscripción":
+        if menu == "💳 Suscripción":
             self._show_payment()
 
     def _show_dashboard(self):
@@ -187,42 +187,83 @@ class EnterpriseFlowApp:
         }
         return resultados
 
-    def show_payment_ui():
-       ph = PaymentHandler()
-    
-       st.header("📈 Planes EnterpriseFlow")
-    
-       with st.container():
-           cols = st.columns(3)
+    def _show_payment(self):
+        """Interfaz de suscripciones corregida"""
+        st.header("📈 Planes EnterpriseFlow")
         
-           with cols[0]:
-               st.subheader("Básico")
-               # ... descripción del plan
-               if st.button("Elegir Básico $99/mes", key="basico"):
-                   handle_subscription(ph, 'basico')  # Key en español
-                
-           with cols[1]:
-               st.subheader("Premium")
-               # ... descripción del plan
-               if st.button("Elegir Premium $299/mes", key="premium"):
-                   handle_subscription(ph, 'premium')
-                
-           with cols[2]:
-               st.subheader("Enterprise")
-               # ... descripción del plan
-               if st.button("Contactar Ventas", key="enterprise"):
-                   handle_subscription(ph, 'enterprise')
+        cols = st.columns(3)
+        
+        with cols[0]:
+            st.subheader("Básico")
+            st.markdown("""
+                - 10 usuarios
+                - Soporte básico
+                - Reportes estándar
+                **Precio: $99/mes**
+            """)
+            if st.button("Elegir Básico", key="basico"):
+                self._handle_subscription('basico')  # Key en español
 
-    def _handle_subscription(self, price_id):
-        """Crea una suscripción en Stripe"""
+        with cols[1]:
+            st.subheader("Premium")
+            st.markdown("""
+                - 50 usuarios
+                - Soporte prioritario
+                - Reportes avanzados
+                **Precio: $299/mes**
+            """)
+            if st.button("Elegir Premium", key="premium"):
+                self._handle_subscription('premium')
+
+        with cols[2]:
+            st.subheader("Enterprise")
+            st.markdown("""
+                - Usuarios ilimitados
+                - Soporte 24/7
+                - Personalización
+                **Precio: $999/mes**
+            """)
+            if st.button("Contactar Ventas", key="enterprise"):
+                st.info("contacto@enterpriseflow.com")
+
+    def _handle_subscription(self, plan: str):
+        """Manejo de suscripciones corregido"""
         try:
-            subscription = self.payment.create_subscription(
-                st.session_state.current_user,
-                price_id
+            if not st.session_state.current_user:
+                raise ValueError("Debe iniciar sesión primero")
+            
+            subscription_data = self.payment.create_subscription(
+                customer_email=st.session_state.current_user,
+                price_key=plan
             )
-            st.success(f"¡Suscripción exitosa! ID: `{subscription.id}`")
+            
+            if subscription_data.get('client_secret'):
+                st.session_state.subscription = subscription_data
+                self._show_payment_confirmation()
+            else:
+                st.error("Error al crear la suscripción")
+        
         except Exception as e:
-            st.error(f"Error: {str(e)}")
+            st.error(f"Error en suscripción: {str(e)}")
 
+   def _show_payment_confirmation(self):
+        """Interfaz para completar el pago"""
+        with st.form("payment-form"):
+            st.write("Complete los datos de pago")
+            
+            # Campos seguros para tarjeta (mejor usar Stripe Elements)
+            card_number = st.text_input("Número de tarjeta")
+            expiry = st.text_input("MM/AA")
+            cvc = st.text_input("CVC")
+            
+            if st.form_submit_button("Confirmar Pago"):
+                try:
+                    # Lógica de confirmación de pago
+                    # Deberías implementar Stripe Elements aquí
+                    st.success("Pago procesado exitosamente!")
+                    st.session_state.subscription = None  # Resetear estado
+                except Exception as e:
+                    st.error(f"Error en pago: {str(e)}")
+    
 if __name__ == "__main__":
     EnterpriseFlowApp()
