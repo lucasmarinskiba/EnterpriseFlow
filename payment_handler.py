@@ -3,17 +3,16 @@ import os
 from typing import Dict, Optional
 from pydantic import BaseModel
 
-stripe.api_key = os.getenv("STRIPE_API_KEY")
-
 class SubscriptionData(BaseModel):
     customer_id: str
     subscription_id: str
     status: str
     plan_type: str
-    current_period_end: int
 
 class PaymentHandler:
     def __init__(self):
+        self.stripe = stripe  # <--- Línea crítica
+        self.stripe.api_key = os.getenv("STRIPE_API_KEY")
         self.price_ids = {
             'basico': os.getenv("STRIPE_BASIC_PRICE_ID"),
             'premium': os.getenv("STRIPE_PREMIUM_PRICE_ID"),
@@ -22,27 +21,22 @@ class PaymentHandler:
 
     def create_subscription(self, customer_email: str, price_key: str) -> Dict:
         try:
-            if price_key not in self.price_ids:
-                raise ValueError("Plan inválido")
-
             customer = self.stripe.Customer.create(email=customer_email)
-            
             subscription = self.stripe.Subscription.create(
                 customer=customer.id,
                 items=[{"price": self.price_ids[price_key]}],
                 payment_behavior="default_incomplete",
                 expand=["latest_invoice.payment_intent"]
             )
-            
             return {
                 "subscription_id": subscription.id,
                 "client_secret": subscription.latest_invoice.payment_intent.client_secret,
-                "customer_id": customer.id
+                "status": subscription.status
             }
-            
-        except stripe.error.StripeError as e:
+        except self.stripe.error.StripeError as e:
             raise Exception(f"Error Stripe: {e.user_message}") from e
 
+    # Webhooks (opcional)
     def handle_webhook(self, payload: bytes, sig_header: str) -> Optional[SubscriptionData]:
         try:
             event = self.stripe.Webhook.construct_event(
@@ -50,18 +44,14 @@ class PaymentHandler:
                 sig_header,
                 os.getenv("STRIPE_WEBHOOK_SECRET")
             )
-
             if event['type'] == 'customer.subscription.updated':
                 subscription = event['data']['object']
                 return SubscriptionData(
                     customer_id=subscription.customer,
                     subscription_id=subscription.id,
                     status=subscription.status,
-                    plan_type=subscription.items.data[0].price.id,
-                    current_period_end=subscription.current_period_end
+                    plan_type=subscription.items.data[0].price.id
                 )
-                
-        except stripe.error.SignatureVerificationError as e:
+        except self.stripe.error.SignatureVerificationError as e:
             raise Exception("Firma inválida") from e
-            
         return None
