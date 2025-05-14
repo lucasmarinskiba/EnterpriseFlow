@@ -7,7 +7,8 @@ import datetime
 import os
 import stripe
 import streamlit as st
-from database import DatabaseManager  
+# Asegúrate de que no haya espacios/tabs antes de las importaciones
+from database import DatabaseManager  # Línea 10
 from payment_handler import PaymentHandler
 from tensorflow.keras.models import load_model
 import spacy
