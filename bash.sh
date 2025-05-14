@@ -26,3 +26,6 @@ echo "=== Ejecutando la aplicación ==="
 streamlit run main.py
 
 flake8 main.py database.py
+
+#para pagos
+pip install pydantic
