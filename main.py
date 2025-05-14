@@ -1,4 +1,4 @@
-# Todas las importaciones deben estar SIN indentación
+import streamlit as st
 import pandas as pd
 import sqlite3
 import hashlib
@@ -6,14 +6,10 @@ import numpy as np
 import datetime
 import os
 import stripe
-import streamlit as st
 from database import DatabaseManager
 from payment_handler import PaymentHandler
 from tensorflow.keras.models import load_model
 import spacy
-
-# Resto del código sin cambios...
-# [Aquí va el resto de tu clase EnterpriseFlowApp como en versiones anteriores]
 
 # Configuración inicial
 st.set_page_config(
@@ -28,7 +24,6 @@ class EnterpriseFlowApp:
         self.payment = PaymentHandler()
         self.nlp = spacy.load("es_core_news_sm")
         
-        # Inicializar estado de sesión
         if 'logged_in' not in st.session_state:
             st.session_state.logged_in = False
         if 'current_user' not in st.session_state:
@@ -37,21 +32,17 @@ class EnterpriseFlowApp:
         self._setup_ui()
 
     def _setup_ui(self):
-        """Configura la interfaz principal"""
         st.sidebar.image("https://via.placeholder.com/200x50.png?text=EnterpriseFlow", width=200)
-        
         if not st.session_state.logged_in:
             self._show_login()
         else:
             self._show_main_interface()
 
     def _show_login(self):
-        """Muestra el formulario de login/registro"""
         with st.sidebar:
             st.header("Bienvenido a EnterpriseFlow")
             tab1, tab2 = st.tabs(["Iniciar Sesión", "Registrarse"])
             
-            # Pestaña de Login
             with tab1:
                 email_login = st.text_input("Correo electrónico")
                 password_login = st.text_input("Contraseña", type="password")
@@ -63,7 +54,6 @@ class EnterpriseFlowApp:
                     else:
                         st.error("Credenciales incorrectas")
             
-            # Pestaña de Registro
             with tab2:
                 email_register = st.text_input("Correo para registro")
                 password_register = st.text_input("Contraseña nueva", type="password")
@@ -75,7 +65,6 @@ class EnterpriseFlowApp:
                         st.error("Este correo ya está registrado")
 
     def _show_main_interface(self):
-        """Interfaz principal"""
         menu = st.sidebar.radio(
             "Menú Principal",
             ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "⚖️ Cumplimiento", "💳 Suscripción"]
@@ -93,12 +82,10 @@ class EnterpriseFlowApp:
             self._show_payment()
 
     def _show_dashboard(self):
-        """Muestra el dashboard principal"""
         st.title("Panel de Control")
         st.write(f"Bienvenido: {st.session_state.current_user}")
 
     def _show_automation(self):
-        """Módulo de Automatización"""
         with st.expander("🤖 Automatización de Tareas", expanded=True):
             col1, col2 = st.columns(2)
             
@@ -130,7 +117,6 @@ class EnterpriseFlowApp:
                     st.success("Tarea programada exitosamente")
 
     def _generate_invoice(self, data):
-        """Genera facturas con IVA automático"""
         iva_rate = 0.16 if 'MEX' in data['client_address'] else 0.21
         return {
             'client': data['client_name'],
@@ -139,11 +125,9 @@ class EnterpriseFlowApp:
         }
 
     def _check_compliance(self, data):
-        """Verifica cumplimiento normativo"""
-        return True  # Implementar lógica real aquí
+        return True
 
     def _show_wellness(self):
-        """Módulo de Bienestar Laboral"""
         with st.expander("😌 Bienestar del Equipo", expanded=True):
             st.subheader("Predicción de Burnout")
             hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
@@ -161,10 +145,8 @@ class EnterpriseFlowApp:
                 st.success("Reconocimiento enviado!")
 
     def _predict_burnout(self, input_data):
-        """Predicción usando modelo de IA (versión simulada para pruebas)"""
         try:
-            # Modelo real: load_model('models/burnout_model.h5')
-            return min(100, int(input_data[0][0] * 1.5))  # Simulación
+            return min(100, int(input_data[0][0] * 1.5))
         except Exception as e:
             st.error(f"Error: {str(e)}")
             return 0
