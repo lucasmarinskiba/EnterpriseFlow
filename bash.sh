@@ -8,3 +8,4 @@ pip install pyinstaller
 pyinstaller --onefile --windowed main.py
 streamlit run main.py
 python -m spacy download es_core_news_sm
+flake8 main.py  # Identificará errores de indentación
