@@ -1,11 +1,27 @@
+#!/bin/bash
+
+# 1. Configuración inicial de Git
 git init
 git add .
-git commit -m "Initial commit"
+git config --global user.email "tu@email.com"
+git config --global user.name "Tu Nombre"
+git commit -m "Fix: Indentación y dependencias"
 git remote add origin https://github.com/lucasmarinskiba/EnterpriseFlow.git
 git push -u origin main
-# Con PyInstaller (ejecuta en tu terminal):
-pip install pyinstaller
-pyinstaller --onefile --windowed main.py
-streamlit run main.py
+
+# 2. Instalación de dependencias y validación
+pip install -r requirements.txt
 python -m spacy download es_core_news_sm
-flake8 main.py  # Identificará errores de indentación
+pip install flake8  # Instalar linter
+
+# 3. Verificación de código
+echo "=== Verificando errores de indentación con flake8 ==="
+flake8 main.py --show-source --statistics
+
+# 4. Generación del ejecutable (opcional)
+pip install pyinstaller
+pyinstaller --onefile --windowed --clean main.py
+
+# 5. Despliegue en Streamlit Cloud
+echo "=== Ejecutando la aplicación ==="
+streamlit run main.py
