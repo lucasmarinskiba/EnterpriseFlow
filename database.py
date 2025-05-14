@@ -26,13 +26,6 @@ class DatabaseManager:
                 receiver TEXT,
                 message TEXT,
                 date DATE
-            )''',
-            '''CREATE TABLE IF NOT EXISTS subscriptions (
-                id INTEGER PRIMARY KEY,
-                user_email TEXT UNIQUE,
-                stripe_customer_id TEXT,
-                plan TEXT,
-                status TEXT
             )'''
         ]
         for table in tables:
@@ -44,6 +37,7 @@ class DatabaseManager:
         cursor = self.conn.execute(
             'SELECT * FROM users WHERE email=? AND password=?',
             (email, hashed_pw)
+        )
         return cursor.fetchone() is not None
 
     def create_user(self, email, password):
@@ -51,7 +45,8 @@ class DatabaseManager:
         try:
             self.conn.execute(
                 'INSERT INTO users (email, password) VALUES (?, ?)',
-                (email, hashed_pw))
+                (email, hashed_pw)
+            )
             self.conn.commit()
         except sqlite3.IntegrityError as e:
             raise e
@@ -59,11 +54,13 @@ class DatabaseManager:
     def save_automation_task(self, user_email, task_data):
         self.conn.execute(
             'INSERT INTO automation_tasks (user_email, task_type, schedule) VALUES (?, ?, ?)',
-            (user_email, task_data['type'], task_data['schedule']))
+            (user_email, task_data['type'], task_data['schedule'])
+        )
         self.conn.commit()
 
     def save_recognition(self, sender, receiver, message):
         self.conn.execute(
             'INSERT INTO recognitions (sender, receiver, message, date) VALUES (?, ?, ?, ?)',
-            (sender, receiver, message, datetime.now().date()))
+            (sender, receiver, message, datetime.now().date())
+        )
         self.conn.commit()
