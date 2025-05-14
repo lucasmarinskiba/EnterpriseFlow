@@ -151,5 +151,81 @@ class EnterpriseFlowApp:
             st.error(f"Error: {str(e)}")
             return 0
 
+   def _show_compliance(self):
+       """Módulo de Cumplimiento Normativo"""
+       with st.expander("⚖️ Auditoría Normativa", expanded=True):
+           uploaded_file = st.file_uploader("Subir Documento", type=["txt", "docx", "pdf"])
+        
+           if uploaded_file:
+               # Leer contenido del archivo
+               if uploaded_file.type == "text/plain":
+                   text = uploaded_file.getvalue().decode()
+               elif uploaded_file.type == "application/pdf":
+                   import PyPDF2
+                   reader = PyPDF2.PdfReader(uploaded_file)
+                   text = "\n".join([page.extract_text() for page in reader.pages])
+               else:
+                   from docx import Document
+                   doc = Document(uploaded_file)
+                   text = "\n".join([para.text for para in doc.paragraphs])
+            
+               # Analizar cumplimiento
+               audit_result = self._audit_document(text)
+               st.write("**Resultados de Auditoría:**")
+               st.json(audit_result)
+
+   def _audit_document(self, text):
+       """Analiza documentos para detectar normativas"""
+       doc = self.nlp(text)
+       resultados = {
+           'GDPR': any(token.text.lower() in ('datos personales', 'consentimiento') for token in doc),
+           'SOX': any(token.text.lower() in ('control interno', 'auditoría financiera') for token in doc),
+           'ISO27001': any(token.text.lower() in ('seguridad de la información', 'riesgos') for token in doc)
+       }
+       return resultados
+
+   def _show_payment(self):
+       """Módulo de Gestión de Suscripciones"""
+       with st.expander("💳 Planes de Suscripción", expanded=True):
+           st.subheader("Selecciona tu Plan")
+           col1, col2, col3 = st.columns(3)
+        
+           with col1:
+               st.write("**Básico**")
+               st.write("- 10 usuarios")
+               st.write("- Soporte básico")
+               st.write("$99/mes")
+               if st.button("Elegir Básico", key="basico"):
+                   self._handle_subscription('price_basico')
+
+           with col2:
+               st.write("**Premium**")
+               st.write("- 50 usuarios")
+               st.write("- Soporte prioritario")
+               st.write("- Reportes avanzados")
+               st.write("$299/mes")
+               if st.button("Elegir Premium", key="premium"):
+                    self._handle_subscription('price_premium')
+
+           with col3:
+               st.write("**Enterprise**")
+               st.write("- Usuarios ilimitados")
+               st.write("- Soporte 24/7")
+               st.write("- Personalización")
+               st.write("$999/mes")
+               if st.button("Elegir Enterprise", key="enterprise"):
+                   self._handle_subscription('price_enterprise')
+
+   def _handle_subscription(self, price_id):
+       """Crea una suscripción en Stripe"""
+       try:
+           subscription = self.payment.create_subscription(
+               st.session_state.current_user,
+               price_id
+           )
+           st.success("¡Suscripción exitosa! ID: " + subscription.id)
+       except Exception as e:
+           st.error(f"Error: {str(e)}")
+
 if __name__ == "__main__":
     EnterpriseFlowApp()
