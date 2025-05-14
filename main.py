@@ -1,5 +1,4 @@
 # Todas las importaciones deben estar SIN indentación
-import streamlit as st
 import pandas as pd
 import sqlite3
 import hashlib
@@ -7,7 +6,8 @@ import numpy as np
 import datetime
 import os
 import stripe
-from database import DatabaseManager  # <--- Línea 9 corregida
+import streamlit as st
+from database import DatabaseManager  
 from payment_handler import PaymentHandler
 from tensorflow.keras.models import load_model
 import spacy
