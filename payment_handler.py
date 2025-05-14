@@ -14,9 +14,8 @@ class SubscriptionData(BaseModel):
 
 class PaymentHandler:
     def __init__(self):
-        self.stripe = stripe
         self.price_ids = {
-            'basic': os.getenv("STRIPE_BASIC_PRICE_ID"),
+            'basico': os.getenv("STRIPE_BASIC_PRICE_ID"),
             'premium': os.getenv("STRIPE_PREMIUM_PRICE_ID"),
             'enterprise': os.getenv("STRIPE_ENTERPRISE_PRICE_ID")
         }
