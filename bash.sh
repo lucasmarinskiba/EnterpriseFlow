@@ -25,3 +25,5 @@ pyinstaller --onefile --windowed --clean main.py
 # 5. Despliegue en Streamlit Cloud
 echo "=== Ejecutando la aplicación ==="
 streamlit run main.py
+
+flake8 main.py database.py
