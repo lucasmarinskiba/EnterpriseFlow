@@ -187,32 +187,31 @@ class EnterpriseFlowApp:
         }
         return resultados
 
-    def _show_payment(self):
-        """Módulo de Gestión de Suscripciones"""
-        with st.expander("💳 Planes de Suscripción", expanded=True):
-            st.subheader("Selecciona tu Plan")
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.markdown("### Básico")
-                st.write("- 10 usuarios\n- Soporte básico\n- Reportes estándar")
-                st.write("**Precio: $99/mes**")
-                if st.button("Elegir Básico", key="basico"):
-                    self._handle_subscription('price_basico')
-
-            with col2:
-                st.markdown("### Premium")
-                st.write("- 50 usuarios\n- Soporte prioritario\n- Reportes avanzados")
-                st.write("**Precio: $299/mes**")
-                if st.button("Elegir Premium", key="premium"):
-                    self._handle_subscription('price_premium')
-
-            with col3:
-                st.markdown("### Enterprise")
-                st.write("- Usuarios ilimitados\n- Soporte 24/7\n- Personalización")
-                st.write("**Precio: $999/mes**")
-                if st.button("Elegir Enterprise", key="enterprise"):
-                    self._handle_subscription('price_enterprise')
+    def show_payment_ui():
+       ph = PaymentHandler()
+    
+       st.header("📈 Planes EnterpriseFlow")
+    
+       with st.container():
+           cols = st.columns(3)
+        
+           with cols[0]:
+               st.subheader("Básico")
+               # ... descripción del plan
+               if st.button("Elegir Básico $99/mes", key="basico"):
+                   handle_subscription(ph, 'basico')  # Key en español
+                
+           with cols[1]:
+               st.subheader("Premium")
+               # ... descripción del plan
+               if st.button("Elegir Premium $299/mes", key="premium"):
+                   handle_subscription(ph, 'premium')
+                
+           with cols[2]:
+               st.subheader("Enterprise")
+               # ... descripción del plan
+               if st.button("Contactar Ventas", key="enterprise"):
+                   handle_subscription(ph, 'enterprise')
 
     def _handle_subscription(self, price_id):
         """Crea una suscripción en Stripe"""
