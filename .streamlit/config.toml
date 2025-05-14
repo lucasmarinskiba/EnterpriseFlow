@@ -1,0 +1,29 @@
+[theme]
+primaryColor = "#1e90ff"    # Color principal (azul Dodger)
+backgroundColor = "#ffffff"  # Fondo claro
+secondaryBackgroundColor = "#f0f2f6"  # Fondo secundario
+textColor = "#262730"        # Color de texto oscuro
+font = "sans serif"          # Tipografía
+
+[browser]
+serverAddress = "0.0.0.0"    # Dirección del servidor (default)
+serverPort = 8501             # Puerto (default)
+
+[server]
+headless = true              # Modo sin interfaz gráfica (para servidores)
+enableCORS = false           # Desactiva CORS si no es necesario
+enableXsrfProtection = true  # Seguridad contra ataques XSRF
+
+# Opcional: Configuración de caché
+[runner]
+magicEnabled = false         # Desactiva el modo "mágico" de Streamlit
+
+# Ejemplo avanzado
+[logger]
+level = "info"  # Nivel de logs (debug, info, warning, error)
+
+[client]
+showErrorDetails = true  # Muestra detalles técnicos de errores al usuario
+
+[mapbox]
+token = "pk.xyz"  # Token para Mapbox (si usas mapas)
