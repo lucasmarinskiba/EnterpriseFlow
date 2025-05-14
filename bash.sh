@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # 1. Configuración inicial de Git
 git init
 git add .
