@@ -37,15 +37,20 @@ class DatabaseManager:
         )
         return cursor.fetchone() is not None
 
-    def create_user(self, email, password):
-        """Crea un nuevo usuario"""
-        hashed_pw = hashlib.sha256(password.encode()).hexdigest()
-        trial_end = datetime.now() + timedelta(days=30)
-        self.conn.execute(
-            'INSERT INTO users (email, password, trial_end) VALUES (?, ?, ?)',
-            (email, hashed_pw, trial_end)
-        )
-        self.conn.commit()
+    # En database.py
+   def create_company(self, company_name, admin_email):
+       # Crea una empresa y su administrador
+       company_id = self.conn.execute('INSERT INTO companies (name) VALUES (?)', (company_name,)).lastrowid
+       self.create_user(admin_email, "temp_password", company_id, is_admin=True)
+       self.conn.commit()
+
+   def create_user(self, email, password, company_id, is_admin=False):
+       # Usuarios vinculados a una empresa
+       hashed_pw = hashlib.sha256(password.encode()).hexdigest()
+       self.conn.execute('''
+           INSERT INTO users (email, password, company_id, is_admin) 
+           VALUES (?, ?, ?, ?)
+       ''', (email, hashed_pw, company_id, is_admin))
 
     def save_automation_task(self, user_email, task_data):
         """Guarda tareas automatizadas"""
