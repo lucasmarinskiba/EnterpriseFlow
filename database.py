@@ -1,30 +1,40 @@
 import sqlite3
 import hashlib
-from datetime import datetime, timedelta
-# En database.py
-import os
-def __init__(self):
-    db_path = os.path.join(os.path.expanduser("~"), "EnterpriseFlow", "enterpriseflow.db")
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-    self.conn = sqlite3.connect(db_path)
-    self._create_tables()
+from datetime import datetime
 
 class DatabaseManager:
     def __init__(self):
         self.conn = sqlite3.connect('enterpriseflow.db')
         self._create_tables()
-    
+
     def _create_tables(self):
-        # Asegúrate de que no haya espacios/tabs inconsistentes aquí
-        self.conn.execute('''
-            CREATE TABLE IF NOT EXISTS users (
+        """Crea estructura inicial de la base de datos"""
+        tables = [
+            '''CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
                 email TEXT UNIQUE,
-                password TEXT
-            )
-        ''')
+                password TEXT,
+                plan TEXT DEFAULT 'free',
+                trial_end DATE
+            )''',
+            '''CREATE TABLE IF NOT EXISTS automation_tasks (
+                id INTEGER PRIMARY KEY,
+                user_email TEXT,
+                task_type TEXT,
+                schedule TEXT
+            )''',
+            '''CREATE TABLE IF NOT EXISTS recognitions (
+                id INTEGER PRIMARY KEY,
+                sender TEXT,
+                receiver TEXT,
+                message TEXT,
+                date DATE
+            )'''
+        ]
+        for table in tables:
+            self.conn.execute(table)
         self.conn.commit()
-    
+   
     # ... otros métodos ...
 
     def verify_user(self, email, password):
