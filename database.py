@@ -13,28 +13,19 @@ class DatabaseManager:
     def __init__(self):
         self.conn = sqlite3.connect('enterpriseflow.db')
         self._create_tables()
-
+    
     def _create_tables(self):
-        """Crea estructura inicial de la base de datos"""
-        tables = [
-            '''CREATE TABLE IF NOT EXISTS users (
+        # Asegúrate de que no haya espacios/tabs inconsistentes aquí
+        self.conn.execute('''
+            CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
                 email TEXT UNIQUE,
-                password TEXT,
-                plan TEXT DEFAULT 'free',
-                trial_end DATE
-            )''',
-            '''CREATE TABLE IF NOT EXISTS automation_tasks (
-                id INTEGER PRIMARY KEY,
-                user_email TEXT,
-                task_type TEXT,
-                schedule TEXT
-            )'''
-        ]
-        
-        for table in tables:
-            self.conn.execute(table)
+                password TEXT
+            )
+        ''')
         self.conn.commit()
+    
+    # ... otros métodos ...
 
     def verify_user(self, email, password):
         hashed_pw = hashlib.sha256(password.encode()).hexdigest()
