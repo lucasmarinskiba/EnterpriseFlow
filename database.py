@@ -1,6 +1,13 @@
 import sqlite3
 import hashlib
 from datetime import datetime, timedelta
+# En database.py
+import os
+def __init__(self):
+    db_path = os.path.join(os.path.expanduser("~"), "EnterpriseFlow", "enterpriseflow.db")
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    self.conn = sqlite3.connect(db_path)
+    self._create_tables()
 
 class DatabaseManager:
     def __init__(self):
