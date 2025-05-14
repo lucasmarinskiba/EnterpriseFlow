@@ -139,31 +139,31 @@ class EnterpriseFlowApp:
         return True  # Implementar lógica real aquí
 
     def _show_wellness(self):
-       """Módulo de Bienestar Laboral"""
-       with st.expander("😌 Bienestar del Equipo", expanded=True):
-           st.subheader("Predicción de Burnout")
-           hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
-        
-       if st.button("Calcular Riesgo"):
-            prediction = self._predict_burnout(np.array([[hours_worked, 0, 0, 0, 0]]))
-            st.metric("Riesgo de Burnout", f"{prediction}%")
+        """Módulo de Bienestar Laboral"""
+        with st.expander("😌 Bienestar del Equipo", expanded=True):
+            st.subheader("Predicción de Burnout")
+            hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
+            
+            if st.button("Calcular Riesgo"):
+                prediction = self._predict_burnout(np.array([[hours_worked, 0, 0, 0, 0]]))
+                st.metric("Riesgo de Burnout", f"{prediction}%")
 
-       st.subheader("Sistema de Reconocimiento")
-       colleague = st.text_input("Nombre del Colega")
-       recognition = st.text_area("Mensaje de Reconocimiento")
-        
-       if st.button("Enviar 🏆"):
-           self.db.save_recognition(st.session_state.current_user, colleague, recognition)
-           st.success("Reconocimiento enviado!")
+            st.subheader("Sistema de Reconocimiento")
+            colleague = st.text_input("Nombre del Colega")
+            recognition = st.text_area("Mensaje de Reconocimiento")
+            
+            if st.button("Enviar 🏆"):
+                self.db.save_recognition(st.session_state.current_user, colleague, recognition)
+                st.success("Reconocimiento enviado!")
 
     def _predict_burnout(self, input_data):
-       """Predicción usando modelo de IA (versión simulada para pruebas)"""
-       try:
-           # Modelo real: load_model('models/burnout_model.h5')
-           return min(100, int(input_data[0][0] * 1.5))  # Simulación
-       except Exception as e:
-           st.error(f"Error: {str(e)}")
-           return 0
+        """Predicción usando modelo de IA (versión simulada para pruebas)"""
+        try:
+            # Modelo real: load_model('models/burnout_model.h5')
+            return min(100, int(input_data[0][0] * 1.5))  # Simulación
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+            return 0
 
 if __name__ == "__main__":
     EnterpriseFlowApp()
