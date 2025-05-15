@@ -10,7 +10,7 @@ class SubscriptionData(BaseModel):
     plan_type: str
 
 class PaymentHandler:
-    def _init_(self):
+    def __init__(self):
         self.stripe = stripe  # <--- Línea crítica
         self.stripe.api_key = os.getenv("STRIPE_API_KEY")
         self.price_ids = {
@@ -54,4 +54,4 @@ class PaymentHandler:
                 )
         except self.stripe.error.SignatureVerificationError as e:
             raise Exception("Firma inválida") from e
-        return None
+        return None
