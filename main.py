@@ -218,10 +218,10 @@ class EnterpriseFlowApp:
                     })
                     st.success("Sincronización configurada")
 
-           # Nueva Sección Debajo (Escalable)
-           with st.container():
-               st.subheader("Automatizaciones Avanzadas")
-               adv_col1, adv_col2 = st.columns(2)
+            # Nueva Sección Debajo (Escalable)
+            with st.container():
+                st.subheader("Automatizaciones Avanzadas")
+                adv_col1, adv_col2 = st.columns(2)
             
                with adv_col1:
                    # Automatización 3: Análisis Predictivo
