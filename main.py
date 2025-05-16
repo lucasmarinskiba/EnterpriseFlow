@@ -16,7 +16,7 @@ st.set_page_config(
 )
 
 class EnterpriseFlowApp:
-    def __init__(self):  # Corregido: __init__ con doble guión bajo
+    def __init__(self):  # Método corregido con doble guión bajo
         self.db = DatabaseManager()
         self.payment = PaymentHandler()
         self.nlp = spacy.load("es_core_news_sm")
@@ -66,7 +66,7 @@ class EnterpriseFlowApp:
     def _show_main_interface(self):
         menu = st.sidebar.radio(
             "Menú Principal",
-            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "⚖️ Cumplimiento", "💳 Suscripción"]  # Corregido emoji
+            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "⚖️ Cumplimiento", "💳 Suscripción"]
         )
         
         if menu == "🏠 Inicio":
@@ -75,9 +75,9 @@ class EnterpriseFlowApp:
             self._show_automation()
         elif menu == "😌 Bienestar":
             self._show_wellness()
-        elif menu == "⚖️ Cumplimiento":  # Corregido
+        elif menu == "⚖️ Cumplimiento":
             self._show_compliance()
-        elif menu == "💳 Suscripción":  # Corregido: elif en lugar de if
+        elif menu == "💳 Suscripción":
             self._show_payment()
 
     def _show_dashboard(self):
@@ -122,7 +122,7 @@ class EnterpriseFlowApp:
                 st.subheader("Nuevas Automatizaciones")
                 
                 with st.container(border=True):
-                    st.markdown("**📧 Email Masivo**")  # Corregido: **
+                    st.markdown("**📧 Email Masivo**")
                     email_subject = st.text_input("Asunto del Email")
                     email_template = st.text_area("Plantilla HTML")
                     if st.button("Programar Envío"):
@@ -134,7 +134,7 @@ class EnterpriseFlowApp:
                         st.success("Envío programado!")
                 
                 with st.container(border=True):
-                    st.markdown("**🔄 Sync CRM**")  # Corregido: **
+                    st.markdown("**🔄 Sync CRM**")
                     crm_action = st.selectbox("Acción", ["Actualizar clientes", "Importar leads"])
                     sync_frequency = st.selectbox("Frecuencia", ["Diario", "Semanal", "Mensual"])
                     if st.button("Configurar Sync"):
@@ -151,14 +151,14 @@ class EnterpriseFlowApp:
                 adv_col1, adv_col2 = st.columns(2)
                 
                 with adv_col1:
-                    st.markdown("**🔮 Análisis Predictivo**")  # Corregido: **
+                    st.markdown("**🔮 Análisis Predictivo**")
                     model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
                     if st.button("Ejecutar Modelo"):
                         self._run_predictive_model(model_type)
                         st.success("Modelo ejecutado")
                 
                 with adv_col2:
-                    st.markdown("**⚙️ Integración Externa**")  # Corregido: **
+                    st.markdown("**⚙️ Integración Externa**")
                     api_endpoint = st.text_input("URL API")
                     if st.button("Conectar"):
                         self._test_api_connection(api_endpoint)
@@ -200,8 +200,7 @@ class EnterpriseFlowApp:
             return 0
 
     def _show_compliance(self):
-        """Módulo de Cumplimiento Normativo"""
-        with st.expander("⚖️ Auditoría Normativa", expanded=True):  # Emoji corregido
+        with st.expander("⚖️ Auditoría Normativa", expanded=True):
             uploaded_file = st.file_uploader("Subir Documento", type=["txt", "docx", "pdf"])
             
             if uploaded_file:
@@ -222,23 +221,19 @@ class EnterpriseFlowApp:
                     return
                 
                 audit_result = self._audit_document(text)
-                st.write("**Resultados de Auditoría:**")  # Corregido
+                st.write("**Resultados de Auditoría:**")
                 st.json(audit_result)
 
     def _audit_document(self, text):
-        """Analiza documentos para detectar normativas"""
         doc = self.nlp(text)
-        resultados = {
+        return {
             'GDPR': any(token.text.lower() in ('datos personales', 'consentimiento') for token in doc),
             'SOX': any(token.text.lower() in ('control interno', 'auditoría financiera') for token in doc),
             'ISO27001': any(token.text.lower() in ('seguridad de la información', 'riesgos') for token in doc)
         }
-        return resultados
 
     def _show_payment(self):
-        """Interfaz de suscripciones corregida"""
         st.header("📈 Planes EnterpriseFlow")
-        
         cols = st.columns(3)
         
         with cols[0]:
@@ -247,7 +242,7 @@ class EnterpriseFlowApp:
                 - 10 usuarios
                 - Soporte básico
                 - Reportes estándar
-                **Precio: $99/mes**  # Corregido
+                **Precio: $99/mes**
             """)
             if st.button("Elegir Básico", key="basico"):
                 self._handle_subscription('basico')
@@ -258,7 +253,7 @@ class EnterpriseFlowApp:
                 - 50 usuarios
                 - Soporte prioritario
                 - Reportes avanzados
-                **Precio: $299/mes**  # Corregido
+                **Precio: $299/mes**
             """)
             if st.button("Elegir Premium", key="premium"):
                 self._handle_subscription('premium')
@@ -269,13 +264,12 @@ class EnterpriseFlowApp:
                 - Usuarios ilimitados
                 - Soporte 24/7
                 - Personalización
-                **Precio: $999/mes**  # Corregido
+                **Precio: $999/mes**
             """)
             if st.button("Contactar Ventas", key="enterprise"):
                 st.info("contacto@enterpriseflow.com")
 
     def _handle_subscription(self, plan: str):
-        """Manejo de suscripciones corregido"""
         try:
             if not st.session_state.current_user:
                 raise ValueError("Debe iniciar sesión primero")
@@ -295,10 +289,8 @@ class EnterpriseFlowApp:
             st.error(f"Error en suscripción: {str(e)}")
 
     def _show_payment_confirmation(self):
-        """Interfaz para completar el pago"""
         with st.form("payment-form"):
             st.write("Complete los datos de pago")
-            
             card_number = st.text_input("Número de tarjeta")
             expiry = st.text_input("MM/AA")
             cvc = st.text_input("CVC")
@@ -310,5 +302,5 @@ class EnterpriseFlowApp:
                 except Exception as e:
                     st.error(f"Error en pago: {str(e)}")
 
-if __name__ == "__main__":  # Corregido
+if __name__ == "__main__":  # Sintaxis corregida
     EnterpriseFlowApp()
