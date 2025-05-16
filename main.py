@@ -181,42 +181,42 @@ class EnterpriseFlowApp:
             task_type = st.selectbox("Tipo de Tarea", ["Reporte", "Recordatorio", "Backup"])
             schedule_time = st.time_input("Hora de Ejecución")
             
-               if st.button("Programar Tarea"):
-                   self.db.save_automation_task(st.session_state.current_user, {
-                       'type': task_type,
-                       'schedule': schedule_time.strftime("%H:%M")
-                   })
-                   st.success("Tarea programada exitosamente")
+            if st.button("Programar Tarea"):
+                self.db.save_automation_task(st.session_state.current_user, {
+                    'type': task_type,
+                    'schedule': schedule_time.strftime("%H:%M")
+                })
+                st.success("Tarea programada exitosamente")
 
-           # Nueva Columna 3 (Automatizaciones Adicionales)
-           with col3:
-               st.subheader("Nuevas Automatizaciones")
+        # Nueva Columna 3 (Automatizaciones Adicionales)
+        with col3:
+            st.subheader("Nuevas Automatizaciones")
             
-               # Automatización 1: Envío Masivo de Emails
-               with st.container(border=True):
-                   st.markdown("**📧 Email Masivo**")
-                   email_subject = st.text_input("Asunto del Email")
-                   email_template = st.text_area("Plantilla HTML")
-                   if st.button("Programar Envío"):
-                       self.db.save_automation_task(st.session_state.current_user, {
-                           'type': 'email_masivo',
-                           'subject': email_subject,
-                           'template': email_template
-                       })
-                       st.success("Envío programado!")
+            # Automatización 1: Envío Masivo de Emails
+            with st.container(border=True):
+                st.markdown("**📧 Email Masivo**")
+                email_subject = st.text_input("Asunto del Email")
+                email_template = st.text_area("Plantilla HTML")
+                if st.button("Programar Envío"):
+                    self.db.save_automation_task(st.session_state.current_user, {
+                        'type': 'email_masivo',
+                        'subject': email_subject,
+                        'template': email_template
+                    })
+                    st.success("Envío programado!")
             
-               # Automatización 2: Actualización de CRM
-               with st.container(border=True):
-                   st.markdown("**🔄 Sync CRM**")
-                   crm_action = st.selectbox("Acción", ["Actualizar clientes", "Importar leads"])
-                   sync_frequency = st.selectbox("Frecuencia", ["Diario", "Semanal", "Mensual"])
-                   if st.button("Configurar Sync"):
-                       self.db.save_automation_task(st.session_state.current_user, {
-                           'type': 'crm_sync',
-                           'action': crm_action,
-                           'frequency': sync_frequency
-                       })
-                       st.success("Sincronización configurada")
+            # Automatización 2: Actualización de CRM
+            with st.container(border=True):
+                st.markdown("**🔄 Sync CRM**")
+                crm_action = st.selectbox("Acción", ["Actualizar clientes", "Importar leads"])
+                sync_frequency = st.selectbox("Frecuencia", ["Diario", "Semanal", "Mensual"])
+                if st.button("Configurar Sync"):
+                    self.db.save_automation_task(st.session_state.current_user, {
+                        'type': 'crm_sync',
+                        'action': crm_action,
+                        'frequency': sync_frequency
+                    })
+                    st.success("Sincronización configurada")
 
            # Nueva Sección Debajo (Escalable)
            with st.container():
