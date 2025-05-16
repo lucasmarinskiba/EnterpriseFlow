@@ -139,41 +139,41 @@ class EnterpriseFlowApp:
            'details': data
        }
 
-   def _generate_pdf(self, invoice):
-       # Implementar generación PDF con ReportLab/FPDF
-       # (Ejemplo básico)
-       from fpdf import FPDF
-       pdf = FPDF()
-       pdf.add_page()
-       pdf.set_font("Arial", size=12)
-       pdf.cell(200, 10, txt=f"Factura para: {invoice['details']['client_name']}", ln=1)
-       pdf.cell(200, 10, txt=f"Total: ${invoice['total']}", ln=1)
-       pdf_path = f"/tmp/factura_{invoice['details']['client_name']}.pdf"
-       pdf.output(pdf_path)
-       return pdf_path
+    def _generate_pdf(self, invoice):
+        # Implementar generación PDF con ReportLab/FPDF
+        # (Ejemplo básico)
+        from fpdf import FPDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt=f"Factura para: {invoice['details']['client_name']}", ln=1)
+        pdf.cell(200, 10, txt=f"Total: ${invoice['total']}", ln=1)
+        pdf_path = f"/tmp/factura_{invoice['details']['client_name']}.pdf"
+        pdf.output(pdf_path)
+        return pdf_path
 
-   def _send_invoice_email(self, email, pdf_path):
-       # Implementar envío real con SMTP/Mailgun
-       # (Ejemplo básico)
-       import smtplib
-       from email.mime.multipart import MIMEMultipart
-       from email.mime.text import MIMEText
-       from email.mime.application import MIMEApplication
+    def _send_invoice_email(self, email, pdf_path):
+        # Implementar envío real con SMTP/Mailgun
+        # (Ejemplo básico)
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        from email.mime.application import MIMEApplication
     
-       msg = MIMEMultipart()
-       msg['Subject'] = "Su factura de EnterpriseFlow"
-       msg.attach(MIMEText("Adjunto encontrará su factura"))
+        msg = MIMEMultipart()
+        msg['Subject'] = "Su factura de EnterpriseFlow"
+        msg.attach(MIMEText("Adjunto encontrará su factura"))
     
-       with open(pdf_path, "rb") as f:
-           attach = MIMEApplication(f.read(), _subtype="pdf")
-           attach.add_header('Content-Disposition', 'attachment', filename="factura.pdf")
-           msg.attach(attach)
+        with open(pdf_path, "rb") as f:
+            attach = MIMEApplication(f.read(), _subtype="pdf")
+            attach.add_header('Content-Disposition', 'attachment', filename="factura.pdf")
+            msg.attach(attach)
     
-       # Configurar servidor SMTP (usar variables de entorno)
-       server = smtplib.SMTP(os.getenv('SMTP_SERVER'), 587)
-       server.login(os.getenv('SMTP_USER'), os.getenv('SMTP_PASS'))
-       server.sendmail(os.getenv('EMAIL_FROM'), email, msg.as_string())
-       server.quit()
+        # Configurar servidor SMTP (usar variables de entorno)
+        server = smtplib.SMTP(os.getenv('SMTP_SERVER'), 587)
+        server.login(os.getenv('SMTP_USER'), os.getenv('SMTP_PASS'))
+        server.sendmail(os.getenv('EMAIL_FROM'), email, msg.as_string())
+        server.quit()
 
            # Columna 2 Existente (Tareas)
            with col2:
