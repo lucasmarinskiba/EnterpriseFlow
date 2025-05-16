@@ -1,10 +1,12 @@
-streamlit==1.33.0
-pandas==2.2.2
-numpy==1.26.4
-tensorflow==2.16.1
-spacy==3.7.4
-stripe==8.0.0
-python-dotenv==1.0.1
-python-docx==0.8.11
-PyPDF2==3.0.1
-https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.7.0/es_core_news_sm-3.7.0-py3-none-any.whl 
+streamlit
+pandas
+numpy
+openpyxl
+python-docx
+PyPDF2
+pdfplumber
+python-pptx
+altair
+matplotlib
+plotly
+fpdf2  # 👈 Añade esta línea
