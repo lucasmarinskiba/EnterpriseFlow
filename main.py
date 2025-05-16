@@ -1,16 +1,12 @@
+# main.py
 import streamlit as st
-import pandas as pd
-import sqlite3
-import hashlib
-import numpy as np
 import datetime
 import os
 import stripe
 from database import DatabaseManager
 from payment_handler import PaymentHandler
-from tensorflow.keras.models import load_model
 import spacy
-from fpdf import FPDF  # Corregido: Usar fpdf2 pero el import sigue siendo from fpdf
+from fpdf import FPDF
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -38,6 +34,8 @@ class EnterpriseFlowApp:
             
         self._setup_ui()
 
+if __name__ == "__main__":
+    EnterpriseFlowApp()
     def _setup_ui(self):
         st.sidebar.image("https://via.placeholder.com/200x50.png?text=EnterpriseFlow", width=200)
         if not st.session_state.logged_in:
