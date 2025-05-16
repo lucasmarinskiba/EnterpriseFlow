@@ -92,18 +92,88 @@ class EnterpriseFlowApp:
            # Columna 1 Existente (Facturas)
            with col1:
                st.subheader("Generador de Facturas")
-               client_name = st.text_input("Nombre del Cliente")
-               subtotal = st.number_input("Subtotal", min_value=0.0)
-               client_address = st.text_input("Dirección del Cliente")
-            
-               if st.button("Generar Factura"):
-                   invoice_data = {
-                       'client_name': client_name,
-                       'subtotal': subtotal,
-                       'client_address': client_address
-                   }
-                   invoice = self._generate_invoice(invoice_data)
-                   st.success(f"Factura generada: ${invoice['total']}")
+    
+           # Campos existentes
+           client_name = st.text_input("Nombre del Cliente")
+           client_email = st.text_input("Email del Cliente")  # Nuevo campo
+           subtotal = st.number_input("Subtotal", min_value=0.0)
+           client_address = st.text_input("Dirección del Cliente")
+    
+           # Nuevas características
+           logo = st.file_uploader("Subir logo (opcional)", type=["png", "jpg"])  # Nuevo
+           due_date = st.date_input("Fecha de vencimiento")  # Nuevo
+           payment_method = st.selectbox("Método de pago", ["Transferencia", "Efectivo", "Tarjeta"])  # Nuevo
+    
+           if st.button("Generar Factura"):
+              invoice_data = {
+                  'client_name': client_name,
+                  'client_email': client_email,  # Nuevo dato
+                  'subtotal': subtotal,
+                  'client_address': client_address,
+                  'due_date': due_date.strftime("%d/%m/%Y"),  # Nuevo
+                  'payment_method': payment_method,  # Nuevo
+                  'logo': logo.read() if logo else None  # Nuevo
+              }
+        
+              invoice = self._generate_invoice(invoice_data)
+        
+              # Generar PDF y enviar por email (nuevas funciones)
+              pdf_path = self._generate_pdf(invoice)
+              st.success(f"Factura generada: ${invoice['total']}")
+        
+              # Descargar PDF
+                 with open(pdf_path, "rb") as f:
+                    st.download_button("Descargar Factura", f, file_name=f"factura_{client_name}.pdf")
+        
+              # Enviar por email
+                 if client_email:
+                    if st.button("Enviar por Email"):
+                        self._send_invoice_email(client_email, pdf_path)
+                        st.success("Factura enviada al cliente!")
+                        
+    # Añade estos métodos en tu clase
+    def _generate_invoice(self, data):
+       iva = data['subtotal'] * 0.21  # Ejemplo IVA 21%
+       return {
+           'total': round(data['subtotal'] + iva, 2),
+           'details': data
+       }
+
+   def _generate_pdf(self, invoice):
+       # Implementar generación PDF con ReportLab/FPDF
+       # (Ejemplo básico)
+       from fpdf import FPDF
+       pdf = FPDF()
+       pdf.add_page()
+       pdf.set_font("Arial", size=12)
+       pdf.cell(200, 10, txt=f"Factura para: {invoice['details']['client_name']}", ln=1)
+       pdf.cell(200, 10, txt=f"Total: ${invoice['total']}", ln=1)
+       pdf_path = f"/tmp/factura_{invoice['details']['client_name']}.pdf"
+       pdf.output(pdf_path)
+       return pdf_path
+
+   def _send_invoice_email(self, email, pdf_path):
+       # Implementar envío real con SMTP/Mailgun
+       # (Ejemplo básico)
+       import smtplib
+       from email.mime.multipart import MIMEMultipart
+       from email.mime.text import MIMEText
+       from email.mime.application import MIMEApplication
+    
+       msg = MIMEMultipart()
+       msg['Subject'] = "Su factura de EnterpriseFlow"
+       msg.attach(MIMEText("Adjunto encontrará su factura"))
+    
+       with open(pdf_path, "rb") as f:
+           attach = MIMEApplication(f.read(), _subtype="pdf")
+           attach.add_header('Content-Disposition', 'attachment', filename="factura.pdf")
+           msg.attach(attach)
+    
+       # Configurar servidor SMTP (usar variables de entorno)
+       server = smtplib.SMTP(os.getenv('SMTP_SERVER'), 587)
+       server.login(os.getenv('SMTP_USER'), os.getenv('SMTP_PASS'))
+       server.sendmail(os.getenv('EMAIL_FROM'), email, msg.as_string())
+       server.quit()
 
            # Columna 2 Existente (Tareas)
            with col2:
