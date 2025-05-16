@@ -175,8 +175,8 @@ class EnterpriseFlowApp:
         server.sendmail(os.getenv('EMAIL_FROM'), email, msg.as_string())
         server.quit()
 
-           # Columna 2 Existente (Tareas)
-           with col2:
+            # Columna 2 Existente (Tareas)
+            with col2:
                st.subheader("Programación de Tareas")
                task_type = st.selectbox("Tipo de Tarea", ["Reporte", "Recordatorio", "Backup"])
                schedule_time = st.time_input("Hora de Ejecución")
