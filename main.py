@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 import pandas as pd
 import sqlite3
 import hashlib
@@ -86,36 +86,90 @@ class EnterpriseFlowApp:
         st.write(f"Bienvenido: {st.session_state.current_user}")
 
     def _show_automation(self):
-        with st.expander("🤖 Automatización de Tareas", expanded=True):
-            col1, col2 = st.columns(2)
+     with st.expander("🤖 Automatización de Tareas", expanded=True):
+        col1, col2, col3 = st.columns(3)  # Nueva columna agregada
+        
+        # Columna 1 Existente (Facturas)
+        with col1:
+            st.subheader("Generador de Facturas")
+            client_name = st.text_input("Nombre del Cliente")
+            subtotal = st.number_input("Subtotal", min_value=0.0)
+            client_address = st.text_input("Dirección del Cliente")
             
-            with col1:
-                st.subheader("Generador de Facturas")
-                client_name = st.text_input("Nombre del Cliente")
-                subtotal = st.number_input("Subtotal", min_value=0.0)
-                client_address = st.text_input("Dirección del Cliente")
-                
-                if st.button("Generar Factura"):
-                    invoice_data = {
-                        'client_name': client_name,
-                        'subtotal': subtotal,
-                        'client_address': client_address
-                    }
-                    invoice = self._generate_invoice(invoice_data)
-                    st.success(f"Factura generada: ${invoice['total']}")
+            if st.button("Generar Factura"):
+                invoice_data = {
+                    'client_name': client_name,
+                    'subtotal': subtotal,
+                    'client_address': client_address
+                }
+                invoice = self._generate_invoice(invoice_data)
+                st.success(f"Factura generada: ${invoice['total']}")
 
-            with col2:
-                st.subheader("Programación de Tareas")
-                task_type = st.selectbox("Tipo de Tarea", ["Reporte", "Recordatorio", "Backup"])
-                schedule_time = st.time_input("Hora de Ejecución")
-                
-                if st.button("Programar Tarea"):
+        # Columna 2 Existente (Tareas)
+        with col2:
+            st.subheader("Programación de Tareas")
+            task_type = st.selectbox("Tipo de Tarea", ["Reporte", "Recordatorio", "Backup"])
+            schedule_time = st.time_input("Hora de Ejecución")
+            
+            if st.button("Programar Tarea"):
+                self.db.save_automation_task(st.session_state.current_user, {
+                    'type': task_type,
+                    'schedule': schedule_time.strftime("%H:%M")
+                })
+                st.success("Tarea programada exitosamente")
+
+        # Nueva Columna 3 (Automatizaciones Adicionales)
+        with col3:
+            st.subheader("Nuevas Automatizaciones")
+            
+            # Automatización 1: Envío Masivo de Emails
+            with st.container(border=True):
+                st.markdown("**📧 Email Masivo**")
+                email_subject = st.text_input("Asunto del Email")
+                email_template = st.text_area("Plantilla HTML")
+                if st.button("Programar Envío"):
                     self.db.save_automation_task(st.session_state.current_user, {
-                        'type': task_type,
-                        'schedule': schedule_time.strftime("%H:%M")
+                        'type': 'email_masivo',
+                        'subject': email_subject,
+                        'template': email_template
                     })
-                    st.success("Tarea programada exitosamente")
+                    st.success("Envío programado!")
+            
+            # Automatización 2: Actualización de CRM
+            with st.container(border=True):
+                st.markdown("**🔄 Sync CRM**")
+                crm_action = st.selectbox("Acción", ["Actualizar clientes", "Importar leads"])
+                sync_frequency = st.selectbox("Frecuencia", ["Diario", "Semanal", "Mensual"])
+                if st.button("Configurar Sync"):
+                    self.db.save_automation_task(st.session_state.current_user, {
+                        'type': 'crm_sync',
+                        'action': crm_action,
+                        'frequency': sync_frequency
+                    })
+                    st.success("Sincronización configurada")
 
+        # Nueva Sección Debajo (Escalable)
+        with st.container():
+            st.subheader("Automatizaciones Avanzadas")
+            adv_col1, adv_col2 = st.columns(2)
+            
+            with adv_col1:
+                # Automatización 3: Análisis Predictivo
+                st.markdown("**🔮 Análisis Predictivo**")
+                model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
+                if st.button("Ejecutar Modelo"):
+                    self._run_predictive_model(model_type)
+                    st.success("Modelo ejecutado")
+            
+            with adv_col2:
+                # Automatización 4: Integración API
+                st.markdown("**⚙️ Integración Externa**")
+                api_endpoint = st.text_input("URL API")
+                if st.button("Conectar"):
+                    self._test_api_connection(api_endpoint)
+                    st.success("Conexión exitosa")
+    
+    #limite
     def _generate_invoice(self, data):
         iva_rate = 0.16 if 'MEX' in data['client_address'] else 0.21
         return {
