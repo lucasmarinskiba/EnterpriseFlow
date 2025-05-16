@@ -9,4 +9,7 @@ python-pptx
 altair
 matplotlib
 plotly
-fpdf2  # 👈 Añade esta línea
+fpdf2
+spacy>=3.7.0  # Versión específica para evitar conflictos
+cython>=0.29.0  # Necesario para compilar Thinc
+thinc>=8.2.0  # Versión compatible con spaCy 3.7+
