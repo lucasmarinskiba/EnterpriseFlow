@@ -10,7 +10,7 @@ altair
 matplotlib
 plotly
 fpdf2
-spacy==3.6.1  # Versión compatible con Python 3.10
-thinc==8.1.10
+spacy==3.7.4  # Versión oficialmente compatible con Python 3.12
+thinc==8.2.4   # Versión requerida por spaCy 3.7.4
 cython==0.29.36
-en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0-py3-none-any.whl  # Modelo para spaCy 3.6
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl
