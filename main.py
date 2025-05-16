@@ -223,21 +223,21 @@ class EnterpriseFlowApp:
                 st.subheader("Automatizaciones Avanzadas")
                 adv_col1, adv_col2 = st.columns(2)
             
-               with adv_col1:
-                   # Automatización 3: Análisis Predictivo
-                   st.markdown("**🔮 Análisis Predictivo**")
-                   model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
-                   if st.button("Ejecutar Modelo"):
-                       self._run_predictive_model(model_type)
-                       st.success("Modelo ejecutado")
+            with adv_col1:
+                # Automatización 3: Análisis Predictivo
+                st.markdown("**🔮 Análisis Predictivo**")
+                model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
+                if st.button("Ejecutar Modelo"):
+                    self._run_predictive_model(model_type)
+                    st.success("Modelo ejecutado")
             
-               with adv_col2:
-                   # Automatización 4: Integración API
-                   st.markdown("**⚙️ Integración Externa**")
-                   api_endpoint = st.text_input("URL API")
-                   if st.button("Conectar"):
-                       self._test_api_connection(api_endpoint)
-                       st.success("Conexión exitosa")
+            with adv_col2:
+                # Automatización 4: Integración API
+                st.markdown("**⚙️ Integración Externa**")
+                api_endpoint = st.text_input("URL API")
+                if st.button("Conectar"):
+                    self._test_api_connection(api_endpoint)
+                    st.success("Conexión exitosa")
 
     def _generate_invoice(self, data):
         iva_rate = 0.16 if 'MEX' in data['client_address'] else 0.21
