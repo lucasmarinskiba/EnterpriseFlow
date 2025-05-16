@@ -86,96 +86,49 @@ class EnterpriseFlowApp:
         st.write(f"Bienvenido: {st.session_state.current_user}")
 
     def _show_automation(self):
-       with st.expander("🤖 Automatización de Tareas", expanded=True):
-           col1, col2, col3 = st.columns(3)  # Nueva columna agregada
+    with st.expander("🤖 Automatización de Tareas", expanded=True):
+        col1, col2, col3 = st.columns(3)
         
-           # Columna 1 Existente (Facturas)
-           with col1:
-               st.subheader("Generador de Facturas")
-    
-           # Campos existentes
-           client_name = st.text_input("Nombre del Cliente")
-           client_email = st.text_input("Email del Cliente")  # Nuevo campo
-           subtotal = st.number_input("Subtotal", min_value=0.0)
-           client_address = st.text_input("Dirección del Cliente")
-    
-           # Nuevas características
-           logo = st.file_uploader("Subir logo (opcional)", type=["png", "jpg"])  # Nuevo
-           due_date = st.date_input("Fecha de vencimiento")  # Nuevo
-           payment_method = st.selectbox("Método de pago", ["Transferencia", "Efectivo", "Tarjeta"])  # Nuevo
-    
-           if st.button("Generar Factura"):
-              invoice_data = {
-                  'client_name': client_name,
-                  'client_email': client_email,  # Nuevo dato
-                  'subtotal': subtotal,
-                  'client_address': client_address,
-                  'due_date': due_date.strftime("%d/%m/%Y"),  # Nuevo
-                  'payment_method': payment_method,  # Nuevo
-                  'logo': logo.read() if logo else None  # Nuevo
-              }
-        
-              invoice = self._generate_invoice(invoice_data)
-        
-              # Generar PDF y enviar por email (nuevas funciones)
-              pdf_path = self._generate_pdf(invoice)
-              st.success(f"Factura generada: ${invoice['total']}")
-        
-              # Descargar PDF
-              with open(pdf_path, "rb") as f:
-                  st.download_button("Descargar Factura", f, file_name=f"factura_{client_name}.pdf")
-        
-              # Enviar por email
-              if client_email:
-                 if st.button("Enviar por Email"):
-                    self._send_invoice_email(client_email, pdf_path)
-                    st.success("Factura enviada al cliente!")
-                        
-    # Añade estos métodos en tu clase
-    def _generate_invoice(self, data):
-       iva = data['subtotal'] * 0.21  # Ejemplo IVA 21%
-       return {
-           'total': round(data['subtotal'] + iva, 2),
-           'details': data
-       }
+        # Columna 1 Mejorada (Facturas)
+        with col1:
+            st.subheader("Generador de Facturas")
+            
+            # Campos principales
+            client_name = st.text_input("Nombre del Cliente")
+            client_email = st.text_input("Email del Cliente")
+            subtotal = st.number_input("Subtotal", min_value=0.0)
+            client_address = st.text_input("Dirección del Cliente")
+            
+            # Nuevos campos
+            with st.expander("Opciones avanzadas"):
+                logo = st.file_uploader("Subir logo", type=["png", "jpg"])
+                due_date = st.date_input("Fecha de vencimiento")
+                payment_method = st.selectbox("Método de pago", ["Transferencia", "Tarjeta", "Efectivo"])
+            
+            if st.button("Generar Factura"):
+                invoice_data = {
+                    'client_name': client_name,
+                    'client_email': client_email,
+                    'subtotal': subtotal,
+                    'client_address': client_address,
+                    'due_date': due_date.strftime("%d/%m/%Y"),
+                    'payment_method': payment_method,
+                    'logo': logo.read() if logo else None
+                }
+                
+                invoice = self._generate_invoice(invoice_data)
+                pdf_path = self._generate_pdf(invoice)
+                
+                st.success(f"Factura generada: ${invoice['total']}")
+                with open(pdf_path, "rb") as f:
+                    st.download_button("Descargar PDF", f, file_name=f"factura_{client_name}.pdf")
+                
+                if client_email:
+                    if st.button("📤 Enviar por Email", key="send_email"):
+                        self._send_invoice_email(client_email, pdf_path)
+                        st.success("Email enviado!")
 
-    def _generate_pdf(self, invoice):
-        # Implementar generación PDF con ReportLab/FPDF
-        # (Ejemplo básico)
-        from fpdf import FPDF
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt=f"Factura para: {invoice['details']['client_name']}", ln=1)
-        pdf.cell(200, 10, txt=f"Total: ${invoice['total']}", ln=1)
-        pdf_path = f"/tmp/factura_{invoice['details']['client_name']}.pdf"
-        pdf.output(pdf_path)
-        return pdf_path
-
-    def _send_invoice_email(self, email, pdf_path):
-        # Implementar envío real con SMTP/Mailgun
-        # (Ejemplo básico)
-        import smtplib
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
-        from email.mime.application import MIMEApplication
-    
-        msg = MIMEMultipart()
-        msg['Subject'] = "Su factura de EnterpriseFlow"
-        msg.attach(MIMEText("Adjunto encontrará su factura"))
-    
-        with open(pdf_path, "rb") as f:
-            attach = MIMEApplication(f.read(), _subtype="pdf")
-            attach.add_header('Content-Disposition', 'attachment', filename="factura.pdf")
-            msg.attach(attach)
-    
-        # Configurar servidor SMTP (usar variables de entorno)
-        server = smtplib.SMTP(os.getenv('SMTP_SERVER'), 587)
-        server.login(os.getenv('SMTP_USER'), os.getenv('SMTP_PASS'))
-        server.sendmail(os.getenv('EMAIL_FROM'), email, msg.as_string())
-        server.quit()
-
-        # Columna 2 Existente (Tareas)
+        # Columna 2 (Mantener igual)
         with col2:
             st.subheader("Programación de Tareas")
             task_type = st.selectbox("Tipo de Tarea", ["Reporte", "Recordatorio", "Backup"])
@@ -188,11 +141,10 @@ class EnterpriseFlowApp:
                 })
                 st.success("Tarea programada exitosamente")
 
-        # Nueva Columna 3 (Automatizaciones Adicionales)
+        # Columna 3 (Mantener igual)
         with col3:
             st.subheader("Nuevas Automatizaciones")
             
-            # Automatización 1: Envío Masivo de Emails
             with st.container(border=True):
                 st.markdown("**📧 Email Masivo**")
                 email_subject = st.text_input("Asunto del Email")
@@ -205,7 +157,6 @@ class EnterpriseFlowApp:
                     })
                     st.success("Envío programado!")
             
-            # Automatización 2: Actualización de CRM
             with st.container(border=True):
                 st.markdown("**🔄 Sync CRM**")
                 crm_action = st.selectbox("Acción", ["Actualizar clientes", "Importar leads"])
@@ -218,13 +169,12 @@ class EnterpriseFlowApp:
                     })
                     st.success("Sincronización configurada")
 
-            # Nueva Sección Debajo (Escalable)
-            with st.container():
-                st.subheader("Automatizaciones Avanzadas")
-                adv_col1, adv_col2 = st.columns(2)
+        # Sección avanzada (Mantener igual)
+        with st.container():
+            st.subheader("Automatizaciones Avanzadas")
+            adv_col1, adv_col2 = st.columns(2)
             
             with adv_col1:
-                # Automatización 3: Análisis Predictivo
                 st.markdown("**🔮 Análisis Predictivo**")
                 model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
                 if st.button("Ejecutar Modelo"):
@@ -232,13 +182,59 @@ class EnterpriseFlowApp:
                     st.success("Modelo ejecutado")
             
             with adv_col2:
-                # Automatización 4: Integración API
                 st.markdown("**⚙️ Integración Externa**")
                 api_endpoint = st.text_input("URL API")
                 if st.button("Conectar"):
                     self._test_api_connection(api_endpoint)
                     st.success("Conexión exitosa")
 
+# Añadir estos métodos en tu clase
+def _generate_invoice(self, data):
+    iva = data['subtotal'] * 0.21
+    return {
+        'total': round(data['subtotal'] + iva, 2),
+        'details': data,
+        'invoice_number': f"INV-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    }
+
+def _generate_pdf(self, invoice):
+    from fpdf import FPDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    
+    # Cabecera
+    pdf.cell(200, 10, txt=f"Factura #{invoice['invoice_number']}", ln=1, align='C')
+    pdf.cell(200, 10, txt=f"Cliente: {invoice['details']['client_name']}", ln=1)
+    pdf.cell(200, 10, txt=f"Total: ${invoice['total']}", ln=1)
+    pdf.cell(200, 10, txt=f"Vencimiento: {invoice['details']['due_date']}", ln=1)
+    
+    pdf_path = f"/tmp/{invoice['invoice_number']}.pdf"
+    pdf.output(pdf_path)
+    return pdf_path
+
+def _send_invoice_email(self, email, pdf_path):
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.application import MIMEApplication
+    
+    msg = MIMEMultipart()
+    msg['Subject'] = "Su factura de EnterpriseFlow"
+    msg.attach(MIMEText("Adjunto encontrará su factura generada automáticamente"))
+    
+    with open(pdf_path, "rb") as f:
+        attach = MIMEApplication(f.read(), _subtype="pdf")
+        attach.add_header('Content-Disposition', 'attachment', filename="factura.pdf")
+        msg.attach(attach)
+    
+    server = smtplib.SMTP(os.getenv('SMTP_SERVER'), 587)
+    server.starttls()
+    server.login(os.getenv('SMTP_USER'), os.getenv('SMTP_PASS'))
+    server.sendmail(os.getenv('EMAIL_FROM'), email, msg.as_string())
+    server.quit()
+    
+    #limite
     def _generate_invoice(self, data):
         iva_rate = 0.16 if 'MEX' in data['client_address'] else 0.21
         return {
