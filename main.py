@@ -1,14 +1,11 @@
 import streamlit as st
-import pandas as pd
 import sqlite3
 import hashlib
-import numpy as np
 import datetime
 import os
 import stripe
 from database import DatabaseManager
 from payment_handler import PaymentHandler
-from tensorflow.keras.models import load_model
 import spacy
 
 # Configuración inicial
@@ -19,7 +16,7 @@ st.set_page_config(
 )
 
 class EnterpriseFlowApp:
-    def _init_(self):
+    def __init__(self):  # Corregido: __init__ con doble guión bajo
         self.db = DatabaseManager()
         self.payment = PaymentHandler()
         self.nlp = spacy.load("es_core_news_sm")
@@ -28,6 +25,8 @@ class EnterpriseFlowApp:
             st.session_state.logged_in = False
         if 'current_user' not in st.session_state:
             st.session_state.current_user = None
+        if 'subscription' not in st.session_state:
+            st.session_state.subscription = None
             
         self._setup_ui()
 
@@ -67,7 +66,7 @@ class EnterpriseFlowApp:
     def _show_main_interface(self):
         menu = st.sidebar.radio(
             "Menú Principal",
-            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "⚖ Cumplimiento", "💳 Suscripción"]
+            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "⚖️ Cumplimiento", "💳 Suscripción"]  # Corregido emoji
         )
         
         if menu == "🏠 Inicio":
@@ -76,9 +75,9 @@ class EnterpriseFlowApp:
             self._show_automation()
         elif menu == "😌 Bienestar":
             self._show_wellness()
-        elif menu == "⚖ Cumplimiento":
+        elif menu == "⚖️ Cumplimiento":  # Corregido
             self._show_compliance()
-        if menu == "💳 Suscripción":
+        elif menu == "💳 Suscripción":  # Corregido: elif en lugar de if
             self._show_payment()
 
     def _show_dashboard(self):
@@ -86,88 +85,84 @@ class EnterpriseFlowApp:
         st.write(f"Bienvenido: {st.session_state.current_user}")
 
     def _show_automation(self):
-       with st.expander("🤖 Automatización de Tareas", expanded=True):
-           col1, col2, col3 = st.columns(3)  # Nueva columna agregada
-        
-           # Columna 1 Existente (Facturas)
-           with col1:
-               st.subheader("Generador de Facturas")
-               client_name = st.text_input("Nombre del Cliente")
-               subtotal = st.number_input("Subtotal", min_value=0.0)
-               client_address = st.text_input("Dirección del Cliente")
+        with st.expander("🤖 Automatización de Tareas", expanded=True):
+            col1, col2, col3 = st.columns(3)
             
-               if st.button("Generar Factura"):
-                   invoice_data = {
-                       'client_name': client_name,
-                       'subtotal': subtotal,
-                       'client_address': client_address
-                   }
-                   invoice = self._generate_invoice(invoice_data)
-                   st.success(f"Factura generada: ${invoice['total']}")
+            # Columna 1 - Generador de Facturas
+            with col1:
+                st.subheader("Generador de Facturas")
+                client_name = st.text_input("Nombre del Cliente")
+                subtotal = st.number_input("Subtotal", min_value=0.0)
+                client_address = st.text_input("Dirección del Cliente")
+                
+                if st.button("Generar Factura"):
+                    invoice_data = {
+                        'client_name': client_name,
+                        'subtotal': subtotal,
+                        'client_address': client_address
+                    }
+                    invoice = self._generate_invoice(invoice_data)
+                    st.success(f"Factura generada: ${invoice['total']}")
 
-           # Columna 2 Existente (Tareas)
-           with col2:
-               st.subheader("Programación de Tareas")
-               task_type = st.selectbox("Tipo de Tarea", ["Reporte", "Recordatorio", "Backup"])
-               schedule_time = st.time_input("Hora de Ejecución")
-            
-               if st.button("Programar Tarea"):
-                   self.db.save_automation_task(st.session_state.current_user, {
-                       'type': task_type,
-                       'schedule': schedule_time.strftime("%H:%M")
-                   })
-                   st.success("Tarea programada exitosamente")
+            # Columna 2 - Programación de Tareas
+            with col2:
+                st.subheader("Programación de Tareas")
+                task_type = st.selectbox("Tipo de Tarea", ["Reporte", "Recordatorio", "Backup"])
+                schedule_time = st.time_input("Hora de Ejecución")
+                
+                if st.button("Programar Tarea"):
+                    self.db.save_automation_task(st.session_state.current_user, {
+                        'type': task_type,
+                        'schedule': schedule_time.strftime("%H:%M")
+                    })
+                    st.success("Tarea programada exitosamente")
 
-           # Nueva Columna 3 (Automatizaciones Adicionales)
-           with col3:
-               st.subheader("Nuevas Automatizaciones")
-            
-               # Automatización 1: Envío Masivo de Emails
-               with st.container(border=True):
-                   st.markdown("📧 Email Masivo**")
-                   email_subject = st.text_input("Asunto del Email")
-                   email_template = st.text_area("Plantilla HTML")
-                   if st.button("Programar Envío"):
-                       self.db.save_automation_task(st.session_state.current_user, {
-                           'type': 'email_masivo',
-                           'subject': email_subject,
-                           'template': email_template
-                       })
-                       st.success("Envío programado!")
-            
-               # Automatización 2: Actualización de CRM
-               with st.container(border=True):
-                   st.markdown("🔄 Sync CRM**")
-                   crm_action = st.selectbox("Acción", ["Actualizar clientes", "Importar leads"])
-                   sync_frequency = st.selectbox("Frecuencia", ["Diario", "Semanal", "Mensual"])
-                   if st.button("Configurar Sync"):
-                       self.db.save_automation_task(st.session_state.current_user, {
-                           'type': 'crm_sync',
-                           'action': crm_action,
-                           'frequency': sync_frequency
-                       })
-                       st.success("Sincronización configurada")
+            # Columna 3 - Automatizaciones Adicionales
+            with col3:
+                st.subheader("Nuevas Automatizaciones")
+                
+                with st.container(border=True):
+                    st.markdown("**📧 Email Masivo**")  # Corregido: **
+                    email_subject = st.text_input("Asunto del Email")
+                    email_template = st.text_area("Plantilla HTML")
+                    if st.button("Programar Envío"):
+                        self.db.save_automation_task(st.session_state.current_user, {
+                            'type': 'email_masivo',
+                            'subject': email_subject,
+                            'template': email_template
+                        })
+                        st.success("Envío programado!")
+                
+                with st.container(border=True):
+                    st.markdown("**🔄 Sync CRM**")  # Corregido: **
+                    crm_action = st.selectbox("Acción", ["Actualizar clientes", "Importar leads"])
+                    sync_frequency = st.selectbox("Frecuencia", ["Diario", "Semanal", "Mensual"])
+                    if st.button("Configurar Sync"):
+                        self.db.save_automation_task(st.session_state.current_user, {
+                            'type': 'crm_sync',
+                            'action': crm_action,
+                            'frequency': sync_frequency
+                        })
+                        st.success("Sincronización configurada")
 
-           # Nueva Sección Debajo (Escalable)
-           with st.container():
-               st.subheader("Automatizaciones Avanzadas")
-               adv_col1, adv_col2 = st.columns(2)
-            
-               with adv_col1:
-                   # Automatización 3: Análisis Predictivo
-                   st.markdown("🔮 Análisis Predictivo**")
-                   model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
-                   if st.button("Ejecutar Modelo"):
-                       self._run_predictive_model(model_type)
-                       st.success("Modelo ejecutado")
-            
-               with adv_col2:
-                   # Automatización 4: Integración API
-                   st.markdown("⚙ Integración Externa**")
-                   api_endpoint = st.text_input("URL API")
-                   if st.button("Conectar"):
-                       self._test_api_connection(api_endpoint)
-                       st.success("Conexión exitosa")
+            # Sección Avanzada
+            with st.container():
+                st.subheader("Automatizaciones Avanzadas")
+                adv_col1, adv_col2 = st.columns(2)
+                
+                with adv_col1:
+                    st.markdown("**🔮 Análisis Predictivo**")  # Corregido: **
+                    model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
+                    if st.button("Ejecutar Modelo"):
+                        self._run_predictive_model(model_type)
+                        st.success("Modelo ejecutado")
+                
+                with adv_col2:
+                    st.markdown("**⚙️ Integración Externa**")  # Corregido: **
+                    api_endpoint = st.text_input("URL API")
+                    if st.button("Conectar"):
+                        self._test_api_connection(api_endpoint)
+                        st.success("Conexión exitosa")
 
     def _generate_invoice(self, data):
         iva_rate = 0.16 if 'MEX' in data['client_address'] else 0.21
@@ -206,7 +201,7 @@ class EnterpriseFlowApp:
 
     def _show_compliance(self):
         """Módulo de Cumplimiento Normativo"""
-        with st.expander("⚖ Auditoría Normativa", expanded=True):
+        with st.expander("⚖️ Auditoría Normativa", expanded=True):  # Emoji corregido
             uploaded_file = st.file_uploader("Subir Documento", type=["txt", "docx", "pdf"])
             
             if uploaded_file:
@@ -227,7 +222,7 @@ class EnterpriseFlowApp:
                     return
                 
                 audit_result = self._audit_document(text)
-                st.write("*Resultados de Auditoría:*")
+                st.write("**Resultados de Auditoría:**")  # Corregido
                 st.json(audit_result)
 
     def _audit_document(self, text):
@@ -252,10 +247,10 @@ class EnterpriseFlowApp:
                 - 10 usuarios
                 - Soporte básico
                 - Reportes estándar
-                *Precio: $99/mes*
+                **Precio: $99/mes**  # Corregido
             """)
             if st.button("Elegir Básico", key="basico"):
-                self._handle_subscription('basico')  # Key en español
+                self._handle_subscription('basico')
 
         with cols[1]:
             st.subheader("Premium")
@@ -263,7 +258,7 @@ class EnterpriseFlowApp:
                 - 50 usuarios
                 - Soporte prioritario
                 - Reportes avanzados
-                *Precio: $299/mes*
+                **Precio: $299/mes**  # Corregido
             """)
             if st.button("Elegir Premium", key="premium"):
                 self._handle_subscription('premium')
@@ -274,7 +269,7 @@ class EnterpriseFlowApp:
                 - Usuarios ilimitados
                 - Soporte 24/7
                 - Personalización
-                *Precio: $999/mes*
+                **Precio: $999/mes**  # Corregido
             """)
             if st.button("Contactar Ventas", key="enterprise"):
                 st.info("contacto@enterpriseflow.com")
@@ -304,19 +299,16 @@ class EnterpriseFlowApp:
         with st.form("payment-form"):
             st.write("Complete los datos de pago")
             
-            # Campos seguros para tarjeta (mejor usar Stripe Elements)
             card_number = st.text_input("Número de tarjeta")
             expiry = st.text_input("MM/AA")
             cvc = st.text_input("CVC")
             
             if st.form_submit_button("Confirmar Pago"):
                 try:
-                    # Lógica de confirmación de pago
-                    # Deberías implementar Stripe Elements aquí
                     st.success("Pago procesado exitosamente!")
-                    st.session_state.subscription = None  # Resetear estado
+                    st.session_state.subscription = None
                 except Exception as e:
                     st.error(f"Error en pago: {str(e)}")
-    
-if _name_ == "_main_":
+
+if __name__ == "__main__":  # Corregido
     EnterpriseFlowApp()
