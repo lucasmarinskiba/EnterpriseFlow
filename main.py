@@ -122,8 +122,8 @@ class EnterpriseFlowApp:
               st.success(f"Factura generada: ${invoice['total']}")
         
               # Descargar PDF
-                 with open(pdf_path, "rb") as f:
-                    st.download_button("Descargar Factura", f, file_name=f"factura_{client_name}.pdf")
+              with open(pdf_path, "rb") as f:
+                  st.download_button("Descargar Factura", f, file_name=f"factura_{client_name}.pdf")
         
               # Enviar por email
                  if client_email:
