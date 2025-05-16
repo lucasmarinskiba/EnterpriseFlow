@@ -126,10 +126,10 @@ class EnterpriseFlowApp:
                   st.download_button("Descargar Factura", f, file_name=f"factura_{client_name}.pdf")
         
               # Enviar por email
-                 if client_email:
-                    if st.button("Enviar por Email"):
-                        self._send_invoice_email(client_email, pdf_path)
-                        st.success("Factura enviada al cliente!")
+              if client_email:
+                 if st.button("Enviar por Email"):
+                    self._send_invoice_email(client_email, pdf_path)
+                    st.success("Factura enviada al cliente!")
                         
     # Añade estos métodos en tu clase
     def _generate_invoice(self, data):
