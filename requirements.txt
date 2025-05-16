@@ -10,7 +10,7 @@ altair
 matplotlib
 plotly
 fpdf2
-spacy>=3.7.0  # Versión específica para evitar conflictos
-cython>=0.29.0  # Necesario para compilar Thinc
-thinc>=8.2.0  # Versión compatible con spaCy 3.7+
-en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl
+spacy==3.7.4  # Versión compatible con Python 3.11
+thinc==8.2.3   # Versión explícita para evitar conflictos
+cython==0.29.36
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl  # Modelo de spaCy
