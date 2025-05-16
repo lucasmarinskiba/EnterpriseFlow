@@ -27,6 +27,3 @@ showErrorDetails = true  # Muestra detalles técnicos de errores al usuario
 
 [mapbox]
 token = "pk.xyz"  # Token para Mapbox (si usas mapas)
-
-[server]
-maxUploadSize = 200
