@@ -1,26 +1,10 @@
-# Paquetes principales
-streamlit==1.35.0
+streamlit==1.33.0
 pandas==2.2.2
 numpy==1.26.4
-python-docx==1.1.0
+tensorflow==2.16.1
+spacy==3.7.4
+stripe==8.0.0
+python-dotenv==1.0.1
+python-docx==0.8.11
 PyPDF2==3.0.1
-pdfplumber==0.10.3
-spacy==3.7.4
-thinc==8.2.4
-cython==3.0.8
-plotly==5.19.0
-fpdf2==2.7.7
-
-# NLP y Procesamiento
-spacy==3.7.4
-https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl
-thinc==8.2.4
-cython==3.0.8
-
-# Seguridad y Rendimiento
-cryptography==42.0.5
-psutil==5.9.8
-
-# Visualización
-plotly==5.19.0
-altair==5.3.0
+https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.7.0/es_core_news_sm-3.7.0-py3-none-any.whl
