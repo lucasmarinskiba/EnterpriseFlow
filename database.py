@@ -1,41 +1,66 @@
-# database.py
 import sqlite3
 import hashlib
+from datetime import datetime
 
 class DatabaseManager:
-    def __init__(self, db_name="enterpriseflow.db"):
-        self.conn = sqlite3.connect(db_name)
+    def _init_(self):
+        self.conn = sqlite3.connect('enterpriseflow.db')
         self._create_tables()
 
     def _create_tables(self):
-        cursor = self.conn.cursor()
-        # Tabla de usuarios
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                email TEXT PRIMARY KEY,
-                password_hash TEXT NOT NULL
-            )
-        ''')
-        # Tabla de tareas
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS automations (
+        tables = [
+            '''CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY,
+                email TEXT UNIQUE,
+                password TEXT
+            )''',
+            '''CREATE TABLE IF NOT EXISTS automation_tasks (
+                id INTEGER PRIMARY KEY,
                 user_email TEXT,
-                type TEXT,
-                data TEXT,
-                FOREIGN KEY(user_email) REFERENCES users(email)
+                task_type TEXT,
+                schedule TEXT
+            )''',
+            '''CREATE TABLE IF NOT EXISTS recognitions (
+                id INTEGER PRIMARY KEY,
+                sender TEXT,
+                receiver TEXT,
+                message TEXT,
+                date DATE
+            )'''
+        ]
+        for table in tables:
+            self.conn.execute(table)
+        self.conn.commit()
+
+    def verify_user(self, email, password):
+        hashed_pw = hashlib.sha256(password.encode()).hexdigest()
+        cursor = self.conn.execute(
+            'SELECT * FROM users WHERE email=? AND password=?',
+            (email, hashed_pw)
+        )
+        return cursor.fetchone() is not None
+
+    def create_user(self, email, password):
+        hashed_pw = hashlib.sha256(password.encode()).hexdigest()
+        try:
+            self.conn.execute(
+                'INSERT INTO users (email, password) VALUES (?, ?)',
+                (email, hashed_pw)
             )
-        ''')
+            self.conn.commit()
+        except sqlite3.IntegrityError as e:
+            raise e
+
+    def save_automation_task(self, user_email, task_data):
+        self.conn.execute(
+            'INSERT INTO automation_tasks (user_email, task_type, schedule) VALUES (?, ?, ?)',
+            (user_email, task_data['type'], task_data['schedule'])
+        )
         self.conn.commit()
 
-    def create_user(self, email: str, password: str):
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
-        cursor = self.conn.cursor()
-        cursor.execute("INSERT INTO users VALUES (?, ?)", (email, password_hash))
+    def save_recognition(self, sender, receiver, message):
+        self.conn.execute(
+            'INSERT INTO recognitions (sender, receiver, message, date) VALUES (?, ?, ?, ?)',
+            (sender, receiver, message, datetime.now().date())
+        )
         self.conn.commit()
-
-    def verify_user(self, email: str, password: str) -> bool:
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
-        cursor = self.conn.cursor()
-        cursor.execute("SELECT password_hash FROM users WHERE email=?", (email,))
-        result = cursor.fetchone()
-        return result[0] == password_hash if result else False
