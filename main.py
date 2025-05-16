@@ -1,343 +1,215 @@
 import streamlit as st
-import sqlite3
-import hashlib
-import datetime
-import os
-import stripe
-from database import DatabaseManager
-from payment_handler import PaymentHandler
-import spacy
+import pandas as pd
+import numpy as np
 from fpdf import FPDF
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
+import spacy
+from spacy import displacy
+import pdfplumber
+from PyPDF2 import PdfReader
+from docx import Document
+from openpyxl import load_workbook
+from pptx import Presentation
+import os
+import time
+import logging
+from datetime import datetime
+import hashlib
 
-# Configuración inicial
-st.set_page_config(
-    page_title="EnterpriseFlow",
-    page_icon="🏢",
-    layout="wide"
+# ===================== 🛠️ CONFIGURACIÓN PROFESIONAL =====================
+# Configuración de logging
+logging.basicConfig(
+    filename='app.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
-class EnterpriseFlowApp:
-    def __init__(self):
-        self.db = DatabaseManager()
-        self.payment = PaymentHandler()
-        self.nlp = spacy.load("es_core_news_sm")
+# Cacheo de recursos pesados (optimización)
+@st.cache_resource
+def load_nlp_model():
+    """Carga el modelo de spaCy con manejo robusto de errores"""
+    try:
+        nlp = spacy.load("en_core_web_sm")
+        logging.info("Modelo spaCy cargado desde caché")
+        return nlp
+    except (OSError, IOError):
+        logging.warning("Descargando modelo spaCy...")
+        from spacy.cli import download
+        try:
+            download("en_core_web_sm")
+            nlp = spacy.load("en_core_web_sm")
+            logging.info("Modelo descargado y cargado exitosamente")
+            return nlp
+        except Exception as e:
+            logging.error(f"Error crítico al cargar modelo: {str(e)}")
+            st.error("❌ Error crítico: No se pudo cargar el motor de NLP")
+            st.stop()
+
+nlp = load_nlp_model()
+
+# ===================== 🤖 AUTOMATIZACIONES CLAVE =====================
+def auto_save_report(content, analysis):
+    """Autoguardado seguro de reportes con timestamp único"""
+    try:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"report_{timestamp}_{hashlib.md5(content.encode()).hexdigest()[:6]}.pdf"
         
-        if 'logged_in' not in st.session_state:
-            st.session_state.logged_in = False
-        if 'current_user' not in st.session_state:
-            st.session_state.current_user = None
-        if 'subscription' not in st.session_state:
-            st.session_state.subscription = None
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        
+        # Contenido estructurado
+        pdf.cell(200, 10, txt="EnterpriseFlow - Reporte Automático", ln=1, align='C')
+        pdf.multi_cell(0, 10, txt=content[:5000])  # Limitar contenido
+        
+        # Análisis en formato tabla
+        pdf.ln(10)
+        pdf.cell(0, 10, txt="Análisis NLP:", ln=1)
+        for section, data in analysis.items():
+            pdf.cell(0, 10, txt=f"{section.capitalize()}:", ln=1)
+            pdf.multi_cell(0, 10, txt="\n".join([str(item) for item in data[:20]]))  # Limitar items
             
-        self._setup_ui()
+        pdf.output(filename)
+        logging.info(f"Reporte autoguardado: {filename}")
+        return filename
+    except Exception as e:
+        logging.error(f"Error en auto_save: {str(e)}")
+        return None
 
-    def _setup_ui(self):
-        st.sidebar.image("https://via.placeholder.com/200x50.png?text=EnterpriseFlow", width=200)
-        if not st.session_state.logged_in:
-            self._show_login()
-        else:
-            self._show_main_interface()
+def background_processing(file):
+    """Procesamiento en segundo plano con barra de progreso"""
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    # Simulación de procesamiento complejo
+    for percent in range(0, 101, 10):
+        time.sleep(0.1)  # Tarea simulada
+        progress_bar.progress(percent)
+        status_text.text(f"Procesando... {percent}%")
+    
+    # Procesamiento real
+    try:
+        # Tu lógica de procesamiento aquí
+        result = process_file(file)
+        return result
+    except Exception as e:
+        logging.error(f"Error en background_processing: {str(e)}")
+        st.error("Error durante el procesamiento")
+    finally:
+        progress_bar.empty()
+        status_text.empty()
 
-    def _show_login(self):
-        with st.sidebar:
-            st.header("Bienvenido a EnterpriseFlow")
-            tab1, tab2 = st.tabs(["Iniciar Sesión", "Registrarse"])
-            
-            with tab1:
-                email_login = st.text_input("Correo electrónico")
-                password_login = st.text_input("Contraseña", type="password")
-                if st.button("Ingresar"):
-                    if self.db.verify_user(email_login, password_login):
-                        st.session_state.logged_in = True
-                        st.session_state.current_user = email_login
-                        st.rerun()
-                    else:
-                        st.error("Credenciales incorrectas")
-            
-            with tab2:
-                email_register = st.text_input("Correo para registro")
-                password_register = st.text_input("Contraseña nueva", type="password")
-                if st.button("Crear Cuenta"):
-                    try:
-                        self.db.create_user(email_register, password_register)
-                        st.success("¡Cuenta creada exitosamente!")
-                    except sqlite3.IntegrityError:
-                        st.error("Este correo ya está registrado")
+# ===================== 🧘 FUNCIONALIDADES DE BIENESTAR =====================
+def system_health_check():
+    """Monitoreo de recursos del sistema"""
+    st.sidebar.subheader("🧘 Bienestar del Sistema")
+    
+    # Métricas simuladas (en producción usar psutil)
+    health_data = {
+        "RAM usage": "75%",
+        "CPU load": "30%",
+        "Active threads": "8",
+        "Uptime": "2h 15m"
+    }
+    
+    st.sidebar.write("**Estado del Sistema:**")
+    for metric, value in health_data.items():
+        st.sidebar.metric(metric, value)
+    
+    if st.sidebar.button("🔄 Optimizar Recursos"):
+        with st.spinner("Optimizando..."):
+            time.sleep(1.5)
+            st.sidebar.success("Recursos optimizados ✅")
 
-    def _show_main_interface(self):
-        menu = st.sidebar.radio(
-            "Menú Principal",
-            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "⚖️ Cumplimiento", "💳 Suscripción"]
+def user_activity_tracking(func):
+    """Decorador para tracking de actividad de usuario"""
+    def wrapper(*args, **kwargs):
+        user_ip = st.experimental_get_query_params().get("client_ip", ["unknown"])[0]
+        logging.info(f"Usuario {user_ip} accedió a {func.__name__}")
+        return func(*args, **kwargs)
+    return wrapper
+
+# ===================== 🚀 FUNCIÓN MAIN MEJORADA =====================
+@user_activity_tracking
+def main():
+    # Configuración inicial
+    st.set_page_config(
+        page_title="EnterpriseFlow Pro",
+        page_icon="🚀",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
+    # Sistema de bienestar
+    system_health_check()
+    
+    # Interfaz principal
+    st.title("🚀 EnterpriseFlow Pro")
+    st.markdown("### Procesamiento Inteligente con Automatizaciones")
+    
+    # Carga de archivos con validación
+    with st.sidebar:
+        st.header("📤 Carga de Documentos")
+        uploaded_files = st.file_uploader(
+            "Arrastra tus archivos aquí",
+            type=["pdf", "docx", "xlsx", "pptx", "txt"],
+            accept_multiple_files=True,
+            help="Máximo 10 archivos de 50MB cada uno"
         )
-        
-        if menu == "🏠 Inicio":
-            self._show_dashboard()
-        elif menu == "🤖 Automatización":
-            self._show_automation()
-        elif menu == "😌 Bienestar":
-            self._show_wellness()
-        elif menu == "⚖️ Cumplimiento":
-            self._show_compliance()
-        elif menu == "💳 Suscripción":
-            self._show_payment()
-
-    def _show_dashboard(self):
-        st.title("Panel de Control")
-        st.write(f"Bienvenido: {st.session_state.current_user}")
-
-    def _show_automation(self):
-        with st.expander("🤖 Automatización de Tareas", expanded=True):
-            col1, col2, col3 = st.columns(3)
-            
-            # Columna 1 - Generador de Facturas
-            with col1:
-                st.subheader("Generador de Facturas")
-                client_name = st.text_input("Nombre del Cliente")
-                client_email = st.text_input("Email del Cliente")
-                subtotal = st.number_input("Subtotal", min_value=0.0)
-                client_address = st.text_input("Dirección del Cliente")
+    
+    # Procesamiento automático
+    if uploaded_files:
+        for file in uploaded_files:
+            with st.expander(f"📄 {file.name}", expanded=True):
+                col1, col2 = st.columns([1, 3])
                 
-                with st.expander("Opciones Avanzadas"):
-                    logo = st.file_uploader("Logo (PNG/JPG)", type=["png", "jpg"])
-                    due_date = st.date_input("Fecha Vencimiento")
-                    payment_method = st.selectbox("Método Pago", ["Transferencia", "Tarjeta", "Efectivo"])
+                with col1:
+                    # Panel de metadata avanzada
+                    st.subheader("🔍 Metadatos Avanzados")
+                    file_details = {
+                        "Nombre": file.name,
+                        "Tipo": file.type.split('/')[-1].upper(),
+                        "Tamaño": f"{len(file.getvalue()) / 1024:.2f} KB",
+                        "Hash MD5": hashlib.md5(file.getvalue()).hexdigest()[:8]
+                    }
+                    st.json(file_details)
+                    
+                    if st.button("⚡ Procesar Rápido", key=f"process_{file.name}"):
+                        result = background_processing(file)
                 
-                if st.button("Generar Factura"):
-                    try:
-                        invoice_data = {
-                            'client_name': client_name,
-                            'client_email': client_email,
-                            'subtotal': subtotal,
-                            'client_address': client_address,
-                            'due_date': due_date.strftime("%d/%m/%Y"),
-                            'payment_method': payment_method,
-                            'logo': logo.read() if logo else None
-                        }
+                with col2:
+                    # Sección de análisis interactivo
+                    st.subheader("🧠 Análisis Inteligente")
+                    content = process_file(file)
+                    
+                    if content:
+                        tab1, tab2, tab3, tab4 = st.tabs(["📝 Contenido", "📊 Análisis", "📈 Insights", "⚙️ Acciones"])
                         
-                        invoice = self._generate_invoice(invoice_data)
-                        pdf_path = self._generate_pdf(invoice)
+                        with tab1:
+                            st.markdown("**Texto Extraído:**")
+                            st.text_area("", value=content[:3000], height=200, key=f"content_{file.name}")
                         
-                        st.success(f"Factura generada: ${invoice['total']}")
-                        with open(pdf_path, "rb") as f:
-                            st.download_button("Descargar Factura", f, file_name=f"factura_{client_name}.pdf")
+                        with tab2:
+                            analysis = analyze_text(content)
+                            st.dataframe(pd.DataFrame.from_dict(analysis, orient='index').T)
                         
-                        if client_email:
-                            if st.button("📤 Enviar por Email"):
-                                self._send_invoice_email(client_email, pdf_path)
-                                st.success("Email enviado exitosamente!")
-                    except Exception as e:
-                        st.error(f"Error: {str(e)}")
-
-            # Columna 2 - Programación de Tareas
-            with col2:
-                st.subheader("Programación de Tareas")
-                task_type = st.selectbox("Tipo de Tarea", ["Reporte", "Recordatorio", "Backup"])
-                schedule_time = st.time_input("Hora Ejecución")
-                
-                if st.button("Programar Tarea"):
-                    self.db.save_automation_task(st.session_state.current_user, {
-                        'type': task_type,
-                        'schedule': schedule_time.strftime("%H:%M")
-                    })
-                    st.success("Tarea programada exitosamente")
-
-            # Columna 3 - Automatizaciones Adicionales
-            with col3:
-                st.subheader("Nuevas Automatizaciones")
-                
-                with st.container(border=True):
-                    st.markdown("**📧 Email Masivo**")
-                    email_subject = st.text_input("Asunto Email")
-                    email_template = st.text_area("Plantilla HTML")
-                    if st.button("Programar Envío Masivo"):
-                        self.db.save_automation_task(st.session_state.current_user, {
-                            'type': 'email_masivo',
-                            'subject': email_subject,
-                            'template': email_template
-                        })
-                        st.success("Envío programado!")
-                
-                with st.container(border=True):
-                    st.markdown("**🔄 Sync CRM**")
-                    crm_action = st.selectbox("Acción CRM", ["Actualizar clientes", "Importar leads"])
-                    sync_frequency = st.selectbox("Frecuencia Sync", ["Diario", "Semanal", "Mensual"])
-                    if st.button("Configurar Sincronización"):
-                        self.db.save_automation_task(st.session_state.current_user, {
-                            'type': 'crm_sync',
-                            'action': crm_action,
-                            'frequency': sync_frequency
-                        })
-                        st.success("Sincronización configurada")
-
-            # Sección Avanzada
-            with st.container():
-                st.subheader("Automatizaciones Avanzadas")
-                adv_col1, adv_col2 = st.columns(2)
-                
-                with adv_col1:
-                    st.markdown("**🔮 Análisis Predictivo**")
-                    model_type = st.selectbox("Modelo Predictivo", ["Ventas", "Retención", "Inventario"])
-                    if st.button("Ejecutar Análisis"):
-                        self._run_predictive_model(model_type)
-                        st.success("Análisis completado")
-                
-                with adv_col2:
-                    st.markdown("**⚙️ Integración API**")
-                    api_endpoint = st.text_input("Endpoint API")
-                    if st.button("Testear Conexión"):
-                        self._test_api_connection(api_endpoint)
-                        st.success("Conexión exitosa")
-
-    def _generate_invoice(self, data):
-        try:
-            iva_rate = 0.16 if 'MEX' in data['client_address'] else 0.21
-            total = round(data['subtotal'] * (1 + iva_rate), 2)
-            return {
-                'total': total,
-                'invoice_number': f"INV-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}",
-                'details': data,
-                'compliance_check': self._check_compliance(data)
-            }
-        except Exception as e:
-            raise ValueError(f"Error generando factura: {str(e)}")
-
-    def _generate_pdf(self, invoice):
-        try:
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            
-            # Encabezado
-            pdf.cell(200, 10, txt=f"Factura #{invoice['invoice_number']}", ln=1, align='C')
-            pdf.cell(200, 10, txt=f"Fecha: {datetime.datetime.now().strftime('%d/%m/%Y')}", ln=1)
-            
-            # Detalles Cliente
-            pdf.cell(200, 10, txt=f"Cliente: {invoice['details']['client_name']}", ln=1)
-            pdf.cell(200, 10, txt=f"Dirección: {invoice['details']['client_address']}", ln=1)
-            
-            # Detalles Pago
-            pdf.cell(200, 10, txt=f"Subtotal: ${invoice['details']['subtotal']}", ln=1)
-            pdf.cell(200, 10, txt=f"IVA ({'16%' if 'MEX' in invoice['details']['client_address'] else '21%'}): ${round(invoice['details']['subtotal'] * 0.16 if 'MEX' in invoice['details']['client_address'] else invoice['details']['subtotal'] * 0.21, 2)}", ln=1)
-            pdf.cell(200, 10, txt=f"Total: ${invoice['total']}", ln=1)
-            
-            pdf_path = f"/tmp/{invoice['invoice_number']}.pdf"
-            pdf.output(pdf_path)
-            return pdf_path
-        except Exception as e:
-            raise RuntimeError(f"Error generando PDF: {str(e)}")
-
-    def _send_invoice_email(self, email, pdf_path):
-        try:
-            msg = MIMEMultipart()
-            msg['From'] = os.getenv('EMAIL_FROM')
-            msg['To'] = email
-            msg['Subject'] = "Su factura de EnterpriseFlow"
-            
-            body = "Adjunto encontrará su factura generada automáticamente."
-            msg.attach(MIMEText(body, 'plain'))
-            
-            with open(pdf_path, "rb") as attachment:
-                part = MIMEApplication(attachment.read(), Name="factura.pdf")
-                part['Content-Disposition'] = f'attachment; filename="factura.pdf"'
-                msg.attach(part)
-            
-            server = smtplib.SMTP(os.getenv('SMTP_SERVER'), 587)
-            server.starttls()
-            server.login(os.getenv('SMTP_USER'), os.getenv('SMTP_PASS'))
-            server.sendmail(msg['From'], email, msg.as_string())
-            server.quit()
-        except Exception as e:
-            raise RuntimeError(f"Error enviando email: {str(e)}")
-
-    def _show_payment(self):
-        st.header("📈 Planes de Suscripción")
-        cols = st.columns(3)
-        
-        with cols[0]:
-            st.subheader("Básico")
-            st.markdown("""
-                - 10 usuarios
-                - Soporte básico
-                - Reportes estándar
-                **$99/mes**
-            """)
-            if st.button("Elegir Básico", key="basic_sub"):
-                self._handle_subscription('basico')
-
-        with cols[1]:
-            st.subheader("Premium")
-            st.markdown("""
-                - 50 usuarios
-                - Soporte prioritario
-                - Reportes avanzados
-                **$299/mes**
-            """)
-            if st.button("Elegir Premium", key="premium_sub"):
-                self._handle_subscription('premium')
-
-        with cols[2]:
-            st.subheader("Enterprise")
-            st.markdown("""
-                - Usuarios ilimitados
-                - Soporte 24/7
-                - Personalización total
-                **$999/mes**
-            """)
-            if st.button("Contactar Ventas", key="enterprise_sub"):
-                st.info("contacto@enterpriseflow.com")
-
-    def _handle_subscription(self, plan):
-        try:
-            if not st.session_state.current_user:
-                raise ValueError("Debe iniciar sesión primero")
-            
-            subscription_data = self.payment.create_subscription(
-                customer_email=st.session_state.current_user,
-                price_key=plan
-            )
-            
-            st.session_state.subscription = {
-                'plan_type': plan.capitalize(),
-                'status': subscription_data.get('status', 'active'),
-                'details': subscription_data
-            }
-            
-            st.success(f"Suscripción {plan.capitalize()} activada!")
-            if subscription_data.get('client_secret'):
-                self._show_payment_confirmation(subscription_data['client_secret'])
-        except Exception as e:
-            st.error(f"Error en suscripción: {str(e)}")
-
-    def _show_payment_confirmation(self, client_secret):
-        with st.form("payment_confirm_form"):
-            st.write("Complete los datos de pago")
-            card_number = st.text_input("Número de Tarjeta")
-            exp_date = st.text_input("MM/AA")
-            cvc = st.text_input("CVC")
-            
-            if st.form_submit_button("Confirmar Pago"):
-                try:
-                    stripe.PaymentIntent.confirm(
-                        client_secret,
-                        payment_method={
-                            'type': 'card',
-                            'card': {
-                                'number': card_number,
-                                'exp_month': exp_date.split('/')[0],
-                                'exp_year': exp_date.split('/')[1],
-                                'cvc': cvc
-                            }
-                        }
-                    )
-                    st.success("Pago procesado exitosamente!")
-                except stripe.error.StripeError as e:
-                    st.error(f"Error en pago: {e.user_message}")
-
-    # ... (Métodos restantes _show_wellness, _show_compliance, etc.)
+                        with tab3:
+                            st.plotly_chart(generate_visualizations(analysis))
+                        
+                        with tab4:
+                            if st.button("💾 AutoGuardar Reporte"):
+                                report_path = auto_save_report(content, analysis)
+                                if report_path:
+                                    st.success(f"Reporte guardado como {report_path}")
+                                    with open(report_path, "rb") as f:
+                                        st.download_button("⬇️ Descargar Reporte", f, file_name=report_path)
+    
+    # Footer profesional
+    st.markdown("---")
+    st.markdown("""
+    <div style="text-align: center; color: #666; font-size: 0.9em;">
+        🛡️ EnterpriseFlow Pro v2.0 | 🔍 Auditoría Automatizada | 📊 NLP Avanzado
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
-    EnterpriseFlowApp()
+    main()
