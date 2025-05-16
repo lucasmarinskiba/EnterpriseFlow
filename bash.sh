@@ -29,3 +29,13 @@ flake8 main.py database.py
 
 #para pagos
 pip install pydantic
+
+# Primera capa: Paquetes esenciales
+pip install streamlit pandas numpy
+
+# Segunda capa: Procesamiento de documentos
+pip install python-docx PyPDF2 pdfplumber
+
+# Tercera capa: NLP
+pip install spacy==3.7.4 thinc==8.2.4
+pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl
