@@ -101,7 +101,7 @@ class EnterpriseFlowApp:
         with st.expander("🤖 Automatización de Tareas", expanded=True):
             col1, col2, col3 = st.columns(3)
             
-            # Columna 1 - Generador de Facturas Mejorado
+            # Columna 1 - Generador de Facturas
             with col1:
                 st.subheader("Generador de Facturas")
                 client_name = st.text_input("Nombre del Cliente")
@@ -220,7 +220,7 @@ class EnterpriseFlowApp:
             pdf.set_font("Arial", size=12)
             
             # Encabezado
-            pdf.cell(200, 10, txt=f"Factura #{invoice['invoice_number']", ln=1, align='C')
+            pdf.cell(200, 10, txt=f"Factura #{invoice['invoice_number']}", ln=1, align='C')  # Línea corregida
             pdf.cell(200, 10, txt=f"Fecha: {datetime.datetime.now().strftime('%d/%m/%Y')}", ln=1)
             
             # Detalles Cliente
@@ -346,7 +346,7 @@ class EnterpriseFlowApp:
                 except stripe.error.StripeError as e:
                     st.error(f"Error en pago: {e.user_message}")
 
-    # ... (Métodos restantes _show_wellness, _show_compliance, etc. se mantienen igual)
+    # Resto de métodos se mantienen igual...
 
 if __name__ == "__main__":
     EnterpriseFlowApp()
