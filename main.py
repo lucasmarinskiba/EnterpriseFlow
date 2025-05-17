@@ -72,7 +72,7 @@ class EnterpriseFlowApp:
     def _show_main_interface(self):
         menu = st.sidebar.radio(
             "Menú Principal",
-            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "⚖️ Cumplimiento", "💳 Suscripción"]
+            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "🔒 Feedback Anónimo", "⚖️ Cumplimiento", "💳 Suscripción"]
         )
         
         if menu == "🏠 Inicio":
