@@ -148,15 +148,15 @@ class EnterpriseFlowApp:
               part.add_header('Content-Disposition', f'attachment; filename= {filename}')
               msg.attach(part)
         
-             # Enviar email
-             try:
-                with smtplib.SMTP(smtp_server, smtp_port) as server:
-                   server.starttls()
-                   server.login(sender_email, sender_password)
-                   server.sendmail(sender_email, client_email, msg.as_string())
-                st.success(f"Factura enviada a {client_email}!")
-             except Exception as e:
-                st.error(f"Error enviando email: {str(e)}")
+              # Enviar email
+              try:
+                 with smtplib.SMTP(smtp_server, smtp_port) as server:
+                    server.starttls()
+                    server.login(sender_email, sender_password)
+                    server.sendmail(sender_email, client_email, msg.as_string())
+                 st.success(f"Factura enviada a {client_email}!")
+              except Exception as e:
+                 st.error(f"Error enviando email: {str(e)}")
 
         # Columna 2 Existente (Tareas)
         with col2:
