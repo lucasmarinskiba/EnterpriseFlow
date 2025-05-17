@@ -234,10 +234,10 @@ class EnterpriseFlowApp:
     def _check_compliance(self, data):
         return True
 
-    def _show_wellness(self):
-    with st.expander("😌 Bienestar del Equipo", expanded=True):
-        st.subheader("Predicción de Burnout")
-        hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
+     def _show_wellness(self):
+     with st.expander("😌 Bienestar del Equipo", expanded=True):
+         st.subheader("Predicción de Burnout")
+         hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
         
         if st.button("Calcular Riesgo"):
             prediction = self._predict_burnout(np.array([[hours_worked, 0, 0, 0, 0]]))
