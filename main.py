@@ -361,6 +361,15 @@ class EnterpriseFlowApp:
            if st.button("Enviar Feedback"):
                self.db.save_anonymous_feedback(feedback_type, feedback)
                st.success("¡Gracias por tu contribución! Tu feedback es anónimo.")
+
+    def _health_dashboard(self):
+       col1, col2, col3 = st.columns(3)
+       with col1:
+           st.metric("📅 Días sin incidentes", "28")
+       with col2:
+           st.metric("💤 Horas Sueño Promedio", "6.2")
+       with col3:
+           st.metric("🚶 Pasos Diarios", "4,892")
     
     def _show_compliance(self):
         """Módulo de Cumplimiento Normativo"""
