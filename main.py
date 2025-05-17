@@ -235,21 +235,116 @@ class EnterpriseFlowApp:
         return True
 
     def _show_wellness(self):
-        with st.expander("😌 Bienestar del Equipo", expanded=True):
-            st.subheader("Predicción de Burnout")
-            hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
-            
-            if st.button("Calcular Riesgo"):
-                prediction = self._predict_burnout(np.array([[hours_worked, 0, 0, 0, 0]]))
-                st.metric("Riesgo de Burnout", f"{prediction}%")
+    with st.expander("😌 Bienestar del Equipo", expanded=True):
+        st.subheader("Predicción de Burnout")
+        hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
+        
+        if st.button("Calcular Riesgo"):
+            prediction = self._predict_burnout(np.array([[hours_worked, 0, 0, 0, 0]]))
+            st.metric("Riesgo de Burnout", f"{prediction}%")
 
-            st.subheader("Sistema de Reconocimiento")
-            colleague = st.text_input("Nombre del Colega")
-            recognition = st.text_area("Mensaje de Reconocimiento")
+        st.subheader("Sistema de Reconocimiento")
+        colleague = st.text_input("Nombre del Colega")
+        colleague_email = st.text_input("Email del Colega")  # Nuevo campo
+        recognition = st.text_area("Mensaje de Reconocimiento")
+        signing_authority = st.selectbox("Firmante", ["CEO", "Gerente General"])  # Selección de firmante
+        
+        if st.button("Enviar 🏆"):
+            # Generar certificado PDF
+            certificate_data = self._generate_certificate(
+                colleague=colleague,
+                recognition=recognition,
+                signer=signing_authority
+            )
             
-            if st.button("Enviar 🏆"):
-                self.db.save_recognition(st.session_state.current_user, colleague, recognition)
-                st.success("Reconocimiento enviado!")
+            # Guardar en base de datos
+            cert_id = self.db.save_recognition(
+                user=st.session_state.current_user,
+                colleague=colleague,
+                recognition=recognition,
+                certificate_id=certificate_data['cert_id'],
+                signer=signing_authority,
+                pdf_data=certificate_data['pdf_bytes']
+            )
+            
+            # Enviar por email
+            if self._send_recognition_email(colleague_email, certificate_data):
+                st.success(f"Certificado enviado a {colleague_email}!")
+                st.download_button(
+                    label="Descargar Certificado",
+                    data=certificate_data['pdf_bytes'],
+                    file_name=f"Certificado_{cert_id}.pdf",
+                    mime="application/pdf"
+                )
+            else:
+                st.error("Error enviando el certificado")
+
+    def _generate_certificate(self, colleague, recognition, signer):
+       from fpdf import FPDF
+       import uuid
+    
+       cert_id = str(uuid.uuid4())[:8].upper()
+       pdf = FPDF()
+       pdf.add_page()
+    
+       # Estilos del certificado
+       pdf.set_font("Arial", 'B', 16)
+       pdf.cell(0, 10, "Certificado de Reconocimiento", ln=1, align='C')
+       pdf.ln(15)
+    
+       pdf.set_font("Arial", '', 12)
+       pdf.multi_cell(0, 10, f"Se reconoce oficialmente a {colleague} por:", align='C')
+       pdf.ln(10)
+       pdf.multi_cell(0, 8, f'"{recognition}"')
+       pdf.ln(20)
+    
+       # Firma (agregar imágenes en secrets)
+       signature_img = st.secrets["signatures"][signer.lower().replace(" ", "_")]
+       pdf.image(signature_img, x=50, w=30)
+       pdf.set_font("Arial", 'I', 10)
+       pdf.cell(0, 10, f"Firmado por: {signer}", ln=1, align='R')
+    
+       pdf_bytes = pdf.output(dest='S').encode('latin1')
+    
+       return {
+           'pdf_bytes': pdf_bytes,
+           'cert_id': cert_id
+       }
+
+    def _send_recognition_email(self, recipient, certificate_data):
+       try:
+           msg = MIMEMultipart()
+           msg['From'] = st.secrets["smtp"]["user"]
+           msg['To'] = recipient
+           msg['Subject'] = "🏆 Reconocimiento Oficial - Tu Certificado"
+        
+           body = f"""
+           ¡Felicitaciones!
+        
+           Has recibido un reconocimiento oficial de la empresa.
+           Adjunto encontrarás tu certificado digital con validez oficial.
+        
+           ID del Certificado: {certificate_data['cert_id']}
+           """
+           msg.attach(MIMEText(body, 'plain'))
+        
+           # Adjuntar certificado
+           part = MIMEBase('application', 'octet-stream')
+           part.set_payload(certificate_data['pdf_bytes'])
+           encoders.encode_base64(part)
+           part.add_header('Content-Disposition', 
+                         f'attachment; filename= "Certificado_{certificate_data["cert_id"]}.pdf"')
+           msg.attach(part)
+        
+           # Enviar email
+           with smtplib.SMTP(st.secrets["smtp"]["server"], st.secrets["smtp"]["port"]) as server:
+               server.starttls()
+               server.login(st.secrets["smtp"]["user"], st.secrets["smtp"]["password"])
+               server.sendmail(st.secrets["smtp"]["user"], recipient, msg.as_string())
+           return True
+       except Exception as e:
+           st.error(f"Error: {str(e)}")
+           return False
 
     def _predict_burnout(self, input_data):
         try:
