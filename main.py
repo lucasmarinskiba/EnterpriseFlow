@@ -370,6 +370,20 @@ class EnterpriseFlowApp:
            st.metric("💤 Horas Sueño Promedio", "6.2")
        with col3:
            st.metric("🚶 Pasos Diarios", "4,892")
+
+    def _smart_breaks(self):
+       with st.expander("⏰ Configurar Descansos"):
+           break_frequency = st.slider("Intervalo entre descansos (minutos)", 30, 120, 50)
+           break_duration = st.slider("Duración del descanso (minutos)", 5, 15, 7)
+           if st.button("Activar Recordatorios"):
+               self._schedule_breaks(break_frequency, break_duration)
+
+    def _schedule_breaks(self, frequency, duration):
+       # Lógica para integrar con calendarios (Google Calendar API)
+       st.session_state.break_config = {
+           'frequency': frequency,
+           'duration': duration
+    }
     
     def _show_compliance(self):
         """Módulo de Cumplimiento Normativo"""
