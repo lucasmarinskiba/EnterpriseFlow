@@ -217,7 +217,7 @@ class EnterpriseFlowApp:
             'compliance_check': self._check_compliance(data),
             'invoice_number': f"INV-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}",
             'date': datetime.datetime.now().strftime("%d/%m/%Y"),
-            'pdf_data': b''  # Agregar lógica de generación PDF real aquí
+            'pdf_data': b''
         }
 
     def _check_compliance(self, data):
@@ -399,11 +399,12 @@ class EnterpriseFlowApp:
             st.subheader("🏆 Sistema de Metas Personales")
             goal = st.text_input("Establece tu objetivo personal esta semana")
             if st.button("Guardar Objetivo"):
-               self.db.save_personal_goal(
-                  user=st.session_state.current_user,
-                  goal=goal,
-                  deadline=datetime.datetime.now() + datetime.timedelta(days=7)
-               st.success("¡Objetivo guardado!")
+                self.db.save_personal_goal(
+                    user=st.session_state.current_user,
+                    goal=goal,
+                    deadline=datetime.datetime.now() + datetime.timedelta(days=7)
+                )
+                st.success("¡Objetivo guardado!")  # Corrección aplicada aquí
 
     def _meditation_module(self):
         with st.container(border=True):
