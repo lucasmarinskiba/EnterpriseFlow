@@ -235,49 +235,49 @@ class EnterpriseFlowApp:
         return True
 
     def _show_wellness(self):
-    with st.expander("😌 Bienestar del Equipo", expanded=True):
-        st.subheader("Predicción de Burnout")
-        hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
+       with st.expander("😌 Bienestar del Equipo", expanded=True):
+           st.subheader("Predicción de Burnout")
+           hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
         
-        if st.button("Calcular Riesgo"):
-            prediction = self._predict_burnout(np.array([[hours_worked, 0, 0, 0, 0]]))
-            st.metric("Riesgo de Burnout", f"{prediction}%")
+           if st.button("Calcular Riesgo"):
+               prediction = self._predict_burnout(np.array([[hours_worked, 0, 0, 0, 0]]))
+               st.metric("Riesgo de Burnout", f"{prediction}%")
 
-        st.subheader("Sistema de Reconocimiento")
-        colleague = st.text_input("Nombre del Colega")
-        colleague_email = st.text_input("Email del Colega")  # Nuevo campo
-        recognition = st.text_area("Mensaje de Reconocimiento")
-        signing_authority = st.selectbox("Firmante", ["CEO", "Gerente General"])  # Selección de firmante
+           st.subheader("Sistema de Reconocimiento")
+           colleague = st.text_input("Nombre del Colega")
+           colleague_email = st.text_input("Email del Colega")  # Nuevo campo
+           recognition = st.text_area("Mensaje de Reconocimiento")
+           signing_authority = st.selectbox("Firmante", ["CEO", "Gerente General"])  # Selección de firmante
         
-        if st.button("Enviar 🏆"):
-            # Generar certificado PDF
-            certificate_data = self._generate_certificate(
-                colleague=colleague,
-                recognition=recognition,
-                signer=signing_authority
-            )
+           if st.button("Enviar 🏆"):
+               # Generar certificado PDF
+               certificate_data = self._generate_certificate(
+                   colleague=colleague,
+                   recognition=recognition,
+                   signer=signing_authority
+               )
             
-            # Guardar en base de datos
-            cert_id = self.db.save_recognition(
-                user=st.session_state.current_user,
-                colleague=colleague,
-                recognition=recognition,
-                certificate_id=certificate_data['cert_id'],
-                signer=signing_authority,
-                pdf_data=certificate_data['pdf_bytes']
-            )
+               # Guardar en base de datos
+               cert_id = self.db.save_recognition(
+                   user=st.session_state.current_user,
+                   colleague=colleague,
+                   recognition=recognition,
+                   certificate_id=certificate_data['cert_id'],
+                   signer=signing_authority,
+                   pdf_data=certificate_data['pdf_bytes']
+               )
             
-            # Enviar por email
-            if self._send_recognition_email(colleague_email, certificate_data):
-                st.success(f"Certificado enviado a {colleague_email}!")
-                st.download_button(
-                    label="Descargar Certificado",
-                    data=certificate_data['pdf_bytes'],
-                    file_name=f"Certificado_{cert_id}.pdf",
-                    mime="application/pdf"
-                )
-            else:
-                st.error("Error enviando el certificado")
+               # Enviar por email
+               if self._send_recognition_email(colleague_email, certificate_data):
+                   st.success(f"Certificado enviado a {colleague_email}!")
+                   st.download_button(
+                       label="Descargar Certificado",
+                       data=certificate_data['pdf_bytes'],
+                       file_name=f"Certificado_{cert_id}.pdf",
+                       mime="application/pdf"
+                   )
+               else:
+                   st.error("Error enviando el certificado")
 
     def _generate_certificate(self, colleague, recognition, signer):
        from fpdf import FPDF
