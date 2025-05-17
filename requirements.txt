@@ -7,4 +7,6 @@ stripe==8.0.0
 python-dotenv==1.0.1
 python-docx==0.8.11
 PyPDF2==3.0.1
+fpdf2==1.7.2
+pyopenssl==23.3.0
 https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.7.0/es_core_news_sm-3.7.0-py3-none-any.whl
