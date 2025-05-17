@@ -399,11 +399,11 @@ class EnterpriseFlowApp:
             st.subheader("🏆 Sistema de Metas Personales")
             goal = st.text_input("Establece tu objetivo personal esta semana")
             if st.button("Guardar Objetivo"):
-                self.db.save_personal_goal(
-                    user=st.session_state.current_user,
-                    goal=goal,
-                    deadline=datetime.datetime.now() + datetime.timedelta(days=7)
-                st.success("¡Objetivo guardado!")
+               self.db.save_personal_goal(
+                  user=st.session_state.current_user,
+                  goal=goal,
+                  deadline=datetime.datetime.now() + datetime.timedelta(days=7)
+               st.success("¡Objetivo guardado!")
 
     def _meditation_module(self):
         with st.container(border=True):
