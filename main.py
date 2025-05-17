@@ -353,6 +353,15 @@ class EnterpriseFlowApp:
             st.error(f"Error: {str(e)}")
             return 0
 
+    def _add_feedback_system(self):
+       with st.container(border=True):
+           st.subheader("🔒 Feedback Anónimo")
+           feedback_type = st.selectbox("Tipo de Feedback", ["Para el equipo", "Para liderazgo", "Sugerencias generales"])
+           feedback = st.text_area("Escribe tu feedback (máx. 500 caracteres)", max_chars=500)
+           if st.button("Enviar Feedback"):
+               self.db.save_anonymous_feedback(feedback_type, feedback)
+               st.success("¡Gracias por tu contribución! Tu feedback es anónimo.")
+    
     def _show_compliance(self):
         """Módulo de Cumplimiento Normativo"""
         with st.expander("⚖️ Auditoría Normativa", expanded=True):
