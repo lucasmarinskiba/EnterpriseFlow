@@ -10,6 +10,11 @@ from database import DatabaseManager
 from payment_handler import PaymentHandler
 from tensorflow.keras.models import load_model
 import spacy
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 
 # Configuración inicial
 st.set_page_config(
@@ -90,20 +95,68 @@ class EnterpriseFlowApp:
         col1, col2, col3 = st.columns(3)  # Nueva columna agregada
         
         # Columna 1 Existente (Facturas)
+        # Columna 1 Existente (Facturas)
         with col1:
-            st.subheader("Generador de Facturas")
-            client_name = st.text_input("Nombre del Cliente")
-            subtotal = st.number_input("Subtotal", min_value=0.0)
-            client_address = st.text_input("Dirección del Cliente")
-            
-            if st.button("Generar Factura"):
-                invoice_data = {
-                    'client_name': client_name,
-                    'subtotal': subtotal,
-                    'client_address': client_address
-                }
-                invoice = self._generate_invoice(invoice_data)
-                st.success(f"Factura generada: ${invoice['total']}")
+           st.subheader("Generador de Facturas")
+           client_name = st.text_input("Nombre del Cliente")
+           subtotal = st.number_input("Subtotal", min_value=0.0)
+           client_address = st.text_input("Dirección del Cliente")
+           client_email = st.text_input("Correo Electrónico del Cliente")  # Nuevo campo para email
+    
+           if st.button("Generar Factura"):
+              invoice_data = {
+                 'client_name': client_name,
+                 'subtotal': subtotal,
+                 'client_address': client_address,
+                 'client_email': client_email  # Agregamos el email a los datos
+              }
+        
+              # Generar factura
+              invoice = self._generate_invoice(invoice_data)
+        
+              # Configurar email (agregar estos datos en secrets.toml)
+              smtp_server = st.secrets["smtp"]["server"]
+              smtp_port = st.secrets["smtp"]["port"]
+              sender_email = st.secrets["smtp"]["user"]
+              sender_password = st.secrets["smtp"]["password"]
+        
+              # Crear mensaje
+              msg = MIMEMultipart()
+              msg['From'] = sender_email
+              msg['To'] = client_email
+              msg['Subject'] = f"Factura {invoice['invoice_number']} - {client_name}"
+        
+              # Cuerpo del mensaje
+              body = f"""
+              Hola {client_name},
+        
+              Adjunto encontrará su factura número {invoice['invoice_number']}.
+        
+              Detalles:
+              - Total: ${invoice['total']}
+              - Fecha: {invoice['date']}
+        
+              Gracias por su preferencia.
+              """
+              msg.attach(MIMEText(body, 'plain'))
+        
+              # Adjuntar PDF (asumiendo que _generate_invoice guarda un archivo)
+              filename = f"Factura_{invoice['invoice_number']}.pdf"
+              part = MIMEBase('application', 'octet-stream')
+              part.set_payload(invoice['pdf_data'])
+              encoders.encode_base64(part)
+              part.add_header('Content-Disposition', f'attachment; filename= {filename}')
+              msg.attach(part)
+        
+             # Enviar email
+             try:
+                with smtplib.SMTP(smtp_server, smtp_port) as server:
+                   server.starttls()
+                   server.login(sender_email, sender_password)
+                   server.sendmail(sender_email, client_email, msg.as_string())
+                st.success(f"Factura enviada a {client_email}!")
+             except Exception as e:
+                st.error(f"Error enviando email: {str(e)}")
 
         # Columna 2 Existente (Tareas)
         with col2:
