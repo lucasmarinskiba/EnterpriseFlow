@@ -583,17 +583,41 @@ class EnterpriseFlowApp:
                     st.write("**Resultados de Auditoría:**")
                     st.json(audit_result)
         
-        elif subseccion == "Documentación":
-            with st.expander("📚 Documentación Normativa", expanded=True):
-                # Agregar documentación
+    def _show_compliance(self):
+        with st.expander("⚖️ Auditoría Normativa", expanded=True):
+            uploaded_file = st.file_uploader("Subir Documento", type=["txt", "docx", "pdf"])
+            
+            if uploaded_file:
+                text = ""
+                try:
+                    if uploaded_file.type == "text/plain":
+                        text = uploaded_file.getvalue().decode()
+                    elif uploaded_file.type == "application/pdf":
+                        import PyPDF2
+                        reader = PyPDF2.PdfReader(uploaded_file)
+                        text = "\n".join([page.extract_text() for page in reader.pages])
+                    else:
+                        from docx import Document
+                        doc = Document(uploaded_file)
+                        text = "\n".join([para.text for para in doc.paragraphs])
+                except Exception as e:
+                    st.error(f"Error al leer el archivo: {str(e)}")
+                    return
+                
+                audit_result = self._audit_document(text)
+                st.write("**Resultados de Auditoría:**")
+                st.json(audit_result)
 
+    # Este método debe estar al mismo nivel que los demás métodos de la clase
     def _audit_document(self, text):
+        """Analiza documentos para detectar normativas"""
         doc = self.nlp(text)
-        return {
+        resultados = {
             'GDPR': any(token.text.lower() in ('datos personales', 'consentimiento') for token in doc),
             'SOX': any(token.text.lower() in ('control interno', 'auditoría financiera') for token in doc),
             'ISO27001': any(token.text.lower() in ('seguridad de la información', 'riesgos') for token in doc)
         }
+        return resultados
 
     def _show_payment(self):
         subseccion = st.session_state.subseccion_activa.get("💳 Suscripción", "Planes")
