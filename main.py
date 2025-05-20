@@ -682,20 +682,20 @@ class EnterpriseFlowApp:
         except Exception as e:
             st.error(f"Error en suscripción: {str(e)}")
 
+    # Este método debe estar al mismo nivel que los demás métodos
     def _show_payment_confirmation(self):
-        with st.expander("💳 Procesar Pago", expanded=True):
-            with st.form("payment-form"):
-                st.write("Complete los datos de pago")
-                card_number = st.text_input("Número de tarjeta")
-                expiry = st.text_input("MM/AA")
-                cvc = st.text_input("CVC")
-                
-                if st.form_submit_button("Confirmar Pago"):
-                    try:
-                        st.success("Pago procesado exitosamente!")
-                        st.session_state.subscription = None
-                    except Exception as e:
-                        st.error(f"Error en pago: {str(e)}")
+        with st.form("payment-form"):
+            st.write("Complete los datos de pago")
+            card_number = st.text_input("Número de tarjeta")
+            expiry = st.text_input("MM/AA")
+            cvc = st.text_input("CVC")
+            
+            if st.form_submit_button("Confirmar Pago"):
+                try:
+                    st.success("Pago procesado exitosamente!")
+                    st.session_state.subscription = None
+                except Exception as e:
+                    st.error(f"Error en pago: {str(e)}")
 
 if __name__ == "__main__":
     EnterpriseFlowApp()
