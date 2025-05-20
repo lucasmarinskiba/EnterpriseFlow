@@ -24,7 +24,7 @@ st.set_page_config(
 )
 
 class EnterpriseFlowApp:
-    def _init_(self):
+    def __init__(self):
         self.db = DatabaseManager()
         self.payment = PaymentHandler()
         self.nlp = spacy.load("es_core_news_sm")
@@ -72,7 +72,7 @@ class EnterpriseFlowApp:
     def _show_main_interface(self):
         menu = st.sidebar.radio(
             "Menú Principal",
-            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "🔒 Feedback Anónimo", "⚖ Cumplimiento", "💳 Suscripción"]
+            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "🔒 Feedback Anónimo", "⚖️ Cumplimiento", "💳 Suscripción"]
         )
         
         if menu == "🏠 Inicio":
@@ -83,7 +83,7 @@ class EnterpriseFlowApp:
             self._show_wellness()
         elif menu == "🔒 Feedback Anónimo":
             self._show_feedback_system()
-        elif menu == "⚖ Cumplimiento":
+        elif menu == "⚖️ Cumplimiento":
             self._show_compliance()
         elif menu == "💳 Suscripción":
             self._show_payment()
@@ -168,7 +168,7 @@ class EnterpriseFlowApp:
                 st.subheader("Nuevas Automatizaciones")
                 
                 with st.container(border=True):
-                    st.markdown("📧 Email Masivo**")
+                    st.markdown("**📧 Email Masivo**")
                     email_subject = st.text_input("Asunto del Email")
                     email_template = st.text_area("Plantilla HTML")
                     if st.button("Programar Envío"):
@@ -180,7 +180,7 @@ class EnterpriseFlowApp:
                         st.success("Envío programado!")
                 
                 with st.container(border=True):
-                    st.markdown("🔄 Sync CRM**")
+                    st.markdown("**🔄 Sync CRM**")
                     crm_action = st.selectbox("Acción", ["Actualizar clientes", "Importar leads"])
                     sync_frequency = st.selectbox("Frecuencia", ["Diario", "Semanal", "Mensual"])
                     if st.button("Configurar Sync"):
@@ -196,14 +196,14 @@ class EnterpriseFlowApp:
                 adv_col1, adv_col2 = st.columns(2)
                 
                 with adv_col1:
-                    st.markdown("🔮 Análisis Predictivo**")
+                    st.markdown("**🔮 Análisis Predictivo**")
                     model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
                     if st.button("Ejecutar Modelo"):
                         self._run_predictive_model(model_type)
                         st.success("Modelo ejecutado")
                 
                 with adv_col2:
-                    st.markdown("⚙ Integración Externa**")
+                    st.markdown("**⚙️ Integración Externa**")
                     api_endpoint = st.text_input("URL API")
                     if st.button("Conectar"):
                         self._test_api_connection(api_endpoint)
@@ -389,7 +389,7 @@ class EnterpriseFlowApp:
             ]
             for course in course_data:
                 with st.container(border=True):
-                    st.markdown(f"{course['title']}")
+                    st.markdown(f"**{course['title']}**")
                     st.progress(course['progress'])
                     if st.button(f"Continuar Curso {course['id']}"):
                         st.session_state.current_course = course['id']
@@ -429,7 +429,7 @@ class EnterpriseFlowApp:
 
     def _workload_monitor(self):
         with st.container(border=True):
-            st.subheader("⚖ Monitor de Carga de Trabajo")
+            st.subheader("⚖️ Monitor de Carga de Trabajo")
             current_load = st.slider("Tu carga actual (1-10)", 1, 10, 7)
             ideal_load = st.slider("Carga ideal deseada (1-10)", 1, 10, 5)
             if current_load > ideal_load:
@@ -451,7 +451,7 @@ class EnterpriseFlowApp:
                 st.metric("🏆 Insignias", "3/10")
 
     def _show_compliance(self):
-        with st.expander("⚖ Auditoría Normativa", expanded=True):
+        with st.expander("⚖️ Auditoría Normativa", expanded=True):
             uploaded_file = st.file_uploader("Subir Documento", type=["txt", "docx", "pdf"])
             
             if uploaded_file:
@@ -472,7 +472,7 @@ class EnterpriseFlowApp:
                     return
                 
                 audit_result = self._audit_document(text)
-                st.write("*Resultados de Auditoría:*")
+                st.write("**Resultados de Auditoría:**")
                 st.json(audit_result)
 
     def _audit_document(self, text):
@@ -493,7 +493,7 @@ class EnterpriseFlowApp:
                 - 10 usuarios
                 - Soporte básico
                 - Reportes estándar
-                *Precio: $99/mes*
+                **Precio: $99/mes**
             """)
             if st.button("Elegir Básico", key="basico"):
                 self._handle_subscription('basico')
@@ -504,7 +504,7 @@ class EnterpriseFlowApp:
                 - 50 usuarios
                 - Soporte prioritario
                 - Reportes avanzados
-                *Precio: $299/mes*
+                **Precio: $299/mes**
             """)
             if st.button("Elegir Premium", key="premium"):
                 self._handle_subscription('premium')
@@ -515,7 +515,7 @@ class EnterpriseFlowApp:
                 - Usuarios ilimitados
                 - Soporte 24/7
                 - Personalización
-                *Precio: $999/mes*
+                **Precio: $999/mes**
             """)
             if st.button("Contactar Ventas", key="enterprise"):
                 st.info("contacto@enterpriseflow.com")
@@ -553,5 +553,5 @@ class EnterpriseFlowApp:
                 except Exception as e:
                     st.error(f"Error en pago: {str(e)}")
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     EnterpriseFlowApp()
