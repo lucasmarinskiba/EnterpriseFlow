@@ -661,8 +661,9 @@ class EnterpriseFlowApp:
         
         elif subseccion == "Facturación":
             with st.expander("🧾 Historial de Pagos", expanded=True):
-                # Agregar historial de pagos
+                pass  # <-- Añadir pass para completar el bloque
 
+    # Este método debe estar al mismo nivel que los demás métodos de la clase
     def _handle_subscription(self, plan: str):
         try:
             if not st.session_state.current_user:
