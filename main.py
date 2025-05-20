@@ -682,7 +682,6 @@ class EnterpriseFlowApp:
         except Exception as e:
             st.error(f"Error en suscripción: {str(e)}")
 
-    # Este método debe estar al mismo nivel que los demás métodos
     def _show_payment_confirmation(self):
         with st.form("payment-form"):
             st.write("Complete los datos de pago")
