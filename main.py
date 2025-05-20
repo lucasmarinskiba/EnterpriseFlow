@@ -24,25 +24,15 @@ st.set_page_config(
 )
 
 class EnterpriseFlowApp:
-    def __init__(self):
+    def _init_(self):
         self.db = DatabaseManager()
         self.payment = PaymentHandler()
         self.nlp = spacy.load("es_core_news_sm")
-        self.subsecciones = {
-            "🏠 Inicio": ["Resumen", "Actividad Reciente"],
-            "🤖 Automatización": ["Facturas", "Tareas Programadas", "CRM", "Avanzado"],
-            "😌 Bienestar": ["Burnout", "Reconocimientos", "Salud", "Metas", "Relajación"],
-            "🔒 Feedback Anónimo": ["Nuevo Feedback", "Historial"],
-            "⚖️ Cumplimiento": ["Auditoría", "Documentación"],
-            "💳 Suscripción": ["Planes", "Facturación"]
-        }
         
         if 'logged_in' not in st.session_state:
             st.session_state.logged_in = False
         if 'current_user' not in st.session_state:
             st.session_state.current_user = None
-        if 'subseccion_activa' not in st.session_state:
-            st.session_state.subseccion_activa = {}
             
         self._setup_ui()
 
@@ -80,200 +70,140 @@ class EnterpriseFlowApp:
                         st.error("Este correo ya está registrado")
 
     def _show_main_interface(self):
-        st.sidebar.markdown("**Navegación Principal**")
-        main_selection = st.sidebar.radio(
-            "",
-            list(self.subsecciones.keys()),
-            label_visibility='collapsed'
+        menu = st.sidebar.radio(
+            "Menú Principal",
+            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "🔒 Feedback Anónimo", "⚖ Cumplimiento", "💳 Suscripción"]
         )
         
-        st.sidebar.markdown("---")
-        st.sidebar.markdown("**Subsecciones**")
-        self._show_subsecciones(main_selection)
-        
-        if main_selection == "🏠 Inicio":
+        if menu == "🏠 Inicio":
             self._show_dashboard()
-        elif main_selection == "🤖 Automatización":
+        elif menu == "🤖 Automatización":
             self._show_automation()
-        elif main_selection == "😌 Bienestar":
+        elif menu == "😌 Bienestar":
             self._show_wellness()
-        elif main_selection == "🔒 Feedback Anónimo":
+        elif menu == "🔒 Feedback Anónimo":
             self._show_feedback_system()
-        elif main_selection == "⚖️ Cumplimiento":
+        elif menu == "⚖ Cumplimiento":
             self._show_compliance()
-        elif main_selection == "💳 Suscripción":
+        elif menu == "💳 Suscripción":
             self._show_payment()
-
-    def _show_subsecciones(self, main_section):
-        st.markdown("""
-            <style>
-            .subseccion button {
-                margin-left: 25px !important;
-                padding-left: 15px !important;
-                border-left: 3px solid #4a90e2 !important;
-                border-radius: 0 !important;
-            }
-            .subseccion-activa {
-                color: #4a90e2 !important;
-                font-weight: 600 !important;
-                background: #f0f4f8 !important;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-        
-        for sub in self.subsecciones[main_section]:
-            key = f"{main_section}-{sub}"
-            btn = st.sidebar.button(
-                sub,
-                key=key,
-                help=f"Ir a {sub}",
-                on_click=lambda k=key: self._actualizar_subseccion(k)
-            )
-            
-            if st.session_state.subseccion_activa.get(main_section) == sub:
-                st.sidebar.markdown(
-                    f"<div class='subseccion-activa' style='margin-left:25px; padding:8px; border-radius:5px;'>{sub}</div>", 
-                    unsafe_allow_html=True
-                )
-
-    def _actualizar_subseccion(self, key):
-        section, sub = key.split('-', 1)
-        st.session_state.subseccion_activa[section] = sub
 
     def _show_dashboard(self):
         st.title("Panel de Control")
         st.write(f"Bienvenido: {st.session_state.current_user}")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            with st.container(border=True):
-                st.subheader("Actividad Reciente")
-                # Agregar lógica de actividad
-        
-        with col2:
-            with st.container(border=True):
-                st.subheader("Métricas Clave")
-                # Agregar métricas
 
     def _show_automation(self):
-        subseccion = st.session_state.subseccion_activa.get("🤖 Automatización", "Facturas")
-        
-        if subseccion == "Facturas":
-            with st.expander("🧾 Generación de Facturas", expanded=True):
-                col1, col2 = st.columns(2)
+        with st.expander("🤖 Automatización de Tareas", expanded=True):
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.subheader("Generador de Facturas")
+                client_name = st.text_input("Nombre del Cliente")
+                subtotal = st.number_input("Subtotal", min_value=0.0)
+                client_address = st.text_input("Dirección del Cliente")
+                client_email = st.text_input("Correo Electrónico del Cliente")
                 
-                with col1:
-                    client_name = st.text_input("Nombre del Cliente")
-                    subtotal = st.number_input("Subtotal", min_value=0.0)
-                    client_address = st.text_input("Dirección del Cliente")
-                    client_email = st.text_input("Correo Electrónico del Cliente")
+                if st.button("Generar Factura"):
+                    invoice_data = {
+                        'client_name': client_name,
+                        'subtotal': subtotal,
+                        'client_address': client_address,
+                        'client_email': client_email
+                    }
                     
-                    if st.button("Generar Factura"):
-                        invoice_data = {
-                            'client_name': client_name,
-                            'subtotal': subtotal,
-                            'client_address': client_address,
-                            'client_email': client_email
-                        }
-                        
-                        invoice = self._generate_invoice(invoice_data)
-                        
-                        smtp_server = st.secrets["smtp"]["server"]
-                        smtp_port = st.secrets["smtp"]["port"]
-                        sender_email = st.secrets["smtp"]["user"]
-                        sender_password = st.secrets["smtp"]["password"]
-                        
-                        msg = MIMEMultipart()
-                        msg['From'] = sender_email
-                        msg['To'] = client_email
-                        msg['Subject'] = f"Factura {invoice['invoice_number']} - {client_name}"
-                        
-                        body = f"""
-                        Hola {client_name},
-                        
-                        Adjunto encontrará su factura número {invoice['invoice_number']}.
-                        
-                        Detalles:
-                        - Total: ${invoice['total']}
-                        - Fecha: {invoice['date']}
-                        
-                        Gracias por su preferencia.
-                        """
-                        msg.attach(MIMEText(body, 'plain'))
-                        
-                        filename = f"Factura_{invoice['invoice_number']}.pdf"
-                        part = MIMEBase('application', 'octet-stream')
-                        part.set_payload(invoice['pdf_data'])
-                        encoders.encode_base64(part)
-                        part.add_header('Content-Disposition', f'attachment; filename= {filename}')
-                        msg.attach(part)
-                        
-                        try:
-                            with smtplib.SMTP(smtp_server, smtp_port) as server:
-                                server.starttls()
-                                server.login(sender_email, sender_password)
-                                server.sendmail(sender_email, client_email, msg.as_string())
-                            st.success(f"Factura enviada a {client_email}!")
-                        except Exception as e:
-                            st.error(f"Error enviando email: {str(e)}")
-                
-                with col2:
-                    st.subheader("Historial de Facturas")
-                    # Agregar tabla de historial
+                    invoice = self._generate_invoice(invoice_data)
+                    
+                    smtp_server = st.secrets["smtp"]["server"]
+                    smtp_port = st.secrets["smtp"]["port"]
+                    sender_email = st.secrets["smtp"]["user"]
+                    sender_password = st.secrets["smtp"]["password"]
+                    
+                    msg = MIMEMultipart()
+                    msg['From'] = sender_email
+                    msg['To'] = client_email
+                    msg['Subject'] = f"Factura {invoice['invoice_number']} - {client_name}"
+                    
+                    body = f"""
+                    Hola {client_name},
+                    
+                    Adjunto encontrará su factura número {invoice['invoice_number']}.
+                    
+                    Detalles:
+                    - Total: ${invoice['total']}
+                    - Fecha: {invoice['date']}
+                    
+                    Gracias por su preferencia.
+                    """
+                    msg.attach(MIMEText(body, 'plain'))
+                    
+                    filename = f"Factura_{invoice['invoice_number']}.pdf"
+                    part = MIMEBase('application', 'octet-stream')
+                    part.set_payload(invoice['pdf_data'])
+                    encoders.encode_base64(part)
+                    part.add_header('Content-Disposition', f'attachment; filename= {filename}')
+                    msg.attach(part)
+                    
+                    try:
+                        with smtplib.SMTP(smtp_server, smtp_port) as server:
+                            server.starttls()
+                            server.login(sender_email, sender_password)
+                            server.sendmail(sender_email, client_email, msg.as_string())
+                        st.success(f"Factura enviada a {client_email}!")
+                    except Exception as e:
+                        st.error(f"Error enviando email: {str(e)}")
 
-        elif subseccion == "Tareas Programadas":
-            with st.expander("⏰ Tareas Programadas", expanded=True):
-                col1, col2 = st.columns([2, 1])
+            with col2:
+                st.subheader("Programación de Tareas")
+                task_type = st.selectbox("Tipo de Tarea", ["Reporte", "Recordatorio", "Backup"])
+                schedule_time = st.time_input("Hora de Ejecución")
                 
-                with col1:
-                    st.subheader("Programar Nueva Tarea")
-                    task_type = st.selectbox("Tipo de Tarea", ["Reporte", "Recordatorio", "Backup"])
-                    schedule_time = st.time_input("Hora de Ejecución")
-                    
-                    if st.button("Agregar a la Cola"):
+                if st.button("Programar Tarea"):
+                    self.db.save_automation_task(st.session_state.current_user, {
+                        'type': task_type,
+                        'schedule': schedule_time.strftime("%H:%M")
+                    })
+                    st.success("Tarea programada exitosamente")
+
+            with col3:
+                st.subheader("Nuevas Automatizaciones")
+                
+                with st.container(border=True):
+                    st.markdown("📧 Email Masivo**")
+                    email_subject = st.text_input("Asunto del Email")
+                    email_template = st.text_area("Plantilla HTML")
+                    if st.button("Programar Envío"):
                         self.db.save_automation_task(st.session_state.current_user, {
-                            'type': task_type,
-                            'schedule': schedule_time.strftime("%H:%M")
+                            'type': 'email_masivo',
+                            'subject': email_subject,
+                            'template': email_template
                         })
-                        st.success("Tarea programada exitosamente")
+                        st.success("Envío programado!")
                 
-                with col2:
-                    st.subheader("Tareas Activas")
-                    # Agregar lista de tareas
-
-        elif subseccion == "CRM":
-            with st.expander("🤝 Gestión de CRM", expanded=True):
-                tab1, tab2 = st.tabs(["Sincronización", "Clientes"])
-                
-                with tab1:
-                    st.subheader("Configurar Sincronización")
+                with st.container(border=True):
+                    st.markdown("🔄 Sync CRM**")
                     crm_action = st.selectbox("Acción", ["Actualizar clientes", "Importar leads"])
                     sync_frequency = st.selectbox("Frecuencia", ["Diario", "Semanal", "Mensual"])
-                    if st.button("Activar Sincronización"):
+                    if st.button("Configurar Sync"):
                         self.db.save_automation_task(st.session_state.current_user, {
                             'type': 'crm_sync',
                             'action': crm_action,
                             'frequency': sync_frequency
                         })
                         st.success("Sincronización configurada")
-                
-                with tab2:
-                    st.subheader("Base de Clientes")
-                    # Agregar tabla de clientes
 
-        elif subseccion == "Avanzado":
-            with st.expander("🚀 Automatizaciones Avanzadas", expanded=True):
-                col1, col2 = st.columns(2)
+            with st.container():
+                st.subheader("Automatizaciones Avanzadas")
+                adv_col1, adv_col2 = st.columns(2)
                 
-                with col1:
-                    st.subheader("Análisis Predictivo")
+                with adv_col1:
+                    st.markdown("🔮 Análisis Predictivo**")
                     model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
                     if st.button("Ejecutar Modelo"):
                         self._run_predictive_model(model_type)
                         st.success("Modelo ejecutado")
                 
-                with col2:
-                    st.subheader("Integración API")
+                with adv_col2:
+                    st.markdown("⚙ Integración Externa**")
                     api_endpoint = st.text_input("URL API")
                     if st.button("Conectar"):
                         self._test_api_connection(api_endpoint)
@@ -294,76 +224,57 @@ class EnterpriseFlowApp:
         return True
 
     def _show_wellness(self):
-        subseccion = st.session_state.subseccion_activa.get("😌 Bienestar", "Burnout")
-        
-        if subseccion == "Burnout":
-            with st.expander("🔥 Monitoreo de Burnout", expanded=True):
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
-                    stress_level = st.slider("Nivel de estrés percibido", 1, 10, 5)
-                    if st.button("Calcular Riesgo"):
-                        prediction = self._predict_burnout(np.array([[hours_worked, stress_level, 0, 0, 0]]))
-                        st.metric("Riesgo de Burnout", f"{prediction}%")
-                
-                with col2:
-                    st.subheader("Recomendaciones Personalizadas")
-                    # Agregar recomendaciones
+        with st.expander("😌 Bienestar del Equipo", expanded=True):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("Predicción de Burnout")
+                hours_worked = st.slider("Horas trabajadas esta semana", 0, 100, 40)
+                if st.button("Calcular Riesgo"):
+                    prediction = self._predict_burnout(np.array([[hours_worked, 0, 0, 0, 0]]))
+                    st.metric("Riesgo de Burnout", f"{prediction}%")
 
-        elif subseccion == "Reconocimientos":
-            with st.expander("🏆 Sistema de Reconocimientos", expanded=True):
-                col1, col2 = st.columns(2)
+            with col2:
+                st.subheader("Sistema de Reconocimiento")
+                colleague = st.text_input("Nombre del Colega")
+                colleague_email = st.text_input("Email del Colega")
+                recognition = st.text_area("Mensaje de Reconocimiento")
+                signing_authority = st.selectbox("Firmante", ["CEO", "Gerente General"])
                 
-                with col1:
-                    colleague = st.text_input("Nombre del Colega")
-                    colleague_email = st.text_input("Email del Colega")
-                    recognition = st.text_area("Mensaje de Reconocimiento")
-                    signing_authority = st.selectbox("Firmante", ["CEO", "Gerente General"])
-                    
-                    if st.button("Enviar Reconocimiento"):
-                        certificate_data = self._generate_certificate(
-                            colleague=colleague,
-                            recognition=recognition,
-                            signer=signing_authority
+                if st.button("Enviar 🏆"):
+                    certificate_data = self._generate_certificate(
+                        colleague=colleague,
+                        recognition=recognition,
+                        signer=signing_authority
+                    )
+                    cert_id = self.db.save_recognition(
+                        user=st.session_state.current_user,
+                        colleague=colleague,
+                        recognition=recognition,
+                        certificate_id=certificate_data['cert_id'],
+                        signer=signing_authority,
+                        pdf_data=certificate_data['pdf_bytes']
+                    )
+                    if self._send_recognition_email(colleague_email, certificate_data):
+                        st.success(f"Certificado enviado a {colleague_email}!")
+                        st.download_button(
+                            label="Descargar Certificado",
+                            data=certificate_data['pdf_bytes'],
+                            file_name=f"Certificado_{cert_id}.pdf",
+                            mime="application/pdf"
                         )
-                        cert_id = self.db.save_recognition(
-                            user=st.session_state.current_user,
-                            colleague=colleague,
-                            recognition=recognition,
-                            certificate_id=certificate_data['cert_id'],
-                            signer=signing_authority,
-                            pdf_data=certificate_data['pdf_bytes']
-                        )
-                        if self._send_recognition_email(colleague_email, certificate_data):
-                            st.success(f"Certificado enviado a {colleague_email}!")
-                            st.download_button(
-                                label="Descargar Certificado",
-                                data=certificate_data['pdf_bytes'],
-                                file_name=f"Certificado_{cert_id}.pdf",
-                                mime="application/pdf"
-                            )
-                        else:
-                            st.error("Error enviando el certificado")
-                
-                with col2:
-                    st.subheader("Historial de Reconocimientos")
-                    # Agregar historial
+                    else:
+                        st.error("Error enviando el certificado")
 
-        elif subseccion == "Salud":
-            with st.expander("💪 Salud Integral", expanded=True):
-                self._health_dashboard()
-                self._smart_breaks()
-
-        elif subseccion == "Metas":
-            with st.expander("🎯 Gestión de Metas", expanded=True):
-                self._personal_goals()
-                self._learning_portal()
-
-        elif subseccion == "Relajación":
-            with st.expander("🧘 Sesiones Guiadas", expanded=True):
-                self._meditation_module()
-                self._team_network()
+            st.markdown("---")
+            self._health_dashboard()
+            self._smart_breaks()
+            self._learning_portal()
+            self._personal_goals()
+            self._meditation_module()
+            self._team_network()
+            self._workload_monitor()
+            self._gamification_system()
 
     def _generate_certificate(self, colleague, recognition, signer):
         from fpdf import FPDF
@@ -429,26 +340,18 @@ class EnterpriseFlowApp:
 
     def _predict_burnout(self, input_data):
         try:
-            return min(100, int(input_data[0][0] * 1.2 + input_data[0][1] * 0.8))
+            return min(100, int(input_data[0][0] * 1.5))
         except Exception as e:
             st.error(f"Error: {str(e)}")
             return 0
 
     def _show_feedback_system(self):
-        subseccion = st.session_state.subseccion_activa.get("🔒 Feedback Anónimo", "Nuevo Feedback")
-        
-        if subseccion == "Nuevo Feedback":
-            with st.expander("📝 Nuevo Feedback Anónimo", expanded=True):
-                feedback_type = st.selectbox("Tipo de Feedback", ["Para el equipo", "Para liderazgo", "Sugerencias generales"])
-                feedback = st.text_area("Escribe tu feedback (máx. 500 caracteres)", max_chars=500)
-                if st.button("Enviar Feedback"):
-                    self.db.save_anonymous_feedback(feedback_type, feedback)
-                    st.success("¡Gracias por tu contribución! Tu feedback es anónimo.")
-        
-        elif subseccion == "Historial":
-            with st.expander("📚 Historial de Feedback", expanded=True):
-                # Agregar lógica de historial
-                st.write("Historial de feedbacks recibidos")
+        with st.expander("🔒 Sistema de Feedback Anónimo", expanded=True):
+            feedback_type = st.selectbox("Tipo de Feedback", ["Para el equipo", "Para liderazgo", "Sugerencias generales"])
+            feedback = st.text_area("Escribe tu feedback (máx. 500 caracteres)", max_chars=500)
+            if st.button("Enviar Feedback"):
+                self.db.save_anonymous_feedback(feedback_type, feedback)
+                st.success("¡Gracias por tu contribución! Tu feedback es anónimo.")
 
     def _health_dashboard(self):
         with st.container(border=True):
@@ -463,17 +366,9 @@ class EnterpriseFlowApp:
 
     def _smart_breaks(self):
         with st.container(border=True):
-            st.subheader("⏰ Configurar Descansos")
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                break_frequency = st.slider("Intervalo entre descansos (minutos)", 30, 120, 50)
-                break_duration = st.slider("Duración del descanso (minutos)", 5, 15, 7)
-            
-            with col2:
-                st.markdown("### Próximos Descansos")
-                # Agregar calendario
-            
+            st.subheader("⏰ Programador de Descansos Inteligentes")
+            break_frequency = st.slider("Intervalo entre descansos (minutos)", 30, 120, 50)
+            break_duration = st.slider("Duración del descanso (minutos)", 5, 15, 7)
             if st.button("Activar Recordatorios"):
                 self._schedule_breaks(break_frequency, break_duration)
 
@@ -486,7 +381,7 @@ class EnterpriseFlowApp:
 
     def _learning_portal(self):
         with st.container(border=True):
-            st.subheader("🎓 Cursos Disponibles")
+            st.subheader("🎓 Plataforma de Aprendizaje")
             course_data = [
                 {'id': 1, 'title': 'Gestión del Tiempo', 'progress': 0.4},
                 {'id': 2, 'title': 'Liderazgo Efectivo', 'progress': 0.7},
@@ -494,14 +389,14 @@ class EnterpriseFlowApp:
             ]
             for course in course_data:
                 with st.container(border=True):
-                    st.markdown(f"#### {course['title']}")
+                    st.markdown(f"{course['title']}")
                     st.progress(course['progress'])
                     if st.button(f"Continuar Curso {course['id']}"):
                         st.session_state.current_course = course['id']
 
     def _personal_goals(self):
         with st.container(border=True):
-            st.subheader("🏅 Mis Metas")
+            st.subheader("🏆 Sistema de Metas Personales")
             goal = st.text_input("Establece tu objetivo personal esta semana")
             if st.button("Guardar Objetivo"):
                 self.db.save_personal_goal(
@@ -509,18 +404,18 @@ class EnterpriseFlowApp:
                     goal=goal,
                     deadline=datetime.datetime.now() + datetime.timedelta(days=7)
                 )
-                st.success("¡Objetivo guardado!")
+                st.success("¡Objetivo guardado!")  # Corrección aplicada aquí
 
     def _meditation_module(self):
         with st.container(border=True):
-            st.subheader("🧘 Sesiones Guiadas")
+            st.subheader("🧘 Sesiones de Relajación")
             duration = st.radio("Duración:", ["5 min", "10 min", "15 min"])
-            if st.button("Iniciar Meditación"):
+            if st.button("Iniciar Meditación Guiada"):
                 st.audio("https://cdn.pixabay.com/download/audio/2023/03/19/audio_6d9dc48707.mp3")
 
     def _team_network(self):
         with st.container(border=True):
-            st.subheader("👥 Red de Equipo")
+            st.subheader("👥 Mapa de Relaciones del Equipo")
             st.graphviz_chart('''
                 digraph {
                     "CEO" -> "Gerente"
@@ -534,7 +429,7 @@ class EnterpriseFlowApp:
 
     def _workload_monitor(self):
         with st.container(border=True):
-            st.subheader("⚖️ Balance de Carga")
+            st.subheader("⚖ Monitor de Carga de Trabajo")
             current_load = st.slider("Tu carga actual (1-10)", 1, 10, 7)
             ideal_load = st.slider("Carga ideal deseada (1-10)", 1, 10, 5)
             if current_load > ideal_load:
@@ -556,35 +451,7 @@ class EnterpriseFlowApp:
                 st.metric("🏆 Insignias", "3/10")
 
     def _show_compliance(self):
-        subseccion = st.session_state.subseccion_activa.get("⚖️ Cumplimiento", "Auditoría")
-        
-        if subseccion == "Auditoría":
-            with st.expander("🔍 Auditoría Normativa", expanded=True):
-                uploaded_file = st.file_uploader("Subir Documento", type=["txt", "docx", "pdf"])
-                
-                if uploaded_file:
-                    text = ""
-                    try:
-                        if uploaded_file.type == "text/plain":
-                            text = uploaded_file.getvalue().decode()
-                        elif uploaded_file.type == "application/pdf":
-                            import PyPDF2
-                            reader = PyPDF2.PdfReader(uploaded_file)
-                            text = "\n".join([page.extract_text() for page in reader.pages])
-                        else:
-                            from docx import Document
-                            doc = Document(uploaded_file)
-                            text = "\n".join([para.text for para in doc.paragraphs])
-                    except Exception as e:
-                        st.error(f"Error al leer el archivo: {str(e)}")
-                        return
-                    
-                    audit_result = self._audit_document(text)
-                    st.write("**Resultados de Auditoría:**")
-                    st.json(audit_result)
-        
-    def _show_compliance(self):
-        with st.expander("⚖️ Auditoría Normativa", expanded=True):
+        with st.expander("⚖ Auditoría Normativa", expanded=True):
             uploaded_file = st.file_uploader("Subir Documento", type=["txt", "docx", "pdf"])
             
             if uploaded_file:
@@ -605,65 +472,54 @@ class EnterpriseFlowApp:
                     return
                 
                 audit_result = self._audit_document(text)
-                st.write("**Resultados de Auditoría:**")
+                st.write("*Resultados de Auditoría:*")
                 st.json(audit_result)
 
-    # Este método debe estar al mismo nivel que los demás métodos de la clase
     def _audit_document(self, text):
-        """Analiza documentos para detectar normativas"""
         doc = self.nlp(text)
-        resultados = {
+        return {
             'GDPR': any(token.text.lower() in ('datos personales', 'consentimiento') for token in doc),
             'SOX': any(token.text.lower() in ('control interno', 'auditoría financiera') for token in doc),
             'ISO27001': any(token.text.lower() in ('seguridad de la información', 'riesgos') for token in doc)
         }
-        return resultados
 
     def _show_payment(self):
-        subseccion = st.session_state.subseccion_activa.get("💳 Suscripción", "Planes")
+        st.header("📈 Planes EnterpriseFlow")
+        cols = st.columns(3)
         
-        if subseccion == "Planes":
-            st.header("📈 Planes Disponibles")
-            cols = st.columns(3)
-            
-            with cols[0]:
-                st.subheader("Básico")
-                st.markdown("""
-                    - 10 usuarios
-                    - Soporte básico
-                    - Reportes estándar
-                    **Precio: $99/mes**
-                """)
-                if st.button("Elegir Básico", key="basico"):
-                    self._handle_subscription('basico')
-            
-            with cols[1]:
-                st.subheader("Premium")
-                st.markdown("""
-                    - 50 usuarios
-                    - Soporte prioritario
-                    - Reportes avanzados
-                    **Precio: $299/mes**
-                """)
-                if st.button("Elegir Premium", key="premium"):
-                    self._handle_subscription('premium')
-            
-            with cols[2]:
-                st.subheader("Enterprise")
-                st.markdown("""
-                    - Usuarios ilimitados
-                    - Soporte 24/7
-                    - Personalización
-                    **Precio: $999/mes**
-                """)
-                if st.button("Contactar Ventas", key="enterprise"):
-                    st.info("contacto@enterpriseflow.com")
-        
-        elif subseccion == "Facturación":
-            with st.expander("🧾 Historial de Pagos", expanded=True):
-                pass  # <-- Añadir pass para completar el bloque
+        with cols[0]:
+            st.subheader("Básico")
+            st.markdown("""
+                - 10 usuarios
+                - Soporte básico
+                - Reportes estándar
+                *Precio: $99/mes*
+            """)
+            if st.button("Elegir Básico", key="basico"):
+                self._handle_subscription('basico')
 
-    # Este método debe estar al mismo nivel que los demás métodos de la clase
+        with cols[1]:
+            st.subheader("Premium")
+            st.markdown("""
+                - 50 usuarios
+                - Soporte prioritario
+                - Reportes avanzados
+                *Precio: $299/mes*
+            """)
+            if st.button("Elegir Premium", key="premium"):
+                self._handle_subscription('premium')
+
+        with cols[2]:
+            st.subheader("Enterprise")
+            st.markdown("""
+                - Usuarios ilimitados
+                - Soporte 24/7
+                - Personalización
+                *Precio: $999/mes*
+            """)
+            if st.button("Contactar Ventas", key="enterprise"):
+                st.info("contacto@enterpriseflow.com")
+
     def _handle_subscription(self, plan: str):
         try:
             if not st.session_state.current_user:
@@ -697,5 +553,5 @@ class EnterpriseFlowApp:
                 except Exception as e:
                     st.error(f"Error en pago: {str(e)}")
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     EnterpriseFlowApp()
