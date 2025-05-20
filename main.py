@@ -508,6 +508,7 @@ class EnterpriseFlowApp:
                     user=st.session_state.current_user,
                     goal=goal,
                     deadline=datetime.datetime.now() + datetime.timedelta(days=7)
+                )
                 st.success("¡Objetivo guardado!")
 
     def _meditation_module(self):
