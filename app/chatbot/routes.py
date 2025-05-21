@@ -2,7 +2,13 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .deepseek import EnterpriseFlowChatbot
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
+@chatbot_bp.post('/api/query')
+@jwt_required()
+def handle_query():
+    user_id = get_jwt_identity()
+    
 chatbot_bp = Blueprint('chatbot', __name__)
 bot = EnterpriseFlowChatbot()
 
