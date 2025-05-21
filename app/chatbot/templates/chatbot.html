@@ -1,0 +1,63 @@
+<!-- app/chatbot/templates/chatbot.html -->
+<div class="enterprise-chatbot">
+    <div class="chat-header">
+        <div class="feature-icons">
+            <span>🏠</span>
+            <span>🤖</span>
+            <span>😌</span>
+            <span>🔒</span>
+            <span>⚖️</span>
+            <span>💳</span>
+        </div>
+        <h3>Asistente EnterpriseFlow</h3>
+    </div>
+    
+    <div class="chat-messages" id="chatMessages"></div>
+    
+    <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Pregunta sobre...">
+        <button onclick="sendMessage()">Enviar</button>
+    </div>
+</div>
+
+<script>
+const jwtToken = localStorage.getItem('jwt');
+
+async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const messagesDiv = document.getElementById('chatMessages');
+
+    // Mostrar mensaje del usuario
+    messagesDiv.innerHTML += `
+        <div class="user-message">
+            <div class="bubble">${input.value}</div>
+        </div>
+    `;
+
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwtToken}`
+            },
+            body: JSON.stringify({ message: input.value })
+        });
+
+        const data = await response.json();
+        
+        // Mostrar respuesta del chatbot
+        messagesDiv.innerHTML += `
+            <div class="bot-message">
+                <div class="bubble">${data.reply}</div>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('Error:', error);
+    }
+    
+    input.value = '';
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+</script>
