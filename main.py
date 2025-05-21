@@ -395,16 +395,42 @@ class EnterpriseFlowApp:
                         st.session_state.current_course = course['id']
 
     def _personal_goals(self):
-        with st.container(border=True):
-            st.subheader("🏆 Sistema de Metas Personales")
-            goal = st.text_input("Establece tu objetivo personal esta semana")
-            if st.button("Guardar Objetivo"):
-                self.db.save_personal_goal(
-                    user=st.session_state.current_user,
-                    goal=goal,
-                    deadline=datetime.datetime.now() + datetime.timedelta(days=7)
-                )
-                st.success("¡Objetivo guardado!")  # Corrección aplicada aquí
+       with st.container(border=True):
+          st.subheader("🏆 Sistema de Metas Personales")
+        
+          # Obtener el objetivo actual si existe
+          current_goal = self.db.get_personal_goal(st.session_state.current_user)
+        
+          # Mostrar el objetivo actual si existe
+          if current_goal:
+              st.markdown(f"**Tu objetivo actual:** {current_goal['goal']}")
+              st.caption(f"Establecido el: {current_goal['created_at']}")
+              st.caption(f"Fecha límite: {current_goal['deadline']}")
+        
+          # Campo para editar/crear nuevo objetivo
+          with st.form("personal_goal_form"):
+              new_goal = st.text_area(
+                  "Establece tu objetivo personal esta semana",
+                  value=current_goal['goal'] if current_goal else "",
+                  placeholder="Ejemplo: Completar el informe de ventas, mejorar mi productividad en un 20%..."
+              )
+            
+              submitted = st.form_submit_button("Guardar Objetivo")
+            
+              if submitted:
+                  if not new_goal.strip():
+                      st.error("Por favor ingresa un objetivo válido")
+                  else:
+                      success = self.db.save_personal_goal(
+                          user=st.session_state.current_user,
+                          goal=new_goal.strip(),
+                          deadline=datetime.datetime.now() + datetime.timedelta(days=7)
+                      )
+                      if success:
+                          st.success("¡Objetivo guardado exitosamente!")
+                          st.rerun()  # Actualizar la vista
+                      else:
+                          st.error("Error al guardar el objetivo. Por favor intenta nuevamente.")
 
     def _meditation_module(self):
         with st.container(border=True):
