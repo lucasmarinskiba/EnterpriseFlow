@@ -1,0 +1,38 @@
+/* static/css/chatbot.css */
+.enterprise-chatbot {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 320px;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    font-family: 'Segoe UI', system-ui;
+}
+
+.feature-icons {
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 15px 15px 0 0;
+}
+
+.user-message .bubble {
+    background: #2c3e50;
+    color: white;
+    margin-left: auto;
+}
+
+.bot-message .bubble {
+    background: #ecf0f1;
+    border: 1px solid #bdc3c7;
+}
+
+.bubble {
+    padding: 12px;
+    border-radius: 12px;
+    margin: 8px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
