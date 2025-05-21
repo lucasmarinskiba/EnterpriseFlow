@@ -88,3 +88,24 @@ class EnterpriseFlowChatbot:
             sub = Subscription.query.filter_by(user_id=user_id).first()
             return f"Tu plan actual: {sub.plan}\nVencimiento: {sub.expiry_date}"
             
+    # app/chatbot/deepseek.py
+    def _handle_special_action(self, response_text, user_id):
+       # Detectar funcionalidad
+       for feature, keywords in FUNCIONALIDADES.items():
+           if any(kw in response_text.lower() for kw in keywords):
+               return self._execute_feature_action(feature, user_id)
+    
+       return response_text
+
+   def _execute_feature_action(self, feature, user_id):
+       from app.models import AutomationFlow, FeedbackReport  # Importa tus modelos
+    
+       if feature == "🤖 Automatización":
+           flows = AutomationFlow.query.filter_by(user_id=user_id).all()
+           return f"Tienes {len(flows)} flujos automatizados:\n- " + "\n- ".join(f.name for f in flows)
+    
+       elif feature == "🔒 Feedback":
+           last_report = FeedbackReport.query.filter_by(user_id=user_id).order_by(FeedbackReport.date.desc()).first()
+           return f"Último feedback enviado: {last_report.date if last_report else 'Nunca'}"
+    
+       # ... Añadir acciones para otras funcionalidades ...
