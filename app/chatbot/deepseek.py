@@ -5,6 +5,27 @@ from flask import current_app
 
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 
+# app/chatbot/deepseek.py
+def _add_enterprise_context(self, user_id, message):
+    user = User.query.get(user_id)
+    sub = Subscription.query.filter_by(user_id=user_id).first()
+    projects = Project.query.filter_by(owner_id=user_id).limit(3).all()
+
+    context = f"""
+    [Usuario]
+    - Nombre: {user.name}
+    - Rol: {user.role}
+    - Último login: {user.last_login.strftime('%Y-%m-%d') if user.last_login else 'Nunca'}
+
+    [Suscripción]
+    - Plan: {sub.plan if sub else 'Free'}
+    - Estado: {'Activo' if sub and sub.expiry_date > datetime.now() else 'Inactivo'}
+
+    [Proyectos Recientes]
+    {', '.join(p.name for p in projects) or 'Ninguno'}
+    """
+    return f"{context}\n\n[Pregunta] {message}"
+    
 class EnterpriseFlowChatbot:
     def __init__(self):
         self.api_key = os.getenv("DEEPSEEK_API_KEY")
@@ -66,3 +87,4 @@ class EnterpriseFlowChatbot:
             from app.models import Subscription
             sub = Subscription.query.filter_by(user_id=user_id).first()
             return f"Tu plan actual: {sub.plan}\nVencimiento: {sub.expiry_date}"
+            
