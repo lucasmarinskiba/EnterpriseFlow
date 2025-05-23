@@ -1,0 +1,18 @@
+<!-- app/chatbot/templates/chatbot_window.html -->
+<div class="chatbot-container">
+    <div class="chat-header">
+        <img src="{{ url_for('static', filename='images/enterpriseflow-logo.png') }}" alt="Logo">
+        <h3>Asistente de EnterpriseFlow</h3>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        <!-- Mensajes se cargarán aquí -->
+    </div>
+    <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Escribe tu pregunta...">
+        <button onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
