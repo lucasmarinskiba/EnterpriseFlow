@@ -316,6 +316,13 @@ class EnterpriseFlowApp:
             'cert_id': cert_id
         }
 
+        # En _generate_certificate()
+        try:
+            signature_img = st.secrets["signatures"][signer.lower().replace(" ", "_")]
+        except KeyError:
+            st.error(f"Firma no configurada para: {signer}")
+            return None
+    
     def _send_recognition_email(self, recipient, certificate_data):
         try:
             msg = MIMEMultipart()
