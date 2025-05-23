@@ -89,14 +89,15 @@ class EnterpriseFlowApp:
             self._show_payment()
 
     # app/sections/automation.py
-   def show_automation_preview(config):
-       with st.expander("Vista Previa del Flujo"):
-           st.graphviz_chart(f"""
-           digraph {{
+    def show_automation_preview(config):
+        with st.expander("Vista Previa del Flujo"):
+            st.graphviz_chart(f"""
+            digraph {{
                {config['trigger']} -> {config['action']}
                {config['action']} -> {config['notification']}
-           }}
-           """)
+            }}
+            """)
+            
     def _show_dashboard(self):
         st.title("Panel de Control")
         st.write(f"Bienvenido: {st.session_state.current_user}")
