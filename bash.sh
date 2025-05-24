@@ -30,3 +30,6 @@ flake8 main.py database.py
 
 #para pagos
 pip install pydantic
+
+mkdir -p firmas
+convert -size 200x100 xc:white -font Arial -pointsize 24 -draw "text 30,50 'CEO'" firmas/ceo_signature.png
