@@ -306,63 +306,63 @@ class EnterpriseFlowApp:
             self._gamification_system()
 
     def _generate_certificate(self, colleague, recognition, signer):
-        try:
-            # Verificar configuración de firmas
-            if "signatures" not in st.secrets:
-                raise ValueError("❌ Falta la sección [signatures] en secrets.toml")
+       try:
+           if "signatures" not in st.secrets:
+               raise ValueError("❌ Sección [signatures] no encontrada en secrets.toml. Verifica la configuración.")
+
+           signer_key = signer.lower().replace(" ", "_")
+           if signer_key not in st.secrets["signatures"]:
+               raise KeyError(f"❌ Firma no configurada para '{signer}'. Añádela en secrets.toml.")
+
+           signature_path = st.secrets["signatures"][signer_key]
         
-            signer_key = signer.lower().replace(" ", "_")
+           # Usar ruta absoluta
+           if not os.path.isabs(signature_path):
+               signature_path = os.path.join(os.getcwd(), signature_path)
         
-            # Verificar si existe la firma configurada
-            if signer_key not in st.secrets["signatures"]:
-                raise KeyError(f"Firma no configurada para: {signer} en secrets.toml")
+           if not os.path.exists(signature_path):
+               raise FileNotFoundError(f"❌ Archivo de firma no encontrado: {signature_path}")
+
+           # Crear PDF
+           pdf = FPDF()
+           pdf.add_page()
+           pdf.set_auto_page_break(auto=True, margin=15)
+
+           # Configuración del documento
+           pdf.set_font("Arial", 'B', 16)
+           pdf.cell(0, 10, "Certificado de Reconocimiento", ln=1, align='C')
+           pdf.ln(15)
+
+           # Contenido del certificado
+           pdf.set_font("Arial", '', 12)
+           pdf.multi_cell(0, 10, f"Se reconoce oficialmente a {colleague} por:", align='C')
+           pdf.ln(10)
+           pdf.set_font("Arial", 'I', 12)
+           pdf.multi_cell(0, 8, f'"{recognition}"')
+           pdf.ln(20)
+
+           # Insertar firma
+           pdf.image(signature_path, x=50, w=30, h=15, type='PNG')
+           pdf.set_font("Arial", 'I', 10)
+           pdf.cell(0, 10, f"Firmado por: {signer}", ln=1, align='R')
+           pdf.ln(15)
+
+           # Pie de página
+           pdf.set_font("Arial", '', 8)
+           pdf.cell(0, 10, f"ID de Certificado: {str(uuid.uuid4())[:8].upper()}", 0, 1, 'C')
+           pdf.cell(0, 10, datetime.datetime.now().strftime("Emitido el %d/%m/%Y a las %H:%M"), 0, 1, 'C')
+
+           # Generar bytes del PDF
+           pdf_bytes = pdf.output(dest='S').encode('latin1')
+
+           return {
+               'pdf_bytes': pdf_bytes,
+               'cert_id': str(uuid.uuid4())[:8].upper()
+           }
         
-            # Obtener la ruta base del proyecto
-            BASE_DIR = Path(__file__).resolve().parent
-            signature_path = os.path.join(BASE_DIR, signature_path_from_secrets)
-        
-            # Verificar existencia del archivo
-            if not os.path.exists(signature_path):
-                raise FileNotFoundError(f"Archivo de firma no encontrado: {signature_path}")
-        
-            # Crear PDF
-            pdf = FPDF()
-            pdf.add_page()
-        
-            # Configuración del documento
-            pdf.set_font("Arial", 'B', 16)
-            pdf.cell(0, 10, "Certificado de Reconocimiento", ln=1, align='C')
-            pdf.ln(15)
-        
-            # Contenido del certificado
-            pdf.set_font("Arial", '', 12)
-            pdf.multi_cell(0, 10, f"Se reconoce oficialmente a {colleague} por:", align='C')
-            pdf.ln(10)
-            pdf.multi_cell(0, 8, f'"{recognition}"')
-            pdf.ln(20)
-        
-            # Insertar firma
-            pdf.image(signature_path, x=50, w=30)
-            pdf.set_font("Arial", 'I', 10)
-            pdf.cell(0, 10, f"Firmado por: {signer}", ln=1, align='R')
-        
-            # Generar ID único
-            cert_id = str(uuid.uuid4())[:8].upper()
-        
-            return {
-                'pdf_bytes': pdf.output(dest='S').encode('latin1'),
-                'cert_id': cert_id
-            }
-        
-        except KeyError as e:
-            st.error(f"Error de configuración: {str(e)}")
-            return None
-        except FileNotFoundError as e:
-            st.error(f"Error de archivo: {str(e)}")
-            return None
-        except Exception as e:
-            st.error(f"Error inesperado al generar certificado: {str(e)}")
-            return None
+       except Exception as e:
+           st.error(f"🚨 Error crítico: {str(e)}")
+           return None
     
     def _send_recognition_email(self, recipient, certificate_data):
         try:
