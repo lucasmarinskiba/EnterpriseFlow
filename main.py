@@ -304,37 +304,52 @@ class EnterpriseFlowApp:
             self._workload_monitor()
             self._gamification_system()
 
-   def _generate_certificate(self, colleague, recognition, signer):
-       try:
-           # Verificar existencia de directorio de firmas
-           if not os.path.exists("app/firmas"):
-               raise FileNotFoundError("Carpeta de firmas no encontrada")
+    def _generate_certificate(self, colleague, recognition, signer):
+        try:
+            # Generar ID único usando uuid
+            cert_id = str(uuid.uuid4())[:8].upper()  # <-- uuid ya está importado
+            signer_key = signer.lower().replace(" ", "_")
+            signature_path = st.secrets["signatures"][signer_key]
+
+            if not os.path.exists(signature_path):
+                raise FileNotFoundError(f"Archivo de firma no encontrado: {signature_path}")
+            
+            pdf = FPDF()
+            pdf.add_page()
         
-           signer_key = signer.lower().replace(" ", "_")
-           signature_path = st.secrets["signatures"][signer_key]
+            pdf.set_font("Arial", 'B', 16)
+            pdf.cell(0, 10, "Certificado de Reconocimiento", ln=1, align='C')
+            pdf.ln(15)
         
-           # Verificar existencia del archivo de firma
-           if not os.path.isfile(signature_path):
-               raise FileNotFoundError(f"Archivo de firma no encontrado: {signature_path}")
+            pdf.set_font("Arial", '', 12)
+            pdf.multi_cell(0, 10, f"Se reconoce oficialmente a {colleague} por:", align='C')
+            pdf.ln(10)
+            pdf.multi_cell(0, 8, f'"{recognition}"')
+            pdf.ln(20)
         
-           pdf = FPDF()
-           pdf.add_page()
+            signature_img = st.secrets["signatures"][signer.lower().replace(" ", "_")]
+            pdf.image(signature_img, x=50, w=30)
+            pdf.set_font("Arial", 'I', 10)
+            pdf.cell(0, 10, f"Firmado por: {signer}", ln=1, align='R')
         
-           # ... (código existente)
+            return {
+                'pdf_bytes': pdf.output(dest='S').encode('latin1'),
+                'cert_id': cert_id  # Usar la variable generada
+            }
         
-           pdf.image(signature_path, x=50, w=30)  # Usar ruta absoluta
-        
-           return {
-               'pdf_bytes': pdf.output(dest='S').encode('latin1'),
-               'cert_id': str(uuid.uuid4())[:8].upper()
-           }
-        
-       except FileNotFoundError as e:
-           st.error(f"Error de configuración: {str(e)}")
-           return None
-       except Exception as e:
-           st.error(f"Error inesperado: {str(e)}")
-           return None
+        except KeyError as e:
+            st.error(f"Firma no configurada: {str(e)}")
+            return None
+        except Exception as e:
+            st.error(f"Error generando certificado: {str(e)}")
+            return None
+        except FileNotFoundError as e:
+            st.error(f"Error: {str(e)}")
+            return None
+
+        except Exception as e:
+            st.error(f"Error inesperado: {str(e)}")
+            return None
     
     def _send_recognition_email(self, recipient, certificate_data):
         try:
