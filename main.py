@@ -308,7 +308,12 @@ class EnterpriseFlowApp:
         try:
             # Generar ID único usando uuid
             cert_id = str(uuid.uuid4())[:8].upper()  # <-- uuid ya está importado
-        
+            signer_key = signer.lower().replace(" ", "_")
+            signature_path = st.secrets["signatures"][signer_key]
+
+            if not os.path.exists(signature_path):
+            raise FileNotFoundError(f"Archivo de firma no encontrado: {signature_path}")
+            
             pdf = FPDF()
             pdf.add_page()
         
@@ -337,6 +342,13 @@ class EnterpriseFlowApp:
             return None
         except Exception as e:
             st.error(f"Error generando certificado: {str(e)}")
+            return None
+        except FileNotFoundError as e:
+            st.error(f"Error: {str(e)}")
+            return None
+
+        except Exception as e:
+            st.error(f"Error inesperado: {str(e)}")
             return None
     
     def _send_recognition_email(self, recipient, certificate_data):
