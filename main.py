@@ -50,6 +50,28 @@ if __name__ == "__main__":
     _check_config()
     EnterpriseFlowApp()
 
+def _validate_secrets():
+    try:
+        # Verificar secciones obligatorias
+        assert "signatures" in st.secrets, "❌ Sección [signatures] faltante"
+        assert "smtp" in st.secrets, "❌ Sección [smtp] faltante"
+        
+        # Verificar existencia de firmas
+        for role in ["ceo", "gerente_general"]:
+            sig_path = st.secrets["signatures"][role]
+            if not os.path.exists(sig_path):
+                raise FileNotFoundError(f"❌ Archivo {sig_path} no encontrado")
+                
+        st.success("✅ Configuración válida!")
+        
+    except Exception as e:
+        st.error(str(e))
+        st.stop()
+
+if __name__ == "__main__":
+    _validate_secrets()
+    EnterpriseFlowApp()
+
 class EnterpriseFlowApp:
     def __init__(self):
         try:
