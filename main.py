@@ -50,6 +50,27 @@ if __name__ == "__main__":
     _check_config()
     EnterpriseFlowApp()
 
+import os
+import streamlit as st
+
+def _validate_config():
+    try:
+        # Verificar existencia de secrets.toml
+        assert os.path.exists(".streamlit/secrets.toml"), "❌ Archivo secrets.toml no encontrado"
+        
+        # Verificar secciones críticas
+        assert "signatures" in st.secrets, "❌ Faltan las firmas en secrets.toml"
+        assert "smtp" in st.secrets, "❌ Configuración SMTP faltante"
+        
+        st.success("✅ Configuración válida!")
+    except Exception as e:
+        st.error(f"**Error crítico:** {str(e)}")
+        st.stop()
+
+if __name__ == "__main__":
+    _validate_config()
+    EnterpriseFlowApp()
+
 def _validate_secrets():
     try:
         # Verificar secciones obligatorias
