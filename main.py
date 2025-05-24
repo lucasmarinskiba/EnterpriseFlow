@@ -19,6 +19,44 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 
+# Configuración inicial
+BASE_DIR = Path(__file__).resolve().parent
+
+def validate_configuration():
+    """Valida la configuración esencial antes de iniciar la aplicación"""
+    try:
+        # Verificar existencia de secrets.toml
+        secrets_path = BASE_DIR / ".streamlit" / "secrets.toml"
+        if not secrets_path.exists():
+            raise FileNotFoundError("❌ Archivo secrets.toml no encontrado en .streamlit/")
+        
+        # Verificar secciones requeridas
+        required_sections = ["signatures", "smtp"]
+        for section in required_sections:
+            if section not in st.secrets:
+                raise ValueError(f"❌ Sección [{section}] faltante en secrets.toml")
+        
+        # Verificar firmas digitales
+        signatures = st.secrets["signatures"]
+        for role, path in signatures.items():
+            full_path = BASE_DIR / path
+            if not full_path.exists():
+                raise FileNotFoundError(f"❌ Archivo de firma no encontrado: {path}")
+                
+        # Verificar configuración SMTP
+        smtp_config = st.secrets["smtp"]
+        required_keys = ["server", "port", "user", "password"]
+        for key in required_keys:
+            if key not in smtp_config:
+                raise ValueError(f"❌ Clave SMTP faltante: {key}")
+        
+        return True
+        
+    except Exception as e:
+        st.error(f"Error de configuración: {str(e)}")
+        st.stop()
+
+
 # Manejo de dependencias opcionales
 try:
     import spacy
@@ -29,15 +67,10 @@ except ImportError as e:
     st.error(f"Error de dependencias: {str(e)}")
     st.stop()
 
-# Configuración inicial
-st.set_page_config(
-    page_title="EnterpriseFlow",
-    page_icon="🏢",
-    layout="wide"
-)
-
 class EnterpriseFlowApp:
     def __init__(self):
+        validate_configuration()
+        
         try:
             self.nlp = spacy.load("es_core_news_sm")
         except Exception as e:
