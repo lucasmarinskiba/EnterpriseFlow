@@ -9,6 +9,7 @@ import os
 import stripe
 from fpdf import FPDF  # Importación corregida aqu
 from database import DatabaseManager
+from pathlib import Path
 from payment_handler import PaymentHandler
 from tensorflow.keras.models import load_model
 import spacy
@@ -316,8 +317,9 @@ class EnterpriseFlowApp:
             if signer_key not in st.secrets["signatures"]:
                 raise KeyError(f"Firma no configurada para: {signer} en secrets.toml")
         
-            # Obtener ruta de la firma
-            signature_path = st.secrets["signatures"][signer_key]
+            # Obtener la ruta base del proyecto
+            BASE_DIR = Path(__file__).resolve().parent
+            signature_path = os.path.join(BASE_DIR, signature_path_from_secrets)
         
             # Verificar existencia del archivo
             if not os.path.exists(signature_path):
