@@ -33,3 +33,10 @@ pip install pydantic
 
 mkdir -p firmas
 convert -size 200x100 xc:white -font Arial -pointsize 24 -draw "text 30,50 'CEO'" firmas/ceo_signature.png
+
+# Crea la carpeta para las firmas
+mkdir -p firmas
+
+# Añade estos archivos (Reemplázalos con tus firmas reales)
+touch firmas/ceo_signature.png
+touch firmas/gerente_signature.png
