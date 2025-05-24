@@ -306,50 +306,61 @@ class EnterpriseFlowApp:
 
     def _generate_certificate(self, colleague, recognition, signer):
         try:
-            # Generar ID único usando uuid
-            cert_id = str(uuid.uuid4())[:8].upper()  # <-- uuid ya está importado
-            signer_key = signer.lower().replace(" ", "_")
-            signature_path = st.secrets["signatures"][signer_key]
-
-            if not os.path.exists("app/firmas"):
-                raise FileNotFoundError("Carpeta de firmas no encontrada")
+            # Verificar configuración de firmas
+            if "signatures" not in st.secrets:
+                raise ValueError("❌ Falta la sección [signatures] en secrets.toml")
         
             signer_key = signer.lower().replace(" ", "_")
-            signature_path = st.secrets["signatures"][signer_key]
-
-            # Verificar existencia del archivo de firma
-            if not os.path.isfile(signature_path):
-                raise FileNotFoundError(f"Archivo de firma no encontrado: {signature_path}")
-            
-            pdf = FPDF()
-            pdf.add_page()
         
-            pdf.set_font("Arial", 'B', 16)
-            pdf.cell(0, 10, "Certificado de Reconocimiento", ln=1, align='C')
-            pdf.ln(15)
+           # Verificar si existe la firma configurada
+           if signer_key not in st.secrets["signatures"]:
+               raise KeyError(f"Firma no configurada para: {signer} en secrets.toml")
         
-            pdf.set_font("Arial", '', 12)
-            pdf.multi_cell(0, 10, f"Se reconoce oficialmente a {colleague} por:", align='C')
-            pdf.ln(10)
-            pdf.multi_cell(0, 8, f'"{recognition}"')
-            pdf.ln(20)
+           # Obtener ruta de la firma
+           signature_path = st.secrets["signatures"][signer_key]
         
-            signature_img = st.secrets["signatures"][signer.lower().replace(" ", "_")]
-            pdf.image(signature_path, x=50, w=30)
-            pdf.set_font("Arial", 'I', 10)
-            pdf.cell(0, 10, f"Firmado por: {signer}", ln=1, align='R')
+           # Verificar existencia del archivo
+           if not os.path.exists(signature_path):
+               raise FileNotFoundError(f"Archivo de firma no encontrado: {signature_path}")
         
-            return {
-                'pdf_bytes': pdf.output(dest='S').encode('latin1'),
-                'cert_id': str(uuid.uuid4())[:8].upper()
-            }
+           # Crear PDF
+           pdf = FPDF()
+           pdf.add_page()
         
-        except FileNotFoundError as e:
-            st.error(f"Error de configuración: {str(e)}")
-            return None
-        except Exception as e:
-            st.error(f"Error inesperado: {str(e)}")
-            return None
+           # Configuración del documento
+           pdf.set_font("Arial", 'B', 16)
+           pdf.cell(0, 10, "Certificado de Reconocimiento", ln=1, align='C')
+           pdf.ln(15)
+        
+           # Contenido del certificado
+           pdf.set_font("Arial", '', 12)
+           pdf.multi_cell(0, 10, f"Se reconoce oficialmente a {colleague} por:", align='C')
+           pdf.ln(10)
+           pdf.multi_cell(0, 8, f'"{recognition}"')
+           pdf.ln(20)
+        
+           # Insertar firma
+           pdf.image(signature_path, x=50, w=30)
+           pdf.set_font("Arial", 'I', 10)
+           pdf.cell(0, 10, f"Firmado por: {signer}", ln=1, align='R')
+        
+           # Generar ID único
+           cert_id = str(uuid.uuid4())[:8].upper()
+        
+           return {
+               'pdf_bytes': pdf.output(dest='S').encode('latin1'),
+               'cert_id': cert_id
+           }
+        
+       except KeyError as e:
+           st.error(f"Error de configuración: {str(e)}")
+           return None
+       except FileNotFoundError as e:
+           st.error(f"Error de archivo: {str(e)}")
+           return None
+       except Exception as e:
+           st.error(f"Error inesperado al generar certificado: {str(e)}")
+           return None
     
     def _send_recognition_email(self, recipient, certificate_data):
         try:
