@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 import hashlib
+import uuid
 import numpy as np
 import datetime
 import os
-import uuid
 import stripe
 from fpdf import FPDF  # Importación corregida aqu
 from database import DatabaseManager
