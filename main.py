@@ -280,7 +280,7 @@ class EnterpriseFlowApp:
                         user=st.session_state.current_user,
                         colleague=colleague,
                         recognition=recognition,
-                        if certificate_data and 'cert_id' in certificate_data:
+                    if certificate_data and 'cert_id' in certificate_data:
                         certificate_id = certificate_data['cert_id'],
                         signer=signing_authority,
                         pdf_data = certificate_data['pdf_bytes']
