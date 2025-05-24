@@ -311,7 +311,14 @@ class EnterpriseFlowApp:
             signer_key = signer.lower().replace(" ", "_")
             signature_path = st.secrets["signatures"][signer_key]
 
-            if not os.path.exists(signature_path):
+            if not os.path.exists("app/firmas"):
+                raise FileNotFoundError("Carpeta de firmas no encontrada")
+        
+            signer_key = signer.lower().replace(" ", "_")
+            signature_path = st.secrets["signatures"][signer_key]
+
+            # Verificar existencia del archivo de firma
+            if not os.path.isfile(signature_path):
                 raise FileNotFoundError(f"Archivo de firma no encontrado: {signature_path}")
             
             pdf = FPDF()
@@ -328,25 +335,18 @@ class EnterpriseFlowApp:
             pdf.ln(20)
         
             signature_img = st.secrets["signatures"][signer.lower().replace(" ", "_")]
-            pdf.image(signature_img, x=50, w=30)
+            pdf.image(signature_path, x=50, w=30)
             pdf.set_font("Arial", 'I', 10)
             pdf.cell(0, 10, f"Firmado por: {signer}", ln=1, align='R')
         
             return {
                 'pdf_bytes': pdf.output(dest='S').encode('latin1'),
-                'cert_id': cert_id  # Usar la variable generada
+                'cert_id': str(uuid.uuid4())[:8].upper()
             }
         
-        except KeyError as e:
-            st.error(f"Firma no configurada: {str(e)}")
-            return None
-        except Exception as e:
-            st.error(f"Error generando certificado: {str(e)}")
-            return None
         except FileNotFoundError as e:
-            st.error(f"Error: {str(e)}")
+            st.error(f"Error de configuración: {str(e)}")
             return None
-
         except Exception as e:
             st.error(f"Error inesperado: {str(e)}")
             return None
