@@ -10,6 +10,7 @@ git push -u origin main
 
 # 2. Instalación de dependencias y validación
 pip install -r requirements.txt
+pip install fpdf2 spacy pandas streamlit
 python -m spacy download es_core_news_sm
 pip install flake8  # Instalar linter
 
