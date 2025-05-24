@@ -5,6 +5,7 @@ import hashlib
 import numpy as np
 import datetime
 import os
+import uuid
 import stripe
 from fpdf import FPDF  # Importación corregida aqu
 from database import DatabaseManager
@@ -305,10 +306,9 @@ class EnterpriseFlowApp:
 
     def _generate_certificate(self, colleague, recognition, signer):
         try:
-            cert_id = str(uuid.uuid4())[:8].upper()
             pdf = FPDF()
             pdf.add_page()
-            
+            cert_id = str(uuid.uuid4())[:8].upper()
             pdf.set_font("Arial", 'B', 16)
             pdf.cell(0, 10, "Certificado de Reconocimiento", ln=1, align='C')
             pdf.ln(15)
