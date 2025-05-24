@@ -279,12 +279,13 @@ class EnterpriseFlowApp:
                     cert_id = self.db.save_recognition(
                         user=st.session_state.current_user,
                         colleague=colleague,
-                        recognition=recognition,
+                        recognition=recognition
+                    )
                     if certificate_data and 'cert_id' in certificate_data:
                         certificate_id = certificate_data['cert_id'],
                         signer=signing_authority,
                         pdf_data = certificate_data['pdf_bytes']
-                    )
+                    
                     if self._send_recognition_email(colleague_email, certificate_data):
                         st.success(f"Certificado enviado a {colleague_email}!")
                         st.download_button(
