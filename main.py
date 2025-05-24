@@ -312,7 +312,7 @@ class EnterpriseFlowApp:
             signature_path = st.secrets["signatures"][signer_key]
 
             if not os.path.exists(signature_path):
-            raise FileNotFoundError(f"Archivo de firma no encontrado: {signature_path}")
+                raise FileNotFoundError(f"Archivo de firma no encontrado: {signature_path}")
             
             pdf = FPDF()
             pdf.add_page()
