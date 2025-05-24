@@ -36,6 +36,20 @@ st.set_page_config(
     layout="wide"
 )
 
+# En main.py, antes de la clase EnterpriseFlowApp:
+def _check_config():
+    try:
+        assert "signatures" in st.secrets, "❌ Configura secrets.toml!"
+        assert os.path.exists("firmas/ceo_signature.png"), "❌ Firma CEO faltante"
+        assert os.path.exists("firmas/gerente_signature.png"), "❌ Firma Gerente faltante"
+    except Exception as e:
+        st.error(str(e))
+        st.stop()
+
+if __name__ == "__main__":
+    _check_config()
+    EnterpriseFlowApp()
+
 class EnterpriseFlowApp:
     def __init__(self):
         try:
