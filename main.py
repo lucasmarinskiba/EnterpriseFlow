@@ -36,63 +36,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# En main.py, antes de la clase EnterpriseFlowApp:
-def _check_config():
-    try:
-        assert "signatures" in st.secrets, "❌ Configura secrets.toml!"
-        assert os.path.exists("firmas/ceo_signature.png"), "❌ Firma CEO faltante"
-        assert os.path.exists("firmas/gerente_signature.png"), "❌ Firma Gerente faltante"
-    except Exception as e:
-        st.error(str(e))
-        st.stop()
-
-if __name__ == "__main__":
-    _check_config()
-    EnterpriseFlowApp()
-
-import os
-import streamlit as st
-
-def _validate_config():
-    try:
-        # Verificar existencia de secrets.toml
-        assert os.path.exists(".streamlit/secrets.toml"), "❌ Archivo secrets.toml no encontrado"
-        
-        # Verificar secciones críticas
-        assert "signatures" in st.secrets, "❌ Faltan las firmas en secrets.toml"
-        assert "smtp" in st.secrets, "❌ Configuración SMTP faltante"
-        
-        st.success("✅ Configuración válida!")
-    except Exception as e:
-        st.error(f"**Error crítico:** {str(e)}")
-        st.stop()
-
-if __name__ == "__main__":
-    _validate_config()
-    EnterpriseFlowApp()
-
-def _validate_secrets():
-    try:
-        # Verificar secciones obligatorias
-        assert "signatures" in st.secrets, "❌ Sección [signatures] faltante"
-        assert "smtp" in st.secrets, "❌ Sección [smtp] faltante"
-        
-        # Verificar existencia de firmas
-        for role in ["ceo", "gerente_general"]:
-            sig_path = st.secrets["signatures"][role]
-            if not os.path.exists(sig_path):
-                raise FileNotFoundError(f"❌ Archivo {sig_path} no encontrado")
-                
-        st.success("✅ Configuración válida!")
-        
-    except Exception as e:
-        st.error(str(e))
-        st.stop()
-
-if __name__ == "__main__":
-    _validate_secrets()
-    EnterpriseFlowApp()
-
 class EnterpriseFlowApp:
     def __init__(self):
         try:
