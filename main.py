@@ -408,13 +408,30 @@ class EnterpriseFlowApp:
     def _health_dashboard(self):
         with st.container(border=True):
             st.subheader("📊 Panel de Salud Integral")
+
+            # Cargar los datos del usuario
+            user = st.session_state.current_user
+            health_data = self.db.get_health_data(user)
+            # Si no existen, usa valores por defecto
+            if not health_data:
+                health_data = {'dias': 0, 'sueno': 0.0, 'pasos': 0}
+
+            # Inputs para que el usuario pueda cambiarlos
+            dias = st.number_input("Días sin incidentes", min_value=0, value=health_data['dias'])
+            sueno = st.number_input("Horas Sueño Promedio", min_value=0.0, step=0.1, value=health_data['sueno'])
+            pasos = st.number_input("Pasos Diarios", min_value=0, value=health_data['pasos'])
+
+            if st.button("Guardar mis registros de salud"):
+                self.db.save_health_data(user, dias, sueno, pasos)
+                st.success("¡Datos guardados!")
+
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("📅 Días sin incidentes", "28")
+                st.metric("📅 Días sin incidentes", dias)
             with col2:
-                st.metric("💤 Horas Sueño Promedio", "6.2")
+                st.metric("💤 Horas Sueño Promedio", sueno)
             with col3:
-                st.metric("🚶 Pasos Diarios", "4,892")
+                st.metric("🚶 Pasos Diarios", pasos)
 
     def _smart_breaks(self):
         with st.container(border=True):
