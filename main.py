@@ -117,42 +117,42 @@ class EnterpriseFlowApp:
             }}
             """)
             
-   def _show_dashboard(self):
-       st.title("Panel de Control")
-       st.write(f"Bienvenido: [{st.session_state.current_user}](mailto:{st.session_state.current_user})")
+    def _show_dashboard(self):
+        st.title("Panel de Control")
+        st.write(f"Bienvenido: [{st.session_state.current_user}](mailto:{st.session_state.current_user})")
 
-       # --- SECCIÓN TUTORIALES ---
-       st.markdown("---")
-       st.header("📖 Tutoriales: Introducción a como usar EnterpriseFlow")
+        # --- SECCIÓN TUTORIALES ---
+        st.markdown("---")
+        st.header("📖 Tutoriales: Introducción a como usar EnterpriseFlow")
 
-       with st.expander("🤖 Automatización de Tareas"):
-           st.markdown("""
-           1. Ve al menú lateral y selecciona **Automatización**.
-           2. Completa los campos para crear una factura, programar tareas o configurar envíos de emails masivos.
-           3. Haz clic en los botones correspondientes para guardar o ejecutar cada acción.
-           4. Observa la vista previa de tus automatizaciones y revisa los resultados en tiempo real.
-           """)
+        with st.expander("🤖 Automatización de Tareas"):
+            st.markdown("""
+            1. Ve al menú lateral y selecciona **Automatización**.
+            2. Completa los campos para crear una factura, programar tareas o configurar envíos de emails masivos.
+            3. Haz clic en los botones correspondientes para guardar o ejecutar cada acción.
+            4. Observa la vista previa de tus automatizaciones y revisa los resultados en tiempo real.
+            """)
 
-       with st.expander("😌 Bienestar del Equipo"):
-           st.markdown("""
-           1. Accede a la sección **Bienestar** en el menú.
-           2. Usa el panel para calcular el riesgo de burnout y registra reconocimientos a tus colegas.
-           3. Explora los módulos de salud, descansos programados, aprendizaje y metas personales.
-           4. Personaliza y guarda tus propios datos de salud para llevar tu propio registro.
-           """)
+        with st.expander("😌 Bienestar del Equipo"):
+            st.markdown("""
+            1. Accede a la sección **Bienestar** en el menú.
+            2. Usa el panel para calcular el riesgo de burnout y registra reconocimientos a tus colegas.
+            3. Explora los módulos de salud, descansos programados, aprendizaje y metas personales.
+            4. Personaliza y guarda tus propios datos de salud para llevar tu propio registro.
+            """)
 
-       with st.expander("🔒 Feedback Anónimo"):
-           st.markdown("""
-           1. Selecciona **Feedback Anónimo** en el menú lateral.
-           2. Elige el tipo de feedback y escribe tu mensaje de forma confidencial.
-           3. Haz clic en **Enviar Feedback** para que la administración lo reciba sin conocer tu identidad.
-           """)
+        with st.expander("🔒 Feedback Anónimo"):
+            st.markdown("""
+            1. Selecciona **Feedback Anónimo** en el menú lateral.
+            2. Elige el tipo de feedback y escribe tu mensaje de forma confidencial.
+            3. Haz clic en **Enviar Feedback** para que la administración lo reciba sin conocer tu identidad.
+            """)
 
-       with st.expander("⚖️ Cumplimiento y Auditoría"):
-           st.markdown("""
-           1. En el menú, haz clic en **Cumplimiento**.
-           2. Sube documentos para auditoría normativa (GDPR, SOX, ISO27001, etc.).
-           3. Revisa los resultados automáticos y asegúrate de que tus archivos cumplen con los estándares requeridos.
+        with st.expander("⚖️ Cumplimiento y Auditoría"):
+            st.markdown("""
+            1. En el menú, haz clic en **Cumplimiento**.
+            2. Sube documentos para auditoría normativa (GDPR, SOX, ISO27001, etc.).
+            3. Revisa los resultados automáticos y asegúrate de que tus archivos cumplen con los estándares requeridos.
             """)
 
        st.info("¿Necesitas más ayuda? Contacta a soporte o revisa la documentación oficial para ver videos y guías paso a paso.")
