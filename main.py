@@ -155,7 +155,7 @@ class EnterpriseFlowApp:
             3. Revisa los resultados automáticos y asegúrate de que tus archivos cumplen con los estándares requeridos.
             """)
 
-       st.info("¿Necesitas más ayuda? Contacta a soporte o revisa la documentación oficial para ver videos y guías paso a paso.")
+        st.info("¿Necesitas más ayuda? Contacta a soporte o revisa la documentación oficial para ver videos y guías paso a paso.")
 
     def _show_automation(self):
         with st.expander("🤖 Automatización de Tareas", expanded=True):
