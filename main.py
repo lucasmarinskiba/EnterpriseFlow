@@ -121,6 +121,24 @@ class EnterpriseFlowApp:
         st.title("Panel de Control")
         st.write(f"Bienvenido: {st.session_state.current_user}")
 
+        # Nueva sección de tutoriales
+        st.markdown("---")
+        st.header("📖 Tutoriales: Introducción a como usar EnterpriseFlow")
+        st.markdown(
+            """
+            <ul>
+                <li><b>¿Qué es EnterpriseFlow?</b> Descubre las funcionalidades clave de la plataforma.</li>
+                <li><b>Automatización:</b> Cómo crear flujos automáticos y programar tareas.</li>
+                <li><b>Bienestar:</b> Cómo registrar y monitorear tu carga laboral y salud.</li>
+                <li><b>Feedback Anónimo:</b> Cómo enviar sugerencias o alertas a la gerencia.</li>
+                <li><b>Cumplimiento:</b> Cómo subir documentos y auditar normativas.</li>
+                <li><b>Suscripción:</b> Cómo gestionar tu plan y equipo.</li>
+            </ul>
+            <p>¿Necesitas más ayuda? Visita nuestra <a href="mailto:soporte@enterpriseflow.com">mesa de ayuda</a> o revisa la documentación oficial.</p>
+            """,
+            unsafe_allow_html=True
+        )
+
     def _show_automation(self):
         with st.expander("🤖 Automatización de Tareas", expanded=True):
             col1, col2, col3 = st.columns(3)
