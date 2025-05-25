@@ -41,3 +41,9 @@ touch firmas/ceo_signature.png
 # Añade estos archivos (Reemplázalos con tus firmas reales)
 touch firmas/ceo_signature.png
 touch firmas/gerente_signature.png
+
+mkdir -p firmas
+convert -size 200x100 xc:white -font Arial -pointsize 24 -draw "text 30,50 'CEO'" firmas/ceo_signature.png
+git add firmas/ceo_signature.png
+git commit -m "Agrega firma digital CEO"
+git push
