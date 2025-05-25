@@ -36,6 +36,7 @@ convert -size 200x100 xc:white -font Arial -pointsize 24 -draw "text 30,50 'CEO'
 
 # Crea la carpeta para las firmas
 mkdir -p firmas
+touch firmas/ceo_signature.png
 
 # Añade estos archivos (Reemplázalos con tus firmas reales)
 touch firmas/ceo_signature.png
