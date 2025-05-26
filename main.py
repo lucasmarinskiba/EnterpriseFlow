@@ -548,44 +548,60 @@ class EnterpriseFlowApp:
                             st.experimental_rerun()
 
     def _meditation_module(self):
-       with st.container(border=True):
-           st.subheader("🧘 Sesiones de Relajación")
-           duration_str = st.radio("Duración:", ["5 min", "10 min", "15 min"], key="meditation_duration")
-           minutes = int(duration_str.split()[0])
-           seconds = minutes * 60
+        with st.container(border=True):
+            st.subheader("🧘 Sesiones de Relajación")
+            duration_str = st.radio("Duración:", ["5 min", "10 min", "15 min"], key="meditation_duration")
+            minutes = int(duration_str.split()[0])
+            seconds = minutes * 60
+            audio_url = "https://cdn.pixabay.com/audio/2022/10/16/audio_12b5fa0b79.mp3"
 
-           # El audio dura 5 minutos exactos
-           audio_url = "https://cdn.pixabay.com/audio/2022/10/16/audio_12b5fa0b79.mp3"
-           repeat_count = minutes // 5
+            # Descargar el audio una vez para la descarga y reproducción (solo si lo necesitas local)
+            if "audio_bytes" not in st.session_state:
+                st.session_state["audio_bytes"] = requests.get(audio_url).content
 
-           if "meditation_active" not in st.session_state:
-               st.session_state["meditation_active"] = False
-           if "meditation_start_time" not in st.session_state:
-               st.session_state["meditation_start_time"] = None
+            if st.button("Iniciar Meditación Guiada", key="meditation_start_btn"):
+                st.session_state["meditation_active"] = True
+                st.session_state["meditation_start_time"] = time.time()
+                st.session_state["meditation_total_seconds"] = seconds
 
-           if st.button("Iniciar Meditación Guiada", key="meditation_start_btn"):
-               st.session_state["meditation_active"] = True
-               st.session_state["meditation_start_time"] = time.time()
-               st.session_state["meditation_total_seconds"] = seconds
+            if st.session_state.get("meditation_active", False):
+                elapsed = int(time.time() - st.session_state["meditation_start_time"])
+                remaining = st.session_state["meditation_total_seconds"] - elapsed
+                if remaining > 0:
+                    mins, secs = divmod(remaining, 60)
+                    st.markdown(f"### ⏳ Tiempo restante: {mins:02d}:{secs:02d}")
 
-           if st.session_state.get("meditation_active", False):
-               elapsed = int(time.time() - st.session_state["meditation_start_time"])
-               remaining = st.session_state["meditation_total_seconds"] - elapsed
-               if remaining > 0:
-                   mins, secs = divmod(remaining, 60)
-                   st.markdown(f"### ⏳ Tiempo restante: {mins:02d}:{secs:02d}")
-                
-                   st.info(
-                       f"Reproduce el audio {repeat_count} {'vez' if repeat_count==1 else 'veces'} para completar tu sesión de {minutes} minutos."
-                   )
-                   st.audio(audio_url)
-                   st.warning(
-                       "Por motivos de seguridad del navegador, debes volver a darle play al audio cuando termine para sesiones de más de 5 minutos."
-                   )
-                   st.experimental_rerun()
-               else:
-                   st.session_state["meditation_active"] = False
-                   st.success("¡La sesión ha finalizado! Puedes abrir los ojos y continuar tu día.")
+                    # Mostrar solo un reproductor pero con loop automático html para el usuario
+                    loop_count = minutes // 5
+                    custom_audio_html = f"""
+                    <audio id="meditation-audio" src="{audio_url}" autoplay></audio>
+                    <script>
+                    var audio = document.getElementById('meditation-audio');
+                    var playCount = 1;
+                    var totalLoops = {loop_count};
+                    audio.onended = function() {{
+                        if(playCount < totalLoops) {{
+                            playCount += 1;
+                            audio.currentTime = 0;
+                            audio.play();
+                        }}
+                    }};
+                    </script>
+                    """
+                    st.markdown(custom_audio_html, unsafe_allow_html=True)
+                    
+                    # Botón de descarga simple
+                    st.download_button(
+                        label="Descargar música de meditación (MP3)",
+                        data=st.session_state["audio_bytes"],
+                        file_name="yoga-meditation-music-328749.mp3",
+                        mime="audio/mp3"
+                    )
+
+                    st.experimental_rerun()
+                else:
+                    st.session_state["meditation_active"] = False
+                    st.success("¡La sesión ha finalizado! Puedes abrir los ojos y continuar tu día.")
 
     
     def _team_network(self):
