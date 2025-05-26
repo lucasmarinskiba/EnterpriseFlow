@@ -34,11 +34,45 @@ class DatabaseManager:
                 horas_sueno_promedio REAL,
                 pasos_diarios INTEGER
             )'''
+            '''CREATE TABLE IF NOT EXISTS personal_goals (
+                id INTEGER PRIMARY KEY,
+                user_email TEXT,
+                goal TEXT,
+                created_at DATE DEFAULT CURRENT_DATE
+            )'''
         ]
         for table in tables:
             self.conn.execute(table)
         self.conn.commit()
 
+    def save_personal_goal(self, user, goal):
+        self.conn.execute(
+            'INSERT INTO personal_goals (user_email, goal) VALUES (?, ?)',
+            (user, goal)
+        )
+        self.conn.commit()
+
+    def get_personal_goals(self, user):
+        cursor = self.conn.execute(
+            'SELECT id, goal FROM personal_goals WHERE user_email=? ORDER BY created_at DESC',
+            (user,)
+        )
+        return cursor.fetchall()
+
+    def edit_personal_goal(self, goal_id, new_goal):
+        self.conn.execute(
+            'UPDATE personal_goals SET goal=? WHERE id=?',
+            (new_goal, goal_id)
+        )
+        self.conn.commit()
+
+    def delete_personal_goal(self, goal_id):
+        self.conn.execute(
+            'DELETE FROM personal_goals WHERE id=?',
+            (goal_id,)
+        )
+    self.conn.commit()
+    
     def verify_user(self, email, password):
         hashed_pw = hashlib.sha256(password.encode()).hexdigest()
         cursor = self.conn.execute(
