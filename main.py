@@ -547,37 +547,45 @@ class EnterpriseFlowApp:
                             self.db.delete_personal_goal(goal_id)
                             st.experimental_rerun()
 
-    def _meditation_module(self):
-        with st.container(border=True):
-            st.subheader("🧘 Sesiones de Relajación")
-            duration_str = st.radio("Duración:", ["5 min", "10 min", "15 min"], key="meditation_duration")
-            minutes = int(duration_str.split()[0])
-            seconds = minutes * 60
+   def _meditation_module(self):
+       with st.container(border=True):
+           st.subheader("🧘 Sesiones de Relajación")
+           duration_str = st.radio("Duración:", ["5 min", "10 min", "15 min"], key="meditation_duration")
+           minutes = int(duration_str.split()[0])
+           seconds = minutes * 60
 
-            if "meditation_active" not in st.session_state:
-                st.session_state["meditation_active"] = False
-            if "meditation_start_time" not in st.session_state:
-                st.session_state["meditation_start_time"] = None
+           # El audio dura 5 minutos exactos
+           audio_url = "https://cdn.pixabay.com/audio/2022/10/16/audio_12b5fa0b79.mp3"
+           repeat_count = minutes // 5
 
-            if st.button("Iniciar Meditación Guiada", key="meditation_start_btn"):
-                st.session_state["meditation_active"] = True
-                st.session_state["meditation_start_time"] = time.time()
-                st.session_state["meditation_total_seconds"] = seconds
+           if "meditation_active" not in st.session_state:
+               st.session_state["meditation_active"] = False
+           if "meditation_start_time" not in st.session_state:
+               st.session_state["meditation_start_time"] = None
 
-            # Mostrar cronómetro solo si está activo
-            if st.session_state.get("meditation_active", False):
-                elapsed = int(time.time() - st.session_state["meditation_start_time"])
-                remaining = st.session_state["meditation_total_seconds"] - elapsed
-                if remaining > 0:
-                    mins, secs = divmod(remaining, 60)
-                    st.markdown(f"### ⏳ Tiempo restante: {mins:02d}:{secs:02d}")
-                    st.audio("https://cdn.pixabay.com/audio/2022/10/16/audio_12b5fa0b79.mp3")  # Previsualización rápida
-                    st.audio("https://cdn.pixabay.com/audio/2022/10/16/audio_12b5fa0b79.mp3")  # También puedes usar el link largo oficial
-                    st.audio("https://pixabay.com/es/music/ambiente-yoga-meditation-music-328749/download/audio_12b5fa0b79.mp3?filename=yoga-meditation-music-328749.mp3")
-                    st.experimental_rerun()
-                else:
-                    st.session_state["meditation_active"] = False
-                    st.success("¡La sesión ha finalizado! Puedes abrir los ojos y continuar tu día.")
+           if st.button("Iniciar Meditación Guiada", key="meditation_start_btn"):
+               st.session_state["meditation_active"] = True
+               st.session_state["meditation_start_time"] = time.time()
+               st.session_state["meditation_total_seconds"] = seconds
+
+           if st.session_state.get("meditation_active", False):
+               elapsed = int(time.time() - st.session_state["meditation_start_time"])
+               remaining = st.session_state["meditation_total_seconds"] - elapsed
+               if remaining > 0:
+                   mins, secs = divmod(remaining, 60)
+                   st.markdown(f"### ⏳ Tiempo restante: {mins:02d}:{secs:02d}")
+                
+                   st.info(
+                       f"Reproduce el audio {repeat_count} {'vez' if repeat_count==1 else 'veces'} para completar tu sesión de {minutes} minutos."
+                   )
+                   st.audio(audio_url)
+                   st.warning(
+                       "Por motivos de seguridad del navegador, debes volver a darle play al audio cuando termine para sesiones de más de 5 minutos."
+                   )
+                   st.experimental_rerun()
+               else:
+                   st.session_state["meditation_active"] = False
+                   st.success("¡La sesión ha finalizado! Puedes abrir los ojos y continuar tu día.")
 
     
     def _team_network(self):
