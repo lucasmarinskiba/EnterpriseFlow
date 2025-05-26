@@ -71,7 +71,7 @@ class DatabaseManager:
             'DELETE FROM personal_goals WHERE id=?',
             (goal_id,)
         )
-    self.conn.commit()
+        self.conn.commit()
     
     def verify_user(self, email, password):
         hashed_pw = hashlib.sha256(password.encode()).hexdigest()
