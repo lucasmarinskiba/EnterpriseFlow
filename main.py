@@ -340,6 +340,7 @@ class EnterpriseFlowApp:
             self._learning_portal()
             self._personal_goals()
             self._meditation_module()
+            self.relaxation_timer()
             self._team_network()
             self._workload_monitor()
             self._gamification_system()
