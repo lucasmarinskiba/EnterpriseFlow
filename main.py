@@ -1,5 +1,4 @@
 import streamlit as st
-import time
 import pandas as pd
 import sqlite3
 import hashlib
@@ -8,7 +7,7 @@ import numpy as np
 import datetime
 import os
 import stripe
-from fpdf import FPDF  # Importación corregida aqu
+from fpdf import FPDF  # Importación corregida aquí
 from database import DatabaseManager
 from pathlib import Path
 from payment_handler import PaymentHandler
@@ -19,6 +18,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
+import time
+import requests
 
 # Manejo de dependencias opcionales
 try:
