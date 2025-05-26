@@ -500,16 +500,51 @@ class EnterpriseFlowApp:
                         st.session_state.current_course = course['id']
 
     def _personal_goals(self):
-        with st.container(border=True):
-            st.subheader("🏆 Sistema de Metas Personales")
-            goal = st.text_input("Establece tu objetivo personal esta semana")
-            if st.button("Guardar Objetivo"):
-                self.db.save_personal_goal(
-                    user=st.session_state.current_user,
-                    goal=goal,
-                    deadline=datetime.datetime.now() + datetime.timedelta(days=7)
-                )
-                st.success("¡Objetivo guardado!")  # Corrección aplicada aquí
+        st.header("🏆 Sistema de Metas Personales")
+        user = st.session_state.current_user
+
+        with st.form(key="add_goal_form"):
+            new_goal = st.text_input("Establece tu objetivo personal esta semana")
+            submitted = st.form_submit_button("Guardar Objetivo")
+            if submitted and new_goal.strip():
+                self.db.save_personal_goal(user, new_goal.strip())
+                st.success("¡Objetivo guardado!")
+
+        st.markdown("#### Tus objetivos de esta semana:")
+
+        goals = self.db.get_personal_goals(user)
+        if not goals:
+            st.info("Aún no tienes objetivos registrados.")
+        else:
+            for goal_id, goal_text in goals:
+                col1, col2, col3 = st.columns([6,2,2])
+                if "edit_goal" not in st.session_state:
+                    st.session_state["edit_goal"] = {}
+
+                # Mostrar en modo edición o como texto normal
+                if st.session_state["edit_goal"].get(goal_id, False):
+                    with col1:
+                        edited_text = st.text_input(f"Edita objetivo {goal_id}", value=goal_text, key=f"edit_input_{goal_id}")
+                    with col2:
+                        if st.button("Guardar", key=f"save_btn_{goal_id}"):
+                            self.db.edit_personal_goal(goal_id, edited_text)
+                            st.session_state["edit_goal"][goal_id] = False
+                            st.experimental_rerun()
+                    with col3:
+                        if st.button("Cancelar", key=f"cancel_btn_{goal_id}"):
+                            st.session_state["edit_goal"][goal_id] = False
+                            st.experimental_rerun()
+                else:
+                    with col1:
+                        st.write(goal_text)
+                    with col2:
+                        if st.button("Editar", key=f"edit_btn_{goal_id}"):
+                            st.session_state["edit_goal"][goal_id] = True
+                            st.experimental_rerun()
+                    with col3:
+                        if st.button("Eliminar", key=f"delete_btn_{goal_id}"):
+                            self.db.delete_personal_goal(goal_id)
+                            st.experimental_rerun()
 
     def _meditation_module(self):
         with st.container(border=True):
