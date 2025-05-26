@@ -571,7 +571,7 @@ class EnterpriseFlowApp:
                 if remaining > 0:
                     mins, secs = divmod(remaining, 60)
                     st.markdown(f"### ⏳ Tiempo restante: {mins:02d}:{secs:02d}")
-                    st.audio("https://cdn.pixabay.com/download/audio/2023/03/19/audio_6d9dc48707.mp3")
+                    st.audio("https://pixabay.com/es/music/ambiente-yoga-meditation-music-328749/")
                     st.experimental_rerun()
                 else:
                     st.session_state["meditation_active"] = False
