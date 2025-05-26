@@ -340,7 +340,6 @@ class EnterpriseFlowApp:
             self._learning_portal()
             self._personal_goals()
             self._meditation_module()
-            self.relaxation_timer()
             self._team_network()
             self._workload_monitor()
             self._gamification_system()
@@ -551,46 +550,34 @@ class EnterpriseFlowApp:
     def _meditation_module(self):
         with st.container(border=True):
             st.subheader("🧘 Sesiones de Relajación")
-            duration = st.radio("Duración:", ["5 min", "10 min", "15 min"])
-            if st.button("Iniciar Meditación Guiada"):
-                st.audio("https://cdn.pixabay.com/download/audio/2023/03/19/audio_6d9dc48707.mp3")
-
-    def relaxation_timer():
-        st.header("🧘 Sesiones de Relajación")
-        with st.container(border=True):
-            st.write("Duración:")
-            duration = st.radio(
-                "", ["5 min", "10 min", "15 min"], 
-                format_func=lambda x: x, 
-                horizontal=False, 
-                key="relax_duration"
-            )
-            minutes = int(duration.split()[0])
+            duration_str = st.radio("Duración:", ["5 min", "10 min", "15 min"], key="meditation_duration")
+            minutes = int(duration_str.split()[0])
             seconds = minutes * 60
 
-            if "timer_running" not in st.session_state:
-                st.session_state["timer_running"] = False
-            if "timer_start_time" not in st.session_state:
-                st.session_state["timer_start_time"] = None
+            if "meditation_active" not in st.session_state:
+                st.session_state["meditation_active"] = False
+            if "meditation_start_time" not in st.session_state:
+                st.session_state["meditation_start_time"] = None
 
-            if st.button("Iniciar Meditación Guiada"):
-                st.session_state["timer_running"] = True
-                st.session_state["timer_start_time"] = time.time()
-                st.session_state["timer_seconds"] = seconds
+            if st.button("Iniciar Meditación Guiada", key="meditation_start_btn"):
+                st.session_state["meditation_active"] = True
+                st.session_state["meditation_start_time"] = time.time()
+                st.session_state["meditation_total_seconds"] = seconds
 
-            if st.session_state.get("timer_running", False):
-                elapsed = int(time.time() - st.session_state["timer_start_time"])
-                remaining = st.session_state["timer_seconds"] - elapsed
+            # Mostrar cronómetro solo si está activo
+            if st.session_state.get("meditation_active", False):
+                elapsed = int(time.time() - st.session_state["meditation_start_time"])
+                remaining = st.session_state["meditation_total_seconds"] - elapsed
                 if remaining > 0:
                     mins, secs = divmod(remaining, 60)
-                    st.subheader(f"⏳ Tiempo restante: {mins:02d}:{secs:02d}")
+                    st.markdown(f"### ⏳ Tiempo restante: {mins:02d}:{secs:02d}")
+                    st.audio("https://cdn.pixabay.com/download/audio/2023/03/19/audio_6d9dc48707.mp3")
                     st.experimental_rerun()
                 else:
-                    st.session_state["timer_running"] = False
-                    st.success("¡La sesión ha finalizado! 🚨 Puedes abrir los ojos y continuar tu día.")
+                    st.session_state["meditation_active"] = False
+                    st.success("¡La sesión ha finalizado! Puedes abrir los ojos y continuar tu día.")
 
-    relaxation_timer()
-
+    
     def _team_network(self):
         with st.container(border=True):
             st.subheader("👥 Mapa de Relaciones del Equipo")
