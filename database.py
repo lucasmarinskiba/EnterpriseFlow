@@ -33,7 +33,7 @@ class DatabaseManager:
                 dias_sin_incidentes INTEGER,
                 horas_sueno_promedio REAL,
                 pasos_diarios INTEGER
-            )'''
+            )''',  # <- CORRECCIÓN: agrega la coma aquí
             '''CREATE TABLE IF NOT EXISTS personal_goals (
                 id INTEGER PRIMARY KEY,
                 user_email TEXT,
@@ -146,4 +146,3 @@ class DatabaseManager:
                 (user, dias, sueno, pasos)
             )
         self.conn.commit()
-
