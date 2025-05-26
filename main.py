@@ -572,7 +572,7 @@ class EnterpriseFlowApp:
             if "timer_start_time" not in st.session_state:
                 st.session_state["timer_start_time"] = None
 
-            if st.button("Iniciar Meditación Guiada"):
+            if st.button("Iniciar Meditación Guiada", key=f"meditacion_guiada_btn_{duracion}"):
                 st.session_state["timer_running"] = True
                 st.session_state["timer_start_time"] = time.time()
                 st.session_state["timer_seconds"] = seconds
