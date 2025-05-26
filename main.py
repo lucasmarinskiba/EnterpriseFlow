@@ -555,17 +555,22 @@ class EnterpriseFlowApp:
             minutes = int(duration_str.split()[0])
             seconds = minutes * 60
 
-            # Definir los archivos de audio según la duración
+            # Ruta según la duración (cada archivo debe existir en assets/)
             if minutes == 5:
                 audio_path = "assets/meditacion.mp3"
             elif minutes == 10:
                 audio_path = "assets/meditacion2.mp3"
+            elif minutes == 15:
+                audio_path = "assets/meditacion3.mp3"
             else:
-                # Para 15 minutos puedes definir otro archivo o reutilizar uno existente
-                audio_path = "assets/meditacion2.mp3"  # O cambia por otro si tienes uno de 15 min
+                st.error("Duración no soportada.")
+                return
 
-            # Lee el archivo MP3 solo una vez
-            if "audio_bytes" not in st.session_state or st.session_state.get("audio_path") != audio_path:
+            # Leer el archivo MP3 solo una vez por cambio de audio
+            if (
+                "audio_bytes" not in st.session_state
+                or st.session_state.get("audio_path") != audio_path
+            ):
                 if os.path.exists(audio_path):
                     with open(audio_path, "rb") as f:
                         st.session_state["audio_bytes"] = f.read()
@@ -575,7 +580,7 @@ class EnterpriseFlowApp:
                     st.session_state["audio_path"] = None
 
             if st.session_state["audio_bytes"] is None:
-                st.error("No se encontró el archivo de audio de meditación.")
+                st.error("No se encontró el archivo de audio de meditación para esta duración.")
                 return
 
             if st.button("Iniciar Meditación Guiada", key="meditation_start_btn"):
