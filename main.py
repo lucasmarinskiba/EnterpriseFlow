@@ -554,11 +554,21 @@ class EnterpriseFlowApp:
             duration_str = st.radio("Duración:", ["5 min", "10 min", "15 min"], key="meditation_duration")
             minutes = int(duration_str.split()[0])
             seconds = minutes * 60
-            audio_url = "https://cdn.pixabay.com/audio/2022/10/16/audio_12b5fa0b79.mp3"
 
-            # Descargar el audio una vez para la descarga y reproducción (solo si lo necesitas local)
+            # Cambia esta ruta si tu audio está en otra carpeta
+            audio_path = "assets/meditacion.mp3"
+
+            # Lee el archivo MP3 sólo una vez
             if "audio_bytes" not in st.session_state:
-                st.session_state["audio_bytes"] = requests.get(audio_url).content
+                if os.path.exists(audio_path):
+                    with open(audio_path, "rb") as f:
+                        st.session_state["audio_bytes"] = f.read()
+                else:
+                    st.session_state["audio_bytes"] = None
+
+            if st.session_state["audio_bytes"] is None:
+                st.error("No se encontró el archivo de audio de meditación.")
+                return
 
             if st.button("Iniciar Meditación Guiada", key="meditation_start_btn"):
                 st.session_state["meditation_active"] = True
@@ -568,42 +578,22 @@ class EnterpriseFlowApp:
             if st.session_state.get("meditation_active", False):
                 elapsed = int(time.time() - st.session_state["meditation_start_time"])
                 remaining = st.session_state["meditation_total_seconds"] - elapsed
+                mins, secs = divmod(max(remaining, 0), 60)
+                st.markdown(f"### ⏳ Tiempo restante: {mins:02d}:{secs:02d}")
+
+                st.audio(st.session_state["audio_bytes"], format="audio/mp3")
+                st.download_button(
+                    label="Descargar música de meditación (MP3)",
+                    data=st.session_state["audio_bytes"],
+                    file_name="meditacion.mp3",
+                    mime="audio/mp3"
+                )
+
                 if remaining > 0:
-                    mins, secs = divmod(remaining, 60)
-                    st.markdown(f"### ⏳ Tiempo restante: {mins:02d}:{secs:02d}")
-
-                    # Mostrar solo un reproductor pero con loop automático html para el usuario
-                    loop_count = minutes // 5
-                    custom_audio_html = f"""
-                    <audio id="meditation-audio" src="{audio_url}" autoplay></audio>
-                    <script>
-                    var audio = document.getElementById('meditation-audio');
-                    var playCount = 1;
-                    var totalLoops = {loop_count};
-                    audio.onended = function() {{
-                        if(playCount < totalLoops) {{
-                            playCount += 1;
-                            audio.currentTime = 0;
-                            audio.play();
-                        }}
-                    }};
-                    </script>
-                    """
-                    st.markdown(custom_audio_html, unsafe_allow_html=True)
-                    
-                    # Botón de descarga simple
-                    st.download_button(
-                        label="Descargar música de meditación (MP3)",
-                        data=st.session_state["audio_bytes"],
-                        file_name="yoga-meditation-music-328749.mp3",
-                        mime="audio/mp3"
-                    )
-
                     st.experimental_rerun()
                 else:
                     st.session_state["meditation_active"] = False
                     st.success("¡La sesión ha finalizado! Puedes abrir los ojos y continuar tu día.")
-
     
     def _team_network(self):
         with st.container(border=True):
