@@ -566,16 +566,18 @@ class EnterpriseFlowApp:
 
             # Mostrar cronómetro solo si está activo
             if st.session_state.get("meditation_active", False):
-                elapsed = int(time.time() - st.session_state["meditation_start_time"])
-                remaining = st.session_state["meditation_total_seconds"] - elapsed
-                if remaining > 0:
-                    mins, secs = divmod(remaining, 60)
-                    st.markdown(f"### ⏳ Tiempo restante: {mins:02d}:{secs:02d}")
-                    st.audio("https://pixabay.com/es/music/ambiente-yoga-meditation-music-328749/")
-                    st.experimental_rerun()
-                else:
-                    st.session_state["meditation_active"] = False
-                    st.success("¡La sesión ha finalizado! Puedes abrir los ojos y continuar tu día.")
+            elapsed = int(time.time() - st.session_state["meditation_start_time"])
+            remaining = st.session_state["meditation_total_seconds"] - elapsed
+            if remaining > 0:
+                mins, secs = divmod(remaining, 60)
+                st.markdown(f"### ⏳ Tiempo restante: {mins:02d}:{secs:02d}")
+                st.audio("https://cdn.pixabay.com/audio/2022/10/16/audio_12b5fa0b79.mp3")  # Previsualización rápida
+                st.audio("https://cdn.pixabay.com/audio/2022/10/16/audio_12b5fa0b79.mp3")  # También puedes usar el link largo oficial
+                st.audio("https://pixabay.com/es/music/ambiente-yoga-meditation-music-328749/download/audio_12b5fa0b79.mp3?filename=yoga-meditation-music-328749.mp3")
+                st.experimental_rerun()
+            else:
+                st.session_state["meditation_active"] = False
+                st.success("¡La sesión ha finalizado! Puedes abrir los ojos y continuar tu día.")
 
     
     def _team_network(self):
