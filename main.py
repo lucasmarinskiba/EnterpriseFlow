@@ -576,8 +576,8 @@ class EnterpriseFlowApp:
                     st.audio("https://pixabay.com/es/music/ambiente-yoga-meditation-music-328749/download/audio_12b5fa0b79.mp3?filename=yoga-meditation-music-328749.mp3")
                     st.experimental_rerun()
                 else:
-                st.session_state["meditation_active"] = False
-                st.success("¡La sesión ha finalizado! Puedes abrir los ojos y continuar tu día.")
+                    st.session_state["meditation_active"] = False
+                    st.success("¡La sesión ha finalizado! Puedes abrir los ojos y continuar tu día.")
 
     
     def _team_network(self):
