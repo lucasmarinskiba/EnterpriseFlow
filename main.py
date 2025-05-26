@@ -547,7 +547,7 @@ class EnterpriseFlowApp:
                             self.db.delete_personal_goal(goal_id)
                             st.experimental_rerun()
 
-   def _meditation_module(self):
+    def _meditation_module(self):
        with st.container(border=True):
            st.subheader("🧘 Sesiones de Relajación")
            duration_str = st.radio("Duración:", ["5 min", "10 min", "15 min"], key="meditation_duration")
