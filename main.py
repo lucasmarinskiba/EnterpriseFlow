@@ -547,6 +547,13 @@ class EnterpriseFlowApp:
                             self.db.delete_personal_goal(goal_id)
                             st.experimental_rerun()
 
+    def _meditation_module(self):
+        with st.container(border=True):
+            st.subheader("🧘 Sesiones de Relajación")
+            duration = st.radio("Duración:", ["5 min", "10 min", "15 min"])
+            if st.button("Iniciar Meditación Guiada"):
+                st.audio("https://cdn.pixabay.com/download/audio/2023/03/19/audio_6d9dc48707.mp3")
+
     def relaxation_timer():
         st.header("🧘 Sesiones de Relajación")
         with st.container(border=True):
