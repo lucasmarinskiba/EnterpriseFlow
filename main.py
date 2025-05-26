@@ -555,16 +555,24 @@ class EnterpriseFlowApp:
             minutes = int(duration_str.split()[0])
             seconds = minutes * 60
 
-            # Cambia esta ruta si tu audio está en otra carpeta
-            audio_path = "assets/meditacion.mp3"
+            # Definir los archivos de audio según la duración
+            if minutes == 5:
+                audio_path = "assets/meditacion.mp3"
+            elif minutes == 10:
+                audio_path = "assets/meditacion2.mp3"
+            else:
+                # Para 15 minutos puedes definir otro archivo o reutilizar uno existente
+                audio_path = "assets/meditacion2.mp3"  # O cambia por otro si tienes uno de 15 min
 
-            # Lee el archivo MP3 sólo una vez
-            if "audio_bytes" not in st.session_state:
+            # Lee el archivo MP3 solo una vez
+            if "audio_bytes" not in st.session_state or st.session_state.get("audio_path") != audio_path:
                 if os.path.exists(audio_path):
                     with open(audio_path, "rb") as f:
                         st.session_state["audio_bytes"] = f.read()
+                    st.session_state["audio_path"] = audio_path
                 else:
                     st.session_state["audio_bytes"] = None
+                    st.session_state["audio_path"] = None
 
             if st.session_state["audio_bytes"] is None:
                 st.error("No se encontró el archivo de audio de meditación.")
@@ -585,7 +593,7 @@ class EnterpriseFlowApp:
                 st.download_button(
                     label="Descargar música de meditación (MP3)",
                     data=st.session_state["audio_bytes"],
-                    file_name="meditacion.mp3",
+                    file_name=os.path.basename(audio_path),
                     mime="audio/mp3"
                 )
 
