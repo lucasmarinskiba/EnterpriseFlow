@@ -543,15 +543,15 @@ class EnterpriseFlowApp:
                         unsafe_allow_html=True
                     )
 
-                # Enlace a la plataforma
-                st.markdown(
-                    f"[Ir al curso]({course['url']})", 
-                    unsafe_allow_html=True
-                )
+               # Enlace a la plataforma
+               st.markdown(
+                   f"[Ir al curso]({course['url']})", 
+                   unsafe_allow_html=True
+               )
             
-                # Control para actualizar progreso
-                new_prog = st.slider(
-                    "Actualizar progreso (%)", 
+               # Control para actualizar progreso
+               new_prog = st.slider(
+                   "Actualizar progreso (%)", 
                     0, 100, int(course["progress"]*100), 
                     key=f"prog_{course['id']}")
                 if new_prog != int(course["progress"]*100):
