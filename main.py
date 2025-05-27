@@ -66,10 +66,40 @@ class EnterpriseFlowApp:
             self._show_main_interface()
 
     def _rewards_header(self):
-        # Puedes reemplazar estos valores por los almacenados por usuario si quieres
-        puntos = "1,250"
-        nivel = "5"
-        insignias = "3/10"
+        # Inicializa los valores si no existen en session_state
+        user = st.session_state.current_user
+        if 'rewards' not in st.session_state:
+            st.session_state['rewards'] = {}
+        if user not in st.session_state['rewards']:
+            st.session_state['rewards'][user] = {
+                'puntos': 0,
+                'nivel': 1,
+                'insignias': 0,
+                'tareas_completadas': 0,
+                'logros': []
+            }
+
+        # Alias para facilidad
+        user_rewards = st.session_state['rewards'][user]
+
+        # Simulación de avance (solo para demo: reemplaza o elimina esto según tu lógica real)
+        # Si tienes self.db, aquí deberías consultar cuántas tareas/logros ha hecho el usuario y actualizar los puntos
+        if st.button("Completar tarea", key="btn_completar_tarea"):
+            user_rewards['tareas_completadas'] += 1
+            user_rewards['puntos'] += 100  # Por ejemplo, cada tarea suma 100 puntos
+
+        if st.button("Logro especial (+insignia)", key="btn_logro_especial"):
+            user_rewards['logros'].append(f"Logro {len(user_rewards['logros'])+1}")
+            user_rewards['puntos'] += 250
+            user_rewards['insignias'] += 1
+
+        # Lógica de nivelación: cada 500 puntos, sube de nivel
+        user_rewards['nivel'] = max(1, user_rewards['puntos'] // 500 + 1)
+
+        # Lógica de insignias extra por hitos de puntos
+        user_rewards['insignias'] += user_rewards['puntos'] // 1000 - user_rewards['insignias']
+
+        # Render compacto
         st.markdown(
             f"""
             <div style="
@@ -86,12 +116,12 @@ class EnterpriseFlowApp:
                     <b style="font-size:1.04rem;">Sistema de Recompensas</b>
                     <span style="flex:1;"></span>
                     <span style="font-size:0.97rem;display:flex;align-items:center;gap:2px;">
-                       🥇
-                        <span style="margin-left:2px;margin-right:10px;"><b>{puntos}</b></span>
+                        🥇
+                        <span style="margin-left:2px;margin-right:10px;"><b>{user_rewards['puntos']:,}</b></span>
                         🌟
-                        <span style="margin-left:2px;margin-right:10px;"><b>{nivel}</b></span>
+                        <span style="margin-left:2px;margin-right:10px;"><b>{user_rewards['nivel']}</b></span>
                         🏆
-                        <span style="margin-left:2px;"><b>{insignias}</b></span>
+                        <span style="margin-left:2px;"><b>{user_rewards['insignias']}</b></span>
                     </span>
                 </div>
             </div>
