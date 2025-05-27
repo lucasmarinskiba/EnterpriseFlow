@@ -719,13 +719,13 @@ class EnterpriseFlowApp:
                     "id": 2,
                     "title": "Liderazgo Efectivo",
                     "progress": 0.7,
-                    "url": "https://www.linkedin.com/learning/liderazgo-efectivo-para-nuevos-lideres"
+                    "url": "https://www.linkedin.com/learning/search?entityType=COURSE&keywords=liderazgo&language=es_ES"
                 },
                {
                     "id": 3,
                     "title": "Inteligencia Emocional",
                     "progress": 0.2,
-                    "url": "https://www.coursera.org/learn/inteligencia-emocional"
+                    "url": "https://www.linkedin.com/learning/search?entityType=COURSE&keywords=inteligencia&language=es_ES"
                }
             ]
 
