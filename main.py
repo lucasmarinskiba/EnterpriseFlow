@@ -93,7 +93,7 @@ class EnterpriseFlowApp:
     def _show_main_interface(self):
         menu = st.sidebar.radio(
             "Menú Principal",
-            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "🔒 Feedback Anónimo", "⚖️ Cumplimiento", "💳 Suscripción"]
+            ["🏠 Inicio", "🤖 Automatización", "😌 Bienestar", "🎓 Aprendizaje", "🔒 Feedback Anónimo", "⚖️ Cumplimiento", "💳 Suscripción"]
         )
         
         if menu == "🏠 Inicio":
@@ -102,6 +102,8 @@ class EnterpriseFlowApp:
             self._show_automation()
         elif menu == "😌 Bienestar":
             self._show_wellness()
+        elif menu == "🎓 Aprendizaje":
+            self._learning_portal()
         elif menu == "🔒 Feedback Anónimo":
             self._show_feedback_system()
         elif menu == "⚖️ Cumplimiento":
@@ -338,7 +340,6 @@ class EnterpriseFlowApp:
             st.markdown("---")
             self._health_dashboard()
             self._smart_breaks()
-            self._learning_portal()
             self._personal_goals()
             self._meditation_module()
             self._team_network()
@@ -486,81 +487,6 @@ class EnterpriseFlowApp:
         }
         st.success(f"Descansos programados cada {frequency} minutos por {duration} minutos")
 
-    def _learning_portal(self):
-        st.subheader("🎓 Plataforma de Aprendizaje")
-
-        user_key = f"learning_courses_{st.session_state.current_user}"
-        if user_key not in st.session_state:
-            st.session_state[user_key] = [
-                {
-                    "id": 1,
-                    "title": "Gestión del Tiempo",
-                    "progress": 0.4,
-                    "url": "https://www.udemy.com/course/gestion-del-tiempo/"
-                },
-                {
-                    "id": 2,
-                    "title": "Liderazgo Efectivo",
-                    "progress": 0.7,
-                    "url": "https://www.linkedin.com/learning/liderazgo-efectivo-para-nuevos-lideres"
-                },
-                {
-                    "id": 3,
-                    "title": "Inteligencia Emocional",
-                    "progress": 0.2,
-                    "url": "https://www.coursera.org/learn/inteligencia-emocional"
-                }
-            ]
-
-        # 1. Expander fuera de cualquier container
-        expander = st.expander("➕ Agregar nuevo curso vinculado", expanded=False)
-        with expander:
-            with st.form("add_course_form", clear_on_submit=True):
-                new_title = st.text_input("Nombre del curso")
-                new_url = st.text_input("Enlace al curso (Udemy, Coursera, Linkedin, etc.)")
-                submitted = st.form_submit_button("Agregar curso")
-                if submitted:
-                    if new_title and new_url:
-                        next_id = max([c["id"] for c in st.session_state[user_key]] + [0]) + 1
-                        st.session_state[user_key].append({
-                            "id": next_id,
-                            "title": new_title,
-                            "progress": 0.0,
-                            "url": new_url
-                        })
-                        st.success("¡Curso agregado!")
-                    else:
-                        st.warning("Completa todos los campos.")
-
-        # 2. Mostrar cursos existentes
-        for course in st.session_state[user_key]:
-            with st.container():
-                st.markdown(f"**{course['title']}**")
-                c1, c2 = st.columns([5,1])
-                with c1:
-                    st.progress(course["progress"])
-                with c2:
-                    st.markdown(
-                        f"<span style='font-size:18px;color:#007bff;font-weight:bold'>{int(course['progress']*100)}%</span>",
-                        unsafe_allow_html=True
-                    )
-                st.markdown(
-                    f"[Ir al curso]({course['url']})",
-                    unsafe_allow_html=True
-                )
-                new_prog = st.slider(
-                    "Actualizar progreso (%)",
-                    0, 100, int(course["progress"]*100),
-                    key=f"prog_{course['id']}")
-                if new_prog != int(course["progress"]*100):
-                    course["progress"] = new_prog / 100.0
-                    st.experimental_rerun()
-                if st.button(f"Eliminar {course['title']}", key=f"del_{course['id']}"):
-                    st.session_state[user_key] = [
-                        c for c in st.session_state[user_key] if c["id"] != course["id"]
-                    ]
-                    st.experimental_rerun()
-    
     def _personal_goals(self):
         st.header("🏆 Sistema de Metas Personales")
         user = st.session_state.current_user
@@ -777,6 +703,79 @@ class EnterpriseFlowApp:
             with col3:
                 st.metric("🏆 Insignias", "3/10")
 
+    def _learning_portal(self):
+        st.subheader("🎓 Plataforma de Aprendizaje")
+
+        user_key = f"learning_courses_{st.session_state.current_user}"
+        if user_key not in st.session_state:
+            st.session_state[user_key] = [
+                {
+                    "id": 1,
+                    "title": "Gestión del Tiempo",
+                    "progress": 0.4,
+                    "url": "https://www.udemy.com/course/gestion-del-tiempo/"
+                },
+               {
+                    "id": 2,
+                    "title": "Liderazgo Efectivo",
+                    "progress": 0.7,
+                    "url": "https://www.linkedin.com/learning/liderazgo-efectivo-para-nuevos-lideres"
+                },
+               {
+                    "id": 3,
+                    "title": "Inteligencia Emocional",
+                    "progress": 0.2,
+                    "url": "https://www.coursera.org/learn/inteligencia-emocional"
+               }
+            ]
+
+        expander = st.expander("➕ Agregar nuevo curso vinculado", expanded=False)
+        with expander:
+            with st.form("add_course_form", clear_on_submit=True):
+                new_title = st.text_input("Nombre del curso")
+                new_url = st.text_input("Enlace al curso (Udemy, Coursera, Linkedin, etc.)")
+                submitted = st.form_submit_button("Agregar curso")
+                if submitted:
+                    if new_title and new_url:
+                        next_id = max([c["id"] for c in st.session_state[user_key]] + [0]) + 1
+                        st.session_state[user_key].append({
+                            "id": next_id,
+                            "title": new_title,
+                            "progress": 0.0,
+                            "url": new_url
+                        })
+                        st.success("¡Curso agregado!")
+                    else:
+                        st.warning("Completa todos los campos.")
+
+        for course in st.session_state[user_key]:
+            with st.container():
+                st.markdown(f"**{course['title']}**")
+                c1, c2 = st.columns([5,1])
+                with c1:
+                    st.progress(course["progress"])
+                with c2:
+                    st.markdown(
+                        f"<span style='font-size:18px;color:#007bff;font-weight:bold'>{int(course['progress']*100)}%</span>",
+                        unsafe_allow_html=True
+                    )
+                st.markdown(
+                    f"[Ir al curso]({course['url']})",
+                    unsafe_allow_html=True
+                )
+                new_prog = st.slider(
+                    "Actualizar progreso (%)",
+                    0, 100, int(course["progress"]*100),
+                    key=f"prog_{course['id']}")
+                if new_prog != int(course["progress"]*100):
+                    course["progress"] = new_prog / 100.0
+                    st.experimental_rerun()
+                if st.button(f"Eliminar {course['title']}", key=f"del_{course['id']}"):
+                    st.session_state[user_key] = [
+                        c for c in st.session_state[user_key] if c["id"] != course["id"]
+                    ]
+                    st.experimental_rerun()
+    
     def _show_compliance(self):
         with st.expander("⚖️ Auditoría Normativa", expanded=True):
             uploaded_file = st.file_uploader("Subir Documento", type=["txt", "docx", "pdf"])
