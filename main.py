@@ -502,7 +502,7 @@ class EnterpriseFlowApp:
                 {
                     "id": 2,
                     "title": "Liderazgo Efectivo",
-                    "progress": 0.9,
+                    "progress": 0.7,
                     "url": "https://www.linkedin.com/learning/liderazgo-efectivo-para-nuevos-lideres"
                 },
                 {
@@ -513,7 +513,7 @@ class EnterpriseFlowApp:
                 }
             ]
 
-         # Sección para agregar un nuevo curso personalizado
+        # Sección para agregar un nuevo curso personalizado (NO dentro de container)
         with st.expander("➕ Agregar nuevo curso vinculado"):
             with st.form("add_course_form"):
                 new_title = st.text_input("Nombre del curso")
@@ -531,11 +531,17 @@ class EnterpriseFlowApp:
         # Mostrar cursos
         for course in st.session_state[user_key]:
             with st.container(border=True):
-                st.markdown(f"**{course['title']}**")
-                # Barra de progreso y porcentaje
-                st.progress(course["progress"])
-                st.markdown(f"<span style='font-size:18px;color:#007bff;font-weight:bold'>{int(course['progress']*100)}%</span>",
-                            unsafe_allow_html=True)
+               st.markdown(f"**{course['title']}**")
+            
+                # Barra de progreso y porcentaje numérico
+                col1, col2 = st.columns([5,1])
+                with col1:
+                    st.progress(course["progress"])
+                with col2:
+                    st.markdown(
+                        f"<span style='font-size:18px;color:#007bff;font-weight:bold'>{int(course['progress']*100)}%</span>",
+                        unsafe_allow_html=True
+                    )
 
                 # Enlace a la plataforma
                 st.markdown(
@@ -545,9 +551,9 @@ class EnterpriseFlowApp:
             
                 # Control para actualizar progreso
                 new_prog = st.slider(
-                     "Actualizar progreso (%)", 
-                     0, 100, int(course["progress"]*100), 
-                     key=f"prog_{course['id']}")
+                    "Actualizar progreso (%)", 
+                    0, 100, int(course["progress"]*100), 
+                    key=f"prog_{course['id']}")
                 if new_prog != int(course["progress"]*100):
                     course["progress"] = new_prog / 100.0
                     st.experimental_rerun()
