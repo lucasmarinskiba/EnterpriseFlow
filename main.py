@@ -513,7 +513,7 @@ class EnterpriseFlowApp:
                 }
             ]
 
-        # Sección para agregar un nuevo curso personalizado (NO dentro de container)
+        # PRIMERO el expander (fuera de cualquier container)
         with st.expander("➕ Agregar nuevo curso vinculado"):
             with st.form("add_course_form"):
                 new_title = st.text_input("Nombre del curso")
@@ -528,42 +528,34 @@ class EnterpriseFlowApp:
                     })
                     st.success("¡Curso agregado!")
 
-        # Mostrar cursos
+        # LUEGO los containers para los cursos
         for course in st.session_state[user_key]:
             with st.container(border=True):
-               st.markdown(f"**{course['title']}**")
-            
-               # Barra de progreso y porcentaje numérico
-               col1, col2 = st.columns([5,1])
-               with col1:
+                st.markdown(f"**{course['title']}**")
+                col1, col2 = st.columns([5,1])
+                with col1:
                     st.progress(course["progress"])
-               with col2:
+                with col2:
                     st.markdown(
                         f"<span style='font-size:18px;color:#007bff;font-weight:bold'>{int(course['progress']*100)}%</span>",
                         unsafe_allow_html=True
                     )
-
-               # Enlace a la plataforma
-               st.markdown(
-                   f"[Ir al curso]({course['url']})", 
-                   unsafe_allow_html=True
-               )
-            
-               # Control para actualizar progreso
-               new_prog = st.slider(
-                   "Actualizar progreso (%)", 
-                    0, 100, int(course["progress"]*100), 
+                st.markdown(
+                    f"[Ir al curso]({course['url']})",
+                    unsafe_allow_html=True
+                 )
+                new_prog = st.slider(
+                    "Actualizar progreso (%)",
+                    0, 100, int(course["progress"]*100),
                     key=f"prog_{course['id']}")
-               if new_prog != int(course["progress"]*100):
-                   course["progress"] = new_prog / 100.0
-                   st.experimental_rerun()
-
-               # Botón para eliminar curso
-               if st.button(f"Eliminar {course['title']}", key=f"del_{course['id']}"):
-                   st.session_state[user_key] = [
-                       c for c in st.session_state[user_key] if c["id"] != course["id"]
-                   ]
-                   st.experimental_rerun()
+                if new_prog != int(course["progress"]*100):
+                    course["progress"] = new_prog / 100.0
+                    st.experimental_rerun()
+                if st.button(f"Eliminar {course['title']}", key=f"del_{course['id']}"):
+                    st.session_state[user_key] = [
+                        c for c in st.session_state[user_key] if c["id"] != course["id"]
+                    ]
+                    st.experimental_rerun()
 
     def _personal_goals(self):
         st.header("🏆 Sistema de Metas Personales")
