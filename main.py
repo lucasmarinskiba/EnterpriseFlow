@@ -533,9 +533,9 @@ class EnterpriseFlowApp:
             with st.container(border=True):
                st.markdown(f"**{course['title']}**")
             
-                # Barra de progreso y porcentaje numérico
-                col1, col2 = st.columns([5,1])
-                with col1:
+               # Barra de progreso y porcentaje numérico
+               col1, col2 = st.columns([5,1])
+               with col1:
                     st.progress(course["progress"])
                 with col2:
                     st.markdown(
