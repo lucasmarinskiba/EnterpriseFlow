@@ -70,32 +70,34 @@ class EnterpriseFlowApp:
         puntos = "1,250"
         nivel = "5"
         insignias = "3/10"
-        with st.container():
-            st.markdown(
-                """
-                <div style="background-color:#f7f7fa;border-radius:10px;padding:0.5rem 1.5rem 0.1rem 1.5rem;margin-bottom:15px;">
-                    <div style="display:flex;align-items:center;">
-                        <span style="font-size:2rem;margin-right:14px;">🎮</span>
-                        <span style="font-size:1.5rem;font-weight:bold;">Sistema de Recompensas</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;padding-top:0.6rem;">
-                        <div style="text-align:center;flex:1;">
-                            <span style="font-size:1rem;display:block;">🥇 Puntos Acumulados</span>
-                            <span style="font-size:2rem;font-weight:bold;">{puntos}</span>
-                        </div>
-                        <div style="text-align:center;flex:1;">
-                            <span style="font-size:1rem;display:block;">🌟 Nivel Actual</span>
-                            <span style="font-size:2rem;font-weight:bold;">{nivel}</span>
-                        </div>
-                        <div style="text-align:center;flex:1;">
-                            <span style="font-size:1rem;display:block;">🏆 Insignias</span>
-                            <span style="font-size:2rem;font-weight:bold;">{insignias}</span>
-                        </div>
-                    </div>
+        st.markdown(
+            f"""
+            <div style="
+                background-color:#f7f7fa;
+                border-radius:8px;
+                padding:0.2rem 1rem 0.1rem 1rem;
+                margin-bottom:10px;
+                margin-top:0px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.04);
+                border:1px solid #ededed;
+                ">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:1.35rem;margin-right:6px;">🎮</span>
+                    <b style="font-size:1.04rem;">Sistema de Recompensas</b>
+                    <span style="flex:1;"></span>
+                    <span style="font-size:0.97rem;display:flex;align-items:center;gap:2px;">
+                       🥇
+                        <span style="margin-left:2px;margin-right:10px;"><b>{puntos}</b></span>
+                        🌟
+                        <span style="margin-left:2px;margin-right:10px;"><b>{nivel}</b></span>
+                        🏆
+                        <span style="margin-left:2px;"><b>{insignias}</b></span>
+                    </span>
                 </div>
-                """.format(puntos=puntos, nivel=nivel, insignias=insignias),
-                unsafe_allow_html=True
-            )
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
     
     def _show_login(self):
         with st.sidebar:
