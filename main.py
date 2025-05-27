@@ -609,18 +609,90 @@ class EnterpriseFlowApp:
                     st.success("¡La sesión ha finalizado! Puedes abrir los ojos y continuar tu día.")
     
     def _team_network(self):
-        with st.container(border=True):
-            st.subheader("👥 Mapa de Relaciones del Equipo")
-            st.graphviz_chart('''
-                digraph {
-                    "CEO" -> "Gerente"
-                    "Gerente" -> "Equipo A"
-                    "Gerente" -> "Equipo B"
-                    "Equipo A" -> "Miembro 1"
-                    "Equipo A" -> "Miembro 2"
-                    "Equipo B" -> "Miembro 3"
-                }
-            ''')
+        import json
+        st.subheader("👥 Mapa de Relaciones del Equipo")
+
+        user_key = f"team_graph_{st.session_state.current_user}"
+        if user_key not in st.session_state:
+            # Estructura inicial por defecto
+            st.session_state[user_key] = {
+                "nodes": ["CEO", "Gerente", "Equipo A", "Equipo B", "Miembro 1", "Miembro 2", "Miembro 3"],
+                "edges": [
+                    ("CEO", "Gerente"),
+                    ("Gerente", "Equipo A"),
+                    ("Gerente", "Equipo B"),
+                    ("Equipo A", "Miembro 1"),
+                    ("Equipo A", "Miembro 2"),
+                    ("Equipo B", "Miembro 3"),
+                ]
+            }
+
+        # Estado de edición
+        edit_state_key = f"edit_team_graph_{st.session_state.current_user}"
+        if edit_state_key not in st.session_state:
+            st.session_state[edit_state_key] = False
+
+        # Botón para alternar edición
+        if st.button("Editar" if not st.session_state[edit_state_key] else "Terminar Edición", key="edit_team_graph_btn"):
+             st.session_state[edit_state_key] = not st.session_state[edit_state_key]
+
+        graph = st.session_state[user_key]
+
+        if st.session_state[edit_state_key]:
+            st.markdown("#### Nodos (Personas/Equipos)")
+            with st.form("add_node_form"):
+                new_node = st.text_input("Agregar nuevo nodo (nombre)")
+                add_node = st.form_submit_button("Agregar Nodo")
+                if add_node and new_node.strip():
+                    if new_node not in graph["nodes"]:
+                        graph["nodes"].append(new_node.strip())
+                    else:
+                        st.warning("Ese nodo ya existe.")
+
+            if len(graph["nodes"]) > 0:
+                node_to_remove = st.selectbox("Eliminar nodo", [""] + graph["nodes"], key="remove_node")
+                if node_to_remove and st.button("Eliminar Nodo"):
+                    # Elimina el nodo y todas sus relaciones
+                    graph["nodes"].remove(node_to_remove)
+                    graph["edges"] = [e for e in graph["edges"] if e[0] != node_to_remove and e[1] != node_to_remove]
+
+            st.markdown("#### Flechas (Relaciones)")
+            if len(graph["nodes"]) >= 2:
+                with st.form("add_edge_form"):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        from_node = st.selectbox("Desde", graph["nodes"], key="from_node")
+                    with col2:
+                        to_node = st.selectbox("Hacia", graph["nodes"], key="to_node")
+                    add_edge = st.form_submit_button("Agregar Flecha")
+                    if add_edge and from_node != to_node:
+                        if (from_node, to_node) not in graph["edges"]:
+                            graph["edges"].append((from_node, to_node))
+                        else:
+                            st.warning("Esa flecha ya existe.")
+
+            if len(graph["edges"]) > 0:
+                edge_to_remove = st.selectbox(
+                    "Eliminar flecha",
+                    [""] + [f"{a} → {b}" for a, b in graph["edges"]],
+                    key="remove_edge"
+                )
+                if edge_to_remove and st.button("Eliminar Flecha"):
+                     edge_tuple = tuple(edge_to_remove.split(" → "))
+                    if edge_tuple in graph["edges"]:
+                        graph["edges"].remove(edge_tuple)
+
+            # Actualiza el estado tras cambios
+            st.session_state[user_key] = graph
+
+         # Mostrar el grafo con graphviz
+        dot = "digraph {\n"
+        for node in graph["nodes"]:
+            dot += f'    "{node}" [shape=ellipse];\n'
+        for a, b in graph["edges"]:
+            dot += f'    "{a}" -> "{b}";\n'
+        dot += "}"
+        st.graphviz_chart(dot)
 
     def _workload_monitor(self):
         with st.container(border=True):
