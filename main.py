@@ -554,16 +554,16 @@ class EnterpriseFlowApp:
                    "Actualizar progreso (%)", 
                     0, 100, int(course["progress"]*100), 
                     key=f"prog_{course['id']}")
-                if new_prog != int(course["progress"]*100):
-                    course["progress"] = new_prog / 100.0
-                    st.experimental_rerun()
+               if new_prog != int(course["progress"]*100):
+                   course["progress"] = new_prog / 100.0
+                   st.experimental_rerun()
 
-                # Botón para eliminar curso
-                if st.button(f"Eliminar {course['title']}", key=f"del_{course['id']}"):
-                    st.session_state[user_key] = [
-                        c for c in st.session_state[user_key] if c["id"] != course["id"]
-                    ]
-                    st.experimental_rerun()
+               # Botón para eliminar curso
+               if st.button(f"Eliminar {course['title']}", key=f"del_{course['id']}"):
+                   st.session_state[user_key] = [
+                       c for c in st.session_state[user_key] if c["id"] != course["id"]
+                   ]
+                   st.experimental_rerun()
 
     def _personal_goals(self):
         st.header("🏆 Sistema de Metas Personales")
