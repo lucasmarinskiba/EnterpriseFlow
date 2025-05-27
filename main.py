@@ -491,7 +491,6 @@ class EnterpriseFlowApp:
 
         user_key = f"learning_courses_{st.session_state.current_user}"
         if user_key not in st.session_state:
-            # Estructura inicial/demo
             st.session_state[user_key] = [
                 {
                     "id": 1,
@@ -513,29 +512,34 @@ class EnterpriseFlowApp:
                 }
             ]
 
-        # PRIMERO el expander (fuera de cualquier container)
-        with st.expander("➕ Agregar nuevo curso vinculado"):
-            with st.form("add_course_form"):
+        # 1. Expander fuera de cualquier container
+        expander = st.expander("➕ Agregar nuevo curso vinculado", expanded=False)
+        with expander:
+            with st.form("add_course_form", clear_on_submit=True):
                 new_title = st.text_input("Nombre del curso")
                 new_url = st.text_input("Enlace al curso (Udemy, Coursera, Linkedin, etc.)")
-                if st.form_submit_button("Agregar curso") and new_title and new_url:
-                    next_id = max([c["id"] for c in st.session_state[user_key]] + [0]) + 1
-                    st.session_state[user_key].append({
-                        "id": next_id,
-                        "title": new_title,
-                        "progress": 0.0,
-                        "url": new_url
-                    })
-                    st.success("¡Curso agregado!")
+                submitted = st.form_submit_button("Agregar curso")
+                if submitted:
+                    if new_title and new_url:
+                        next_id = max([c["id"] for c in st.session_state[user_key]] + [0]) + 1
+                        st.session_state[user_key].append({
+                            "id": next_id,
+                            "title": new_title,
+                            "progress": 0.0,
+                            "url": new_url
+                        })
+                        st.success("¡Curso agregado!")
+                    else:
+                        st.warning("Completa todos los campos.")
 
-        # LUEGO los containers para los cursos
+        # 2. Mostrar cursos existentes
         for course in st.session_state[user_key]:
-            with st.container(border=True):
+            with st.container():
                 st.markdown(f"**{course['title']}**")
-                col1, col2 = st.columns([5,1])
-                with col1:
+                c1, c2 = st.columns([5,1])
+                with c1:
                     st.progress(course["progress"])
-                with col2:
+                with c2:
                     st.markdown(
                         f"<span style='font-size:18px;color:#007bff;font-weight:bold'>{int(course['progress']*100)}%</span>",
                         unsafe_allow_html=True
@@ -543,9 +547,9 @@ class EnterpriseFlowApp:
                 st.markdown(
                     f"[Ir al curso]({course['url']})",
                     unsafe_allow_html=True
-                 )
+                )
                 new_prog = st.slider(
-                    "Actualizar progreso (%)",
+                   "Actualizar progreso (%)",
                     0, 100, int(course["progress"]*100),
                     key=f"prog_{course['id']}")
                 if new_prog != int(course["progress"]*100):
@@ -556,7 +560,7 @@ class EnterpriseFlowApp:
                         c for c in st.session_state[user_key] if c["id"] != course["id"]
                     ]
                     st.experimental_rerun()
-
+    
     def _personal_goals(self):
         st.header("🏆 Sistema de Metas Personales")
         user = st.session_state.current_user
