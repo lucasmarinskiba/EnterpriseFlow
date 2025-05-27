@@ -549,7 +549,7 @@ class EnterpriseFlowApp:
                     unsafe_allow_html=True
                 )
                 new_prog = st.slider(
-                   "Actualizar progreso (%)",
+                    "Actualizar progreso (%)",
                     0, 100, int(course["progress"]*100),
                     key=f"prog_{course['id']}")
                 if new_prog != int(course["progress"]*100):
