@@ -62,8 +62,41 @@ class EnterpriseFlowApp:
         if not st.session_state.logged_in:
             self._show_login()
         else:
+            self._rewards_header()
             self._show_main_interface()
 
+    def _rewards_header(self):
+        # Puedes reemplazar estos valores por los almacenados por usuario si quieres
+        puntos = "1,250"
+        nivel = "5"
+        insignias = "3/10"
+        with st.container():
+            st.markdown(
+                """
+                <div style="background-color:#f7f7fa;border-radius:10px;padding:0.5rem 1.5rem 0.1rem 1.5rem;margin-bottom:15px;">
+                    <div style="display:flex;align-items:center;">
+                        <span style="font-size:2rem;margin-right:14px;">🎮</span>
+                        <span style="font-size:1.5rem;font-weight:bold;">Sistema de Recompensas</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding-top:0.6rem;">
+                        <div style="text-align:center;flex:1;">
+                            <span style="font-size:1rem;display:block;">🥇 Puntos Acumulados</span>
+                            <span style="font-size:2rem;font-weight:bold;">{puntos}</span>
+                        </div>
+                        <div style="text-align:center;flex:1;">
+                            <span style="font-size:1rem;display:block;">🌟 Nivel Actual</span>
+                            <span style="font-size:2rem;font-weight:bold;">{nivel}</span>
+                        </div>
+                        <div style="text-align:center;flex:1;">
+                            <span style="font-size:1rem;display:block;">🏆 Insignias</span>
+                            <span style="font-size:2rem;font-weight:bold;">{insignias}</span>
+                        </div>
+                    </div>
+                </div>
+                """.format(puntos=puntos, nivel=nivel, insignias=insignias),
+                unsafe_allow_html=True
+            )
+    
     def _show_login(self):
         with st.sidebar:
             st.header("Bienvenido a EnterpriseFlow")
