@@ -66,40 +66,20 @@ class EnterpriseFlowApp:
             self._show_main_interface()
 
     def _rewards_header(self):
-        # Inicializa los valores si no existen en session_state
         user = st.session_state.current_user
-        if 'rewards' not in st.session_state:
-            st.session_state['rewards'] = {}
-        if user not in st.session_state['rewards']:
-            st.session_state['rewards'][user] = {
-                'puntos': 0,
-                'nivel': 1,
-                'insignias': 0,
-                'tareas_completadas': 0,
-                'logros': []
-            }
 
-        # Alias para facilidad
-        user_rewards = st.session_state['rewards'][user]
+        # Ejemplo: estos datos deberían venir de tu base de datos o tu lógica real de avance
+        # Simulación para el ejemplo (reemplaza los valores aquí por tus consultas reales):
+        tareas_completadas = self.db.get_completed_tasks_count(user) if hasattr(self.db, "get_completed_tasks_count") else 12
+        logros = self.db.get_user_achievements(user) if hasattr(self.db, "get_user_achievements") else ["Inicio de sesión diario", "Primer tarea completada"]
+        dias_constancia = self.db.get_user_streak_days(user) if hasattr(self.db, "get_user_streak_days") else 7
 
-        # Simulación de avance (solo para demo: reemplaza o elimina esto según tu lógica real)
-        # Si tienes self.db, aquí deberías consultar cuántas tareas/logros ha hecho el usuario y actualizar los puntos
-        if st.button("Completar tarea", key="btn_completar_tarea"):
-            user_rewards['tareas_completadas'] += 1
-            user_rewards['puntos'] += 100  # Por ejemplo, cada tarea suma 100 puntos
+        # Lógica de puntos y recompensas automática:
+        puntos = tareas_completadas * 100 + len(logros) * 250 + dias_constancia * 10
+        nivel = max(1, puntos // 500 + 1)
+        # Insignias: 1 por cada 5 tareas completadas + 1 por cada 1000 puntos + 1 por cada 7 días de constancia
+        insignias = (tareas_completadas // 5) + (puntos // 1000) + (dias_constancia // 7)
 
-        if st.button("Logro especial (+insignia)", key="btn_logro_especial"):
-            user_rewards['logros'].append(f"Logro {len(user_rewards['logros'])+1}")
-            user_rewards['puntos'] += 250
-            user_rewards['insignias'] += 1
-
-        # Lógica de nivelación: cada 500 puntos, sube de nivel
-        user_rewards['nivel'] = max(1, user_rewards['puntos'] // 500 + 1)
-
-        # Lógica de insignias extra por hitos de puntos
-        user_rewards['insignias'] += user_rewards['puntos'] // 1000 - user_rewards['insignias']
-
-        # Render compacto
         st.markdown(
             f"""
             <div style="
@@ -117,11 +97,11 @@ class EnterpriseFlowApp:
                     <span style="flex:1;"></span>
                     <span style="font-size:0.97rem;display:flex;align-items:center;gap:2px;">
                         🥇
-                        <span style="margin-left:2px;margin-right:10px;"><b>{user_rewards['puntos']:,}</b></span>
+                        <span style="margin-left:2px;margin-right:10px;"><b>{puntos:,}</b></span>
                         🌟
-                        <span style="margin-left:2px;margin-right:10px;"><b>{user_rewards['nivel']}</b></span>
+                        <span style="margin-left:2px;margin-right:10px;"><b>{nivel}</b></span>
                         🏆
-                        <span style="margin-left:2px;"><b>{user_rewards['insignias']}</b></span>
+                        <span style="margin-left:2px;"><b>{insignias}</b></span>
                     </span>
                 </div>
             </div>
