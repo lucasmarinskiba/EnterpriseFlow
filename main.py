@@ -108,6 +108,31 @@ class EnterpriseFlowApp:
             """,
             unsafe_allow_html=True
         )
+
+    def update_user_rewards(user_email, puntos_delta=0, tareas_completadas=0, dias_constancia=0, insignias_delta=0):
+        conn = sqlite3.connect("enterprise_flow.db")
+        c = conn.cursor()
+        c.execute("SELECT puntos, nivel, insignias, tareas_completadas, dias_constancia FROM user_rewards WHERE user_email=?", (user_email,))
+        row = c.fetchone()
+        if row:
+            puntos, nivel, insignias, tareas, dias = row
+            puntos += puntos_delta
+            tareas += tareas_completadas
+            dias += dias_constancia
+            nivel = max(1, puntos // 500 + 1)
+            insignias += insignias_delta
+            c.execute("""
+                UPDATE user_rewards
+                SET puntos=?, nivel=?, insignias=?, tareas_completadas=?, dias_constancia=?, updated_at=CURRENT_TIMESTAMP
+                WHERE user_email=?
+            """, (puntos, nivel, insignias, tareas, dias, user_email))
+        else:
+            c.execute("""
+                INSERT INTO user_rewards (user_email, puntos, nivel, insignias, tareas_completadas, dias_constancia)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (user_email, puntos_delta, 1, insignias_delta, tareas_completadas, dias_constancia))
+        conn.commit()
+        conn.close()
     
     def _show_login(self):
         with st.sidebar:
@@ -579,6 +604,13 @@ class EnterpriseFlowApp:
                             self.db.delete_personal_goal(goal_id)
                             st.experimental_rerun()
 
+    def add_personal_goal(user_email, goal_text):
+        conn = sqlite3.connect("enterprise_flow.db")
+        c = conn.cursor()
+        c.execute("INSERT INTO personal_goals (user_email, goal_text) VALUES (?, ?)", (user_email, goal_text))
+        conn.commit()
+        conn.close()
+    
     def _meditation_module(self):
         with st.container(border=True):
             st.subheader("🧘 Sesiones de Relajación")
@@ -923,6 +955,34 @@ class EnterpriseFlowApp:
                     st.session_state.subscription = None
                 except Exception as e:
                     st.error(f"Error en pago: {str(e)}")
+
+# Crear las tablas (ejecuta una sola vez al instalar tu app)
+conn = sqlite3.connect("enterprise_flow.db")
+c = conn.cursor()
+c.execute("""
+CREATE TABLE IF NOT EXISTS user_rewards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    puntos INTEGER DEFAULT 0,
+    nivel INTEGER DEFAULT 1,
+    insignias INTEGER DEFAULT 0,
+    tareas_completadas INTEGER DEFAULT 0,
+    dias_constancia INTEGER DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_email)
+)
+""")
+c.execute("""
+CREATE TABLE IF NOT EXISTS personal_goals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    goal_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed BOOLEAN DEFAULT 0
+)
+""")
+conn.commit()
+conn.close()
 
 if __name__ == "__main__":
     EnterpriseFlowApp()
