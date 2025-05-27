@@ -487,19 +487,77 @@ class EnterpriseFlowApp:
         st.success(f"Descansos programados cada {frequency} minutos por {duration} minutos")
 
     def _learning_portal(self):
-        with st.container(border=True):
-            st.subheader("🎓 Plataforma de Aprendizaje")
-            course_data = [
-                {'id': 1, 'title': 'Gestión del Tiempo', 'progress': 0.4},
-                {'id': 2, 'title': 'Liderazgo Efectivo', 'progress': 0.7},
-                {'id': 3, 'title': 'Inteligencia Emocional', 'progress': 0.2}
+        st.subheader("🎓 Plataforma de Aprendizaje")
+
+        user_key = f"learning_courses_{st.session_state.current_user}"
+        if user_key not in st.session_state:
+            # Estructura inicial/demo
+            st.session_state[user_key] = [
+                {
+                    "id": 1,
+                    "title": "Gestión del Tiempo",
+                    "progress": 0.4,
+                    "url": "https://www.udemy.com/course/gestion-del-tiempo/"
+                },
+                {
+                    "id": 2,
+                    "title": "Liderazgo Efectivo",
+                    "progress": 0.9,
+                    "url": "https://www.linkedin.com/learning/liderazgo-efectivo-para-nuevos-lideres"
+                },
+                {
+                    "id": 3,
+                    "title": "Inteligencia Emocional",
+                    "progress": 0.2,
+                    "url": "https://www.coursera.org/learn/inteligencia-emocional"
+                }
             ]
-            for course in course_data:
-                with st.container(border=True):
-                    st.markdown(f"**{course['title']}**")
-                    st.progress(course['progress'])
-                    if st.button(f"Continuar Curso {course['id']}"):
-                        st.session_state.current_course = course['id']
+
+         # Sección para agregar un nuevo curso personalizado
+        with st.expander("➕ Agregar nuevo curso vinculado"):
+            with st.form("add_course_form"):
+                new_title = st.text_input("Nombre del curso")
+                new_url = st.text_input("Enlace al curso (Udemy, Coursera, Linkedin, etc.)")
+                if st.form_submit_button("Agregar curso") and new_title and new_url:
+                    next_id = max([c["id"] for c in st.session_state[user_key]] + [0]) + 1
+                    st.session_state[user_key].append({
+                        "id": next_id,
+                        "title": new_title,
+                        "progress": 0.0,
+                        "url": new_url
+                    })
+                    st.success("¡Curso agregado!")
+
+        # Mostrar cursos
+        for course in st.session_state[user_key]:
+            with st.container(border=True):
+                st.markdown(f"**{course['title']}**")
+                # Barra de progreso y porcentaje
+                st.progress(course["progress"])
+                st.markdown(f"<span style='font-size:18px;color:#007bff;font-weight:bold'>{int(course['progress']*100)}%</span>",
+                            unsafe_allow_html=True)
+
+                # Enlace a la plataforma
+                st.markdown(
+                    f"[Ir al curso]({course['url']})", 
+                    unsafe_allow_html=True
+                )
+            
+                # Control para actualizar progreso
+                new_prog = st.slider(
+                     "Actualizar progreso (%)", 
+                     0, 100, int(course["progress"]*100), 
+                     key=f"prog_{course['id']}")
+                 if new_prog != int(course["progress"]*100):
+                    course["progress"] = new_prog / 100.0
+                    st.experimental_rerun()
+
+                # Botón para eliminar curso
+                if st.button(f"Eliminar {course['title']}", key=f"del_{course['id']}"):
+                    st.session_state[user_key] = [
+                        c for c in st.session_state[user_key] if c["id"] != course["id"]
+                    ]
+                    st.experimental_rerun()
 
     def _personal_goals(self):
         st.header("🏆 Sistema de Metas Personales")
