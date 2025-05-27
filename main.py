@@ -679,7 +679,7 @@ class EnterpriseFlowApp:
                 )
                 if edge_to_remove and st.button("Eliminar Flecha"):
                      edge_tuple = tuple(edge_to_remove.split(" → "))
-                    if edge_tuple in graph["edges"]:
+                     if edge_tuple in graph["edges"]:
                         graph["edges"].remove(edge_tuple)
 
             # Actualiza el estado tras cambios
