@@ -537,7 +537,7 @@ class EnterpriseFlowApp:
                col1, col2 = st.columns([5,1])
                with col1:
                     st.progress(course["progress"])
-                with col2:
+               with col2:
                     st.markdown(
                         f"<span style='font-size:18px;color:#007bff;font-weight:bold'>{int(course['progress']*100)}%</span>",
                         unsafe_allow_html=True
