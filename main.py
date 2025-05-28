@@ -984,6 +984,8 @@ CREATE TABLE IF NOT EXISTS personal_goals (
 conn.commit()
 conn.close()
 
+print("SMTP server:", smtp_server)
+
 if __name__ == "__main__":
     EnterpriseFlowApp()
     
