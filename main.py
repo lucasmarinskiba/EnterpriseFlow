@@ -367,17 +367,6 @@ class EnterpriseFlowApp:
     # Uso:
     sender_email = "usuario@hotmail.com"
     smtp_server, smtp_port = get_smtp_settings(sender_email)
-
-    st.write("Configura tu correo de envío")
-    sender_email = st.text_input("Correo de envío")
-    password = st.text_input("Contraseña o contraseña de aplicación", type="password")
-
-    if sender_email:
-        try:
-            smtp_server, smtp_port = get_smtp_settings(sender_email)
-            st.success(f"Servidor detectado: {smtp_server}:{smtp_port}")
-        except ValueError as e:
-            st.error(str(e))
     
     def _generate_invoice(self, data):
         iva_rate = 0.16 if 'MEX' in data['client_address'] else 0.21
