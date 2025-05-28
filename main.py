@@ -246,7 +246,7 @@ class EnterpriseFlowApp:
             save_path = f"uploaded_docs/{user}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
             with open(save_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
+                 f.write(uploaded_file.getbuffer())
             st.success(f"Documento '{uploaded_file.name}' guardado correctamente.")
 
             if uploaded_file.type == "application/pdf":
@@ -275,7 +275,7 @@ class EnterpriseFlowApp:
                         st.text_area("Texto extraído", value=text, height=200)
                     except ImportError:
                         st.warning("python-docx necesario para abrir archivos Word.")
-
+ 
         # Listar documentos subidos por el usuario
         st.markdown("### Tus documentos subidos")
         doc_folder = "uploaded_docs"
@@ -308,8 +308,8 @@ class EnterpriseFlowApp:
             if submit and nombre and monto and concepto and email_receptor:
                 # Crear PDF de recibo
                 pdf_path = f"uploaded_docs/recibo_{user}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
-                os.makedirs(os.path.dirname(pdf_path), exist_ok=True)  # <--- ¡Agrega esta línea!
-                pdf.output(pdf_path)
+                os.makedirs(os.path.dirname(pdf_path), exist_ok=True)  # <- Solución al error
+                from fpdf import FPDF
                 pdf = FPDF()
                 pdf.add_page()
                 pdf.set_font("Arial", size=14)
