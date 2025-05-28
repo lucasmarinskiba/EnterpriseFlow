@@ -233,7 +233,7 @@ class EnterpriseFlowApp:
 
         st.info("¿Necesitas más ayuda? Contacta a soporte o revisa la documentación oficial para ver videos y guías paso a paso.")
 
-     def _show_documents(self):
+    def _show_documents(self):
         st.header("📁 Gestor de Documentos")
         st.markdown("Sube, escanea, entrega y gestiona tus documentos digitales.")
 
