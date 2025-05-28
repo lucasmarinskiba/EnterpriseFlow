@@ -246,7 +246,7 @@ class EnterpriseFlowApp:
             save_path = f"uploaded_docs/{user}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
             with open(save_path, "wb") as f:
-                 f.write(uploaded_file.getbuffer())
+                f.write(uploaded_file.getbuffer())
             st.success(f"Documento '{uploaded_file.name}' guardado correctamente.")
 
             if uploaded_file.type == "application/pdf":
@@ -267,15 +267,15 @@ class EnterpriseFlowApp:
                     except ImportError:
                         st.warning("pytesseract y pillow necesarios para OCR de imagen. Instálalos con pip si quieres esta función.")
             elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                with st.expander("📄 Leer Word"):
+                 with st.expander("📄 Leer Word"):
                     try:
                         from docx import Document
                         doc = Document(save_path)
                         text = "\n".join([para.text for para in doc.paragraphs])
                         st.text_area("Texto extraído", value=text, height=200)
-                    except ImportError:
-                        st.warning("python-docx necesario para abrir archivos Word.")
- 
+                except ImportError:
+                    st.warning("python-docx necesario para abrir archivos Word.")
+
         # Listar documentos subidos por el usuario
         st.markdown("### Tus documentos subidos")
         doc_folder = "uploaded_docs"
@@ -306,9 +306,7 @@ class EnterpriseFlowApp:
             submit = st.form_submit_button("Generar Recibo PDF y Enviar por Email")
 
             if submit and nombre and monto and concepto and email_receptor:
-                # Crear PDF de recibo
-                pdf_path = f"uploaded_docs/recibo_{user}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
-                os.makedirs(os.path.dirname(pdf_path), exist_ok=True)  # <- Solución al error
+                # Crear PDF de recibo en memoria (¡NO en disco!)
                 from fpdf import FPDF
                 pdf = FPDF()
                 pdf.add_page()
@@ -321,9 +319,8 @@ class EnterpriseFlowApp:
                 pdf.cell(0, 10, f"Concepto: {concepto}", ln=1)
                 pdf.cell(0, 10, f"Emitido por: {user}", ln=1)
                 pdf.cell(0, 10, f"Fecha: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=1)
-                pdf.output(pdf_path)
-                with open(pdf_path, "rb") as f:
-                    pdf_bytes = f.read()
+                # Guardar como bytes en memoria
+                pdf_bytes = pdf.output(dest='S').encode('latin1')
                 st.success("Recibo PDF generado correctamente.")
                 st.download_button("Descargar recibo PDF", data=pdf_bytes, file_name="recibo.pdf", mime="application/pdf")
 
@@ -339,7 +336,7 @@ class EnterpriseFlowApp:
                     msg["From"] = st.secrets["smtp"]["user"]
                     msg["To"] = email_receptor
                     msg["Subject"] = "Recibo Digital"
-
+ 
                     body = f"Estimado/a {nombre},\nAdjunto encontrará su recibo digital por el concepto: {concepto}."
                     msg.attach(MIMEText(body, "plain"))
 
