@@ -201,9 +201,12 @@ class EnterpriseFlowApp:
         st.markdown("---")
         st.header("📖 Tutoriales: Introducción a como usar EnterpriseFlow")
 
-        def _show_documents(self):
-            st.header("📁 Gestor de Documentos")
-            st.markdown("Sube, escanea, entrega y gestiona tus documentos digitales.")
+       def _show_documents(self):
+           st.header("📁 Gestor de Documentos")
+           uploaded_file = st.file_uploader("Sube un documento (PDF, imagen, Word)", type=["pdf", "png", "jpg", "jpeg", "docx"])
+           if uploaded_file:
+               st.success(f"Documento '{uploaded_file.name}' subido correctamente.")
+               st.write("Puedes implementar aquí las funciones de escaneo, descarga, envío por mail, etc.")
 
             # Subida de documentos
             uploaded_file = st.file_uploader("Sube un documento (PDF, imagen, Word)", type=["pdf", "png", "jpg", "jpeg", "docx"])
