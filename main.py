@@ -348,6 +348,26 @@ class EnterpriseFlowApp:
                         self._test_api_connection(api_endpoint)
                         st.success("Conexión exitosa")
 
+    def get_smtp_settings(email):
+        domain = email.split('@')[-1].lower()
+        if domain == "gmail.com":
+            return "smtp.gmail.com", 587
+        elif domain in ["hotmail.com", "outlook.com", "live.com"]:
+            return "smtp.office365.com", 587
+        elif domain == "yahoo.com":
+            return "smtp.mail.yahoo.com", 587
+        elif domain in ["icloud.com", "me.com"]:
+            return "smtp.mail.me.com", 587
+        elif domain == "zoho.com":
+            return "smtp.zoho.com", 587
+        else:
+            # Por defecto, podrías pedir al usuario que lo indique
+            raise ValueError("Proveedor de correo no soportado automáticamente")
+
+    # Uso:
+    sender_email = "usuario@hotmail.com"
+    smtp_server, smtp_port = get_smtp_settings(sender_email)
+    
     def _generate_invoice(self, data):
         iva_rate = 0.16 if 'MEX' in data['client_address'] else 0.21
         return {
