@@ -325,7 +325,7 @@ class EnterpriseFlowApp:
                             server.login(sender_email, sender_password)
                             server.sendmail(sender_email, email_receptor, msg.as_string())
                         st.success(f"Recibo enviado a {email_receptor} correctamente.")
-                      except Exception as e:
+                    except Exception as e:
                         st.error(f"Error enviando email: {str(e)}")
          
         with st.expander("🤖 Automatización de Tareas"):
