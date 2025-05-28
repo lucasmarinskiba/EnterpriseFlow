@@ -200,136 +200,6 @@ class EnterpriseFlowApp:
         # --- SECCIÓN TUTORIALES ---
         st.markdown("---")
         st.header("📖 Tutoriales: Introducción a como usar EnterpriseFlow")
-
-       def _show_documents(self):
-           st.header("📁 Gestor de Documentos")
-           uploaded_file = st.file_uploader("Sube un documento (PDF, imagen, Word)", type=["pdf", "png", "jpg", "jpeg", "docx"])
-           if uploaded_file:
-               st.success(f"Documento '{uploaded_file.name}' subido correctamente.")
-               st.write("Puedes implementar aquí las funciones de escaneo, descarga, envío por mail, etc.")
-
-            # Subida de documentos
-            uploaded_file = st.file_uploader("Sube un documento (PDF, imagen, Word)", type=["pdf", "png", "jpg", "jpeg", "docx"])
-            user = st.session_state.current_user
-
-            if uploaded_file:
-                # Guardar el archivo temporalmente o en base de datos
-                save_path = f"uploaded_docs/{user}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
-                os.makedirs(os.path.dirname(save_path), exist_ok=True)
-                with open(save_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                st.success(f"Documento '{uploaded_file.name}' guardado correctamente.")
-
-                if uploaded_file.type == "application/pdf":
-                    with st.expander("📄 Escanear PDF (extraer texto)"):
-                        import PyPDF2
-                        reader = PyPDF2.PdfReader(save_path)
-                        text = "\n".join([page.extract_text() or "" for page in reader.pages])
-                        st.text_area("Texto extraído", value=text, height=200)
-                elif "image" in uploaded_file.type:
-                    with st.expander("🔎 Escanear Imagen (OCR)"):
-                        try:
-                            import pytesseract
-                            from PIL import Image
-                            img = Image.open(save_path)
-                            st.image(img, caption="Imagen subida", use_column_width=True)
-                            text = pytesseract.image_to_string(img, lang="spa")
-                            st.text_area("Texto extraído (OCR)", value=text, height=200)
-                        except ImportError:
-                            st.warning("pytesseract y pillow necesarios para OCR de imagen. Instálalos con pip si quieres esta función.")
-                elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                    with st.expander("📄 Leer Word"):
-                        try:
-                            from docx import Document
-                            doc = Document(save_path)
-                            text = "\n".join([para.text for para in doc.paragraphs])
-                            st.text_area("Texto extraído", value=text, height=200)
-                        except ImportError:
-                            st.warning("python-docx necesario para abrir archivos Word.")
-
-            # Listar documentos subidos por el usuario
-            st.markdown("### Tus documentos subidos")
-            doc_folder = "uploaded_docs"
-            docs = []
-            if os.path.exists(doc_folder):
-                docs = [f for f in os.listdir(doc_folder) if f.startswith(user+"_")]
-            if docs:
-                for docfile in docs:
-                    st.write(f"📄 {docfile}")
-                    with open(f"{doc_folder}/{docfile}", "rb") as f:
-                        st.download_button(
-                            label="Descargar",
-                            data=f.read(),
-                            file_name=docfile.split("_",2)[-1],
-                            mime="application/octet-stream"
-                        )
-            else:
-                st.info("Aún no has subido documentos.")
-
-            st.markdown("---")
-            st.header("🧾 Generar y Enviar Recibo Digital")
-
-            with st.form("generate_receipt"):
-                nombre = st.text_input("Nombre del receptor")
-                monto = st.number_input("Monto", min_value=0.0)
-                concepto = st.text_input("Concepto del recibo")
-                email_receptor = st.text_input("Email para enviar recibo")
-                submit = st.form_submit_button("Generar Recibo PDF y Enviar por Email")
- 
-                if submit and nombre and monto and concepto and email_receptor:
-                    # Crear PDF de recibo
-                    pdf_path = f"uploaded_docs/recibo_{user}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
-                    pdf = FPDF()
-                    pdf.add_page()
-                    pdf.set_font("Arial", size=14)
-                    pdf.cell(0, 10, "Recibo Digital", ln=1, align="C")
-                    pdf.set_font("Arial", size=12)
-                    pdf.ln(8)
-                    pdf.cell(0, 10, f"Recibí de: {nombre}", ln=1)
-                    pdf.cell(0, 10, f"Monto: ${monto:.2f}", ln=1)
-                    pdf.cell(0, 10, f"Concepto: {concepto}", ln=1)
-                    pdf.cell(0, 10, f"Emitido por: {user}", ln=1)
-                    pdf.cell(0, 10, f"Fecha: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=1)
-                    pdf.output(pdf_path)
-                    with open(pdf_path, "rb") as f:
-                        pdf_bytes = f.read()
-                    st.success("Recibo PDF generado correctamente.")
-                    st.download_button("Descargar recibo PDF", data=pdf_bytes, file_name="recibo.pdf", mime="application/pdf")
-
-                    # Enviar por email
-                    try:
-                        import smtplib
-                        from email.mime.multipart import MIMEMultipart
-                        from email.mime.base import MIMEBase
-                        from email.mime.text import MIMEText
-                        from email import encoders
-
-                        msg = MIMEMultipart()
-                        msg["From"] = st.secrets["smtp"]["user"]
-                        msg["To"] = email_receptor
-                        msg["Subject"] = "Recibo Digital"
-
-                        body = f"Estimado/a {nombre},\nAdjunto encontrará su recibo digital por el concepto: {concepto}."
-                        msg.attach(MIMEText(body, "plain"))
-
-                        part = MIMEBase("application", "octet-stream")
-                        part.set_payload(pdf_bytes)
-                        encoders.encode_base64(part)
-                        part.add_header("Content-Disposition", f"attachment; filename=recibo.pdf")
-                        msg.attach(part)
-
-                        smtp_server = st.secrets["smtp"]["server"]
-                        smtp_port = st.secrets["smtp"]["port"]
-                        sender_email = st.secrets["smtp"]["user"]
-                        sender_password = st.secrets["smtp"]["password"]
-
-                        with smtplib.SMTP(smtp_server, smtp_port) as server:
-                            server.starttls()
-                            server.login(sender_email, sender_password)
-                            server.sendmail(sender_email, email_receptor, msg.as_string())
-                        st.success(f"Recibo enviado a {email_receptor} correctamente.")
-                    except Exception as e:
-                        st.error(f"Error enviando email: {str(e)}")
          
         with st.expander("🤖 Automatización de Tareas"):
             st.markdown("""
@@ -363,6 +233,133 @@ class EnterpriseFlowApp:
 
         st.info("¿Necesitas más ayuda? Contacta a soporte o revisa la documentación oficial para ver videos y guías paso a paso.")
 
+     def _show_documents(self):
+        st.header("📁 Gestor de Documentos")
+        st.markdown("Sube, escanea, entrega y gestiona tus documentos digitales.")
+
+        # Subida de documentos
+        uploaded_file = st.file_uploader("Sube un documento (PDF, imagen, Word)", type=["pdf", "png", "jpg", "jpeg", "docx"])
+        user = st.session_state.current_user
+
+        if uploaded_file:
+            # Guardar el archivo temporalmente o en base de datos
+            save_path = f"uploaded_docs/{user}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            with open(save_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            st.success(f"Documento '{uploaded_file.name}' guardado correctamente.")
+
+            if uploaded_file.type == "application/pdf":
+                with st.expander("📄 Escanear PDF (extraer texto)"):
+                    import PyPDF2
+                    reader = PyPDF2.PdfReader(save_path)
+                    text = "\n".join([page.extract_text() or "" for page in reader.pages])
+                    st.text_area("Texto extraído", value=text, height=200)
+            elif "image" in uploaded_file.type:
+                with st.expander("🔎 Escanear Imagen (OCR)"):
+                    try:
+                        import pytesseract
+                        from PIL import Image
+                        img = Image.open(save_path)
+                        st.image(img, caption="Imagen subida", use_column_width=True)
+                        text = pytesseract.image_to_string(img, lang="spa")
+                        st.text_area("Texto extraído (OCR)", value=text, height=200)
+                    except ImportError:
+                        st.warning("pytesseract y pillow necesarios para OCR de imagen. Instálalos con pip si quieres esta función.")
+            elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                with st.expander("📄 Leer Word"):
+                    try:
+                        from docx import Document
+                        doc = Document(save_path)
+                        text = "\n".join([para.text for para in doc.paragraphs])
+                        st.text_area("Texto extraído", value=text, height=200)
+                    except ImportError:
+                        st.warning("python-docx necesario para abrir archivos Word.")
+
+        # Listar documentos subidos por el usuario
+        st.markdown("### Tus documentos subidos")
+        doc_folder = "uploaded_docs"
+        docs = []
+        if os.path.exists(doc_folder):
+            docs = [f for f in os.listdir(doc_folder) if f.startswith(user+"_")]
+        if docs:
+            for docfile in docs:
+                st.write(f"📄 {docfile}")
+                with open(f"{doc_folder}/{docfile}", "rb") as f:
+                    st.download_button(
+                        label="Descargar",
+                        data=f.read(),
+                        file_name=docfile.split("_",2)[-1],
+                        mime="application/octet-stream"
+                    )
+        else:
+            st.info("Aún no has subido documentos.")
+
+        st.markdown("---")
+        st.header("🧾 Generar y Enviar Recibo Digital")
+
+        with st.form("generate_receipt"):
+            nombre = st.text_input("Nombre del receptor")
+            monto = st.number_input("Monto", min_value=0.0)
+            concepto = st.text_input("Concepto del recibo")
+            email_receptor = st.text_input("Email para enviar recibo")
+            submit = st.form_submit_button("Generar Recibo PDF y Enviar por Email")
+
+            if submit and nombre and monto and concepto and email_receptor:
+                # Crear PDF de recibo
+                pdf_path = f"uploaded_docs/recibo_{user}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+                pdf = FPDF()
+                pdf.add_page()
+                pdf.set_font("Arial", size=14)
+                pdf.cell(0, 10, "Recibo Digital", ln=1, align="C")
+                pdf.set_font("Arial", size=12)
+                pdf.ln(8)
+                pdf.cell(0, 10, f"Recibí de: {nombre}", ln=1)
+                pdf.cell(0, 10, f"Monto: ${monto:.2f}", ln=1)
+                pdf.cell(0, 10, f"Concepto: {concepto}", ln=1)
+                pdf.cell(0, 10, f"Emitido por: {user}", ln=1)
+                pdf.cell(0, 10, f"Fecha: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=1)
+                pdf.output(pdf_path)
+                with open(pdf_path, "rb") as f:
+                    pdf_bytes = f.read()
+                st.success("Recibo PDF generado correctamente.")
+                st.download_button("Descargar recibo PDF", data=pdf_bytes, file_name="recibo.pdf", mime="application/pdf")
+
+                # Enviar por email
+                try:
+                    import smtplib
+                    from email.mime.multipart import MIMEMultipart
+                    from email.mime.base import MIMEBase
+                    from email.mime.text import MIMEText
+                    from email import encoders
+
+                    msg = MIMEMultipart()
+                    msg["From"] = st.secrets["smtp"]["user"]
+                    msg["To"] = email_receptor
+                    msg["Subject"] = "Recibo Digital"
+
+                    body = f"Estimado/a {nombre},\nAdjunto encontrará su recibo digital por el concepto: {concepto}."
+                    msg.attach(MIMEText(body, "plain"))
+
+                    part = MIMEBase("application", "octet-stream")
+                    part.set_payload(pdf_bytes)
+                    encoders.encode_base64(part)
+                    part.add_header("Content-Disposition", f"attachment; filename=recibo.pdf")
+                    msg.attach(part)
+
+                    smtp_server = st.secrets["smtp"]["server"]
+                    smtp_port = st.secrets["smtp"]["port"]
+                    sender_email = st.secrets["smtp"]["user"]
+                    sender_password = st.secrets["smtp"]["password"]
+
+                    with smtplib.SMTP(smtp_server, smtp_port) as server:
+                        server.starttls()
+                        server.login(sender_email, sender_password)
+                        server.sendmail(sender_email, email_receptor, msg.as_string())
+                    st.success(f"Recibo enviado a {email_receptor} correctamente.")
+                except Exception as e:
+                    st.error(f"Error enviando email: {str(e)}")
+    
     def _show_automation(self):
         with st.expander("🤖 Automatización de Tareas", expanded=True):
             col1, col2, col3 = st.columns(3)
