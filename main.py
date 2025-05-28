@@ -273,7 +273,7 @@ class EnterpriseFlowApp:
                         doc = Document(save_path)
                         text = "\n".join([para.text for para in doc.paragraphs])
                         st.text_area("Texto extraído", value=text, height=200)
-                except ImportError:
+                 except ImportError:
                     st.warning("python-docx necesario para abrir archivos Word.")
 
         # Listar documentos subidos por el usuario
