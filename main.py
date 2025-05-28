@@ -320,13 +320,13 @@ class EnterpriseFlowApp:
                         sender_email = st.secrets["smtp"]["user"]
                         sender_password = st.secrets["smtp"]["password"]
 
-                         with smtplib.SMTP(smtp_server, smtp_port) as server:
-                             server.starttls()
-                             server.login(sender_email, sender_password)
-                             server.sendmail(sender_email, email_receptor, msg.as_string())
-                         st.success(f"Recibo enviado a {email_receptor} correctamente.")
+                        with smtplib.SMTP(smtp_server, smtp_port) as server:
+                            server.starttls()
+                            server.login(sender_email, sender_password)
+                            server.sendmail(sender_email, email_receptor, msg.as_string())
+                        st.success(f"Recibo enviado a {email_receptor} correctamente.")
                      except Exception as e:
-                         st.error(f"Error enviando email: {str(e)}")
+                        st.error(f"Error enviando email: {str(e)}")
          
         with st.expander("🤖 Automatización de Tareas"):
             st.markdown("""
