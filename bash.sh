@@ -47,3 +47,5 @@ convert -size 200x100 xc:white -font Arial -pointsize 24 -draw "text 30,50 'CEO'
 git add firmas/ceo_signature.png
 git commit -m "Agrega firma digital CEO"
 git push
+
+ping smtp.gmail.com
