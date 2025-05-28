@@ -308,6 +308,8 @@ class EnterpriseFlowApp:
             if submit and nombre and monto and concepto and email_receptor:
                 # Crear PDF de recibo
                 pdf_path = f"uploaded_docs/recibo_{user}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+                os.makedirs(os.path.dirname(pdf_path), exist_ok=True)  # <--- ¡Agrega esta línea!
+                pdf.output(pdf_path)
                 pdf = FPDF()
                 pdf.add_page()
                 pdf.set_font("Arial", size=14)
