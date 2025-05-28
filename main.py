@@ -267,7 +267,7 @@ class EnterpriseFlowApp:
                     except ImportError:
                         st.warning("pytesseract y pillow necesarios para OCR de imagen. Instálalos con pip si quieres esta función.")
             elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                 with st.expander("📄 Leer Word"):
+                with st.expander("📄 Leer Word"):
                     try:
                         from docx import Document
                         doc = Document(save_path)
@@ -319,8 +319,12 @@ class EnterpriseFlowApp:
                 pdf.cell(0, 10, f"Concepto: {concepto}", ln=1)
                 pdf.cell(0, 10, f"Emitido por: {user}", ln=1)
                 pdf.cell(0, 10, f"Fecha: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=1)
-                # Guardar como bytes en memoria
-                pdf_bytes = pdf.output(dest='S').encode('latin1')
+                # Guardar como bytes en memoria — robusto para cualquier versión de FPDF
+                pdf_output = pdf.output(dest='S')
+                if isinstance(pdf_output, str):
+                    pdf_bytes = pdf_output.encode('latin1')
+                else:
+                    pdf_bytes = pdf_output
                 st.success("Recibo PDF generado correctamente.")
                 st.download_button("Descargar recibo PDF", data=pdf_bytes, file_name="recibo.pdf", mime="application/pdf")
 
@@ -336,7 +340,7 @@ class EnterpriseFlowApp:
                     msg["From"] = st.secrets["smtp"]["user"]
                     msg["To"] = email_receptor
                     msg["Subject"] = "Recibo Digital"
- 
+
                     body = f"Estimado/a {nombre},\nAdjunto encontrará su recibo digital por el concepto: {concepto}."
                     msg.attach(MIMEText(body, "plain"))
 
