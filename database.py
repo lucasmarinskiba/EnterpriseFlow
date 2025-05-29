@@ -154,7 +154,7 @@ class DatabaseManager:
         c = conn.cursor()
         c.execute("SELECT patologia, enfermedades, embarazo, observaciones FROM medical_records WHERE user_email=?", (user_email,))
         row = c.fetchone()
-        conn.close()
+        onn.close()
         if row:
             return {"patologia": row[0], "enfermedades": row[1], "embarazo": row[2], "observaciones": row[3]}
         return None
@@ -164,7 +164,7 @@ class DatabaseManager:
         c = conn.cursor()
         c.execute("SELECT id FROM medical_records WHERE user_email=?", (user_email,))
         if c.fetchone():
-           c.execute("""
+            c.execute("""
                 UPDATE medical_records 
                 SET patologia=?, enfermedades=?, embarazo=?, observaciones=?
                 WHERE user_email=?
