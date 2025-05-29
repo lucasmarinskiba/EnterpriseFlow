@@ -59,3 +59,24 @@ CREATE TABLE leave_requests (
     FOREIGN KEY(user_email) REFERENCES employees(user_email)
 );
 
+CREATE TABLE IF NOT EXISTS medical_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    patologia TEXT,
+    enfermedades TEXT,
+    embarazo BOOLEAN DEFAULT 0,
+    observaciones TEXT,
+    FOREIGN KEY(user_email) REFERENCES employees(user_email)
+);
+
+CREATE TABLE IF NOT EXISTS leave_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    tipo_permiso TEXT,
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    estado TEXT DEFAULT 'pendiente',
+    motivo TEXT,
+    observaciones TEXT,
+    FOREIGN KEY(user_email) REFERENCES employees(user_email)
+);
