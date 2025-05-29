@@ -550,6 +550,68 @@ class EnterpriseFlowApp:
         else:
             st.info("Aún no has registrado permisos.")
 
+        # DatabaseManager methods
+
+    def get_medical_record(self, user_email):
+        conn = sqlite3.connect("enterprise_flow.db")
+        c = conn.cursor()
+        c.execute("SELECT patologia, enfermedades, embarazo, observaciones FROM medical_records WHERE user_email=?", (user_email,))
+        row = c.fetchone()
+        conn.close()
+        if row:
+            return {"patologia": row[0], "enfermedades": row[1], "embarazo": row[2], "observaciones": row[3]}
+        return None
+
+    def save_medical_record(self, user_email, patologia, enfermedades, embarazo, observaciones):
+        conn = sqlite3.connect("enterprise_flow.db")
+        c = conn.cursor()
+        c.execute("SELECT id FROM medical_records WHERE user_email=?", (user_email,))
+        if c.fetchone():
+            c.execute("""
+                UPDATE medical_records 
+                SET patologia=?, enfermedades=?, embarazo=?, observaciones=?
+                WHERE user_email=?
+            """, (patologia, enfermedades, int(embarazo), observaciones, user_email))
+        else:
+            c.execute("""
+                INSERT INTO medical_records (user_email, patologia, enfermedades, embarazo, observaciones)
+                VALUES (?, ?, ?, ?, ?)
+            """, (user_email, patologia, enfermedades, int(embarazo), observaciones))
+        conn.commit()
+        conn.close()
+
+    def save_leave_request(self, user_email, tipo, fecha_inicio, fecha_fin, motivo, observaciones):
+        conn = sqlite3.connect("enterprise_flow.db")
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO leave_requests (user_email, tipo_permiso, fecha_inicio, fecha_fin, motivo, observaciones)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (user_email, tipo, fecha_inicio, fecha_fin, motivo, observaciones))
+        conn.commit()
+        conn.close()
+
+    def get_leave_requests(self, user_email):
+        conn = sqlite3.connect("enterprise_flow.db")
+        c = conn.cursor()
+        c.execute("""
+            SELECT tipo_permiso, fecha_inicio, fecha_fin, estado, motivo, observaciones
+            FROM leave_requests WHERE user_email=?
+            ORDER BY fecha_inicio DESC
+        """, (user_email,))
+        rows = c.fetchall()
+        conn.close()
+        return [
+            {
+                "tipo_permiso": r[0],
+                "fecha_inicio": r[1],
+                "fecha_fin": r[2],
+                "estado": r[3],
+                "motivo": r[4],
+                "observaciones": r[5]
+            } 
+            for r in rows
+        ]
+        
         # ... el resto de tu módulo de bienestar ...
 
         with st.expander("😌 Bienestar del Equipo", expanded=True):
