@@ -515,6 +515,43 @@ class EnterpriseFlowApp:
         return True
 
     def _show_wellness(self):
+        st.markdown("---")
+        st.subheader("🩺 Ficha Médica del Empleado")
+        user = st.session_state.current_user
+        # Mostrar/actualizar ficha médica
+        ficha = self.db.get_medical_record(user)
+        with st.form("ficha_medica"):
+            patologia = st.text_input("Patología principal", value=ficha.get("patologia", "") if ficha else "")
+            enfermedades = st.text_area("Otras enfermedades", value=ficha.get("enfermedades", "") if ficha else "")
+            embarazo = st.checkbox("Embarazo", value=bool(ficha.get("embarazo", 0)) if ficha else False)
+            observaciones = st.text_area("Observaciones", value=ficha.get("observaciones", "") if ficha else "")
+            if st.form_submit_button("Guardar ficha médica"):
+                self.db.save_medical_record(user, patologia, enfermedades, embarazo, observaciones)
+                st.success("Ficha médica actualizada.")
+
+        st.markdown("---")
+        st.subheader("📋 Faltas y Permisos de Salud")
+        with st.form("solicitar_permiso"):
+            tipo = st.selectbox("Tipo de permiso", ["Vacaciones", "Enfermedad", "Otro"])
+            fecha_inicio = st.date_input("Desde")
+            fecha_fin = st.date_input("Hasta")
+            motivo = st.text_input("Motivo")
+            observaciones = st.text_area("Observaciones")
+            if st.form_submit_button("Solicitar permiso"):
+                self.db.save_leave_request(user, tipo, fecha_inicio, fecha_fin, motivo, observaciones)
+                st.success("Permiso solicitado.")
+
+        # Mostrar historial
+        st.markdown("### Permisos solicitados")
+        leaves = self.db.get_leave_requests(user)
+        if leaves:
+            for lv in leaves:
+                st.markdown(f"- **{lv['tipo_permiso']}**: {lv['fecha_inicio']} a {lv['fecha_fin']} ({lv['estado']})<br> Motivo: {lv['motivo']}<br>Obs: {lv['observaciones']}", unsafe_allow_html=True)
+        else:
+            st.info("Aún no has registrado permisos.")
+
+        # ... el resto de tu módulo de bienestar ...
+
         with st.expander("😌 Bienestar del Equipo", expanded=True):
             col1, col2 = st.columns(2)
             
@@ -568,6 +605,7 @@ class EnterpriseFlowApp:
             self._workload_monitor()
             self._gamification_system()
 
+    
     def _generate_certificate(self, colleague, recognition, signer):
         try:
             signer_key = signer.lower().replace(" ", "_")
