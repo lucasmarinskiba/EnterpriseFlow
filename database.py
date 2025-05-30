@@ -154,7 +154,7 @@ class DatabaseManager:
         c = conn.cursor()
         c.execute("SELECT patologia, enfermedades, embarazo, observaciones FROM medical_records WHERE user_email=?", (user_email,))
         row = c.fetchone()
-        onn.close()
+        conn.close()
         if row:
             return {"patologia": row[0], "enfermedades": row[1], "embarazo": row[2], "observaciones": row[3]}
         return None
