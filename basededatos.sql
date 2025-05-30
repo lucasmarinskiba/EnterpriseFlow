@@ -80,3 +80,12 @@ CREATE TABLE IF NOT EXISTS leave_requests (
     observaciones TEXT,
     FOREIGN KEY(user_email) REFERENCES employees(user_email)
 );
+
+CREATE TABLE IF NOT EXISTS employees (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL UNIQUE,
+    nombre TEXT,
+    apellido TEXT,
+    fecha_nacimiento DATE,
+    documento TEXT
+);
