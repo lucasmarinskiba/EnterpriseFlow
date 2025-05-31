@@ -237,11 +237,9 @@ class EnterpriseFlowApp:
         st.header("📁 Gestor de Documentos")
         st.markdown("Sube, escanea, entrega y gestiona tus documentos digitales.")
 
-        # Subida de documentos
         apellido = st.text_input("Apellido del empleado")
         nombre = st.text_input("Nombre del empleado")
         uploaded_file = st.file_uploader("Sube un documento (PDF, imagen, Word)", type=["pdf", "png", "jpg", "jpeg", "docx"])
-        user = st.session_state.current_user
 
         if uploaded_file and apellido and nombre:
             empleado_folder = f"uploaded_docs/{apellido}_{nombre}"
@@ -250,6 +248,35 @@ class EnterpriseFlowApp:
             with open(save_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
             st.success(f"Documento '{uploaded_file.name}' guardado correctamente en la carpeta de {apellido}, {nombre}.")
+ 
+            # Procesamiento según el tipo de archivo
+            if uploaded_file.type == "application/pdf":
+                with st.expander("📄 Escanear PDF (extraer texto)"):
+                    import PyPDF2
+                    reader = PyPDF2.PdfReader(save_path)
+                    text = "\n".join([page.extract_text() or "" for page in reader.pages])
+                    st.text_area("Texto extraído", value=text, height=200)
+            elif "image" in uploaded_file.type:
+                with st.expander("🔎 Escanear Imagen (OCR)"):
+                    try:
+                        import pytesseract
+                        from PIL import Image
+                        img = Image.open(save_path)
+                        st.image(img, caption="Imagen subida", use_column_width=True)
+                        text = pytesseract.image_to_string(img, lang="spa")
+                        st.text_area("Texto extraído (OCR)", value=text, height=200)
+                    except ImportError:
+                        st.warning("pytesseract y pillow necesarios para OCR de imagen. Instálalos con pip si quieres esta función.")
+            elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                with st.expander("📄 Leer Word"):
+                    try:
+                        from docx import Document
+                        doc = Document(save_path)
+                        text = "\n".join([para.text for para in doc.paragraphs])
+                        st.text_area("Texto extraído", value=text, height=200)
+                    except ImportError:
+                        st.warning("python-docx necesario para abrir archivos Word.")
+
         st.markdown("### Carpetas de empleados y sus documentos")
         doc_root = "uploaded_docs"
         if os.path.exists(doc_root):
@@ -266,7 +293,7 @@ class EnterpriseFlowApp:
                                 label="Descargar",
                                 data=f.read(),
                                 file_name=archivo,
-                                mime="application/octet-stream"
+                                 mime="application/octet-stream"
                             )
                 else:
                     st.info("Este empleado aún no tiene documentos.")
