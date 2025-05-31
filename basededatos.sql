@@ -89,3 +89,7 @@ CREATE TABLE IF NOT EXISTS employees (
     fecha_nacimiento DATE,
     documento TEXT
 );
+
+ALTER TABLE medical_records ADD COLUMN apellido TEXT;
+ALTER TABLE medical_records ADD COLUMN nombre TEXT;
+ALTER TABLE medical_records ADD COLUMN file_path TEXT;
