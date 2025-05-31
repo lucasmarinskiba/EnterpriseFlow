@@ -529,18 +529,6 @@ class EnterpriseFlowApp:
                 self.db.save_medical_record(user, patologia, enfermedades, embarazo, observaciones)
                 st.success("Ficha médica actualizada.")
 
-        st.markdown("---")
-        st.subheader("📋 Faltas y Permisos de Salud")
-        with st.form("solicitar_permiso"):
-            tipo = st.selectbox("Tipo de permiso", ["Vacaciones", "Enfermedad", "Otro"])
-            fecha_inicio = st.date_input("Desde")
-            fecha_fin = st.date_input("Hasta")
-            motivo = st.text_input("Motivo")
-            observaciones = st.text_area("Observaciones")
-            if st.form_submit_button("Solicitar permiso"):
-                self.db.save_leave_request(user, tipo, fecha_inicio, fecha_fin, motivo, observaciones)
-                st.success("Permiso solicitado.")
-
         # NUEVO: Apellido y nombre del empleado
         apellido = st.text_input("Apellido del empleado")
         nombre = st.text_input("Nombre del empleado")
@@ -594,6 +582,20 @@ class EnterpriseFlowApp:
                             )
                 else:
                     st.info("No hay archivos médicos para este empleado.")
+        
+        st.markdown("---")
+        st.subheader("📋 Faltas y Permisos de Salud")
+        with st.form("solicitar_permiso"):
+            tipo = st.selectbox("Tipo de permiso", ["Vacaciones", "Enfermedad", "Otro"])
+            fecha_inicio = st.date_input("Desde")
+            fecha_fin = st.date_input("Hasta")
+            motivo = st.text_input("Motivo")
+            observaciones = st.text_area("Observaciones")
+            if st.form_submit_button("Solicitar permiso"):
+                self.db.save_leave_request(user, tipo, fecha_inicio, fecha_fin, motivo, observaciones)
+                st.success("Permiso solicitado.")
+
+
         
         # Mostrar historial
         st.markdown("### Permisos solicitados")
