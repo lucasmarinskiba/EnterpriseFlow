@@ -583,7 +583,23 @@ class EnterpriseFlowApp:
                 else:
                     st.info("No hay archivos médicos para este empleado.")
 
-
+    def save_medical_record(self, user_email, patologia, enfermedades, embarazo, observaciones, apellido=None, nombre=None, file_path=None):
+        conn = sqlite3.connect("enterprise_flow.db")
+        c = conn.cursor()
+        c.execute("SELECT id FROM medical_records WHERE user_email=?", (user_email,))
+        if c.fetchone():
+            c.execute("""
+                UPDATE medical_records 
+                SET patologia=?, enfermedades=?, embarazo=?, observaciones=?, apellido=?, nombre=?, file_path=?
+                WHERE user_email=?
+            """, (patologia, enfermedades, int(embarazo), observaciones, apellido, nombre, file_path, user_email))
+        else:
+            c.execute("""
+                INSERT INTO medical_records (user_email, patologia, enfermedades, embarazo, observaciones, apellido, nombre, file_path)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (user_email, patologia, enfermedades, int(embarazo), observaciones, apellido, nombre, file_path))
+        conn.commit()
+        conn.close()
         
         st.markdown("---")
         st.subheader("📋 Faltas y Permisos de Salud")
