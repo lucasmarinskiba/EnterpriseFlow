@@ -370,7 +370,7 @@ class EnterpriseFlowApp:
                         server.starttls()
                         server.login(sender_email, sender_password)
                         server.sendmail(sender_email, email_receptor, msg.as_string())
-                     st.success(f"Recibo enviado a {email_receptor} correctamente.")
+                    st.success(f"Recibo enviado a {email_receptor} correctamente.")
                 except Exception as e:
                     st.error(f"Error enviando email: {str(e)}")
     
