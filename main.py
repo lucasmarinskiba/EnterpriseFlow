@@ -238,17 +238,44 @@ class EnterpriseFlowApp:
         st.markdown("Sube, escanea, entrega y gestiona tus documentos digitales.")
 
         # Subida de documentos
+        apellido = st.text_input("Apellido del empleado")
+        nombre = st.text_input("Nombre del empleado")
         uploaded_file = st.file_uploader("Sube un documento (PDF, imagen, Word)", type=["pdf", "png", "jpg", "jpeg", "docx"])
         user = st.session_state.current_user
 
-        if uploaded_file:
-            # Guardar el archivo temporalmente o en base de datos
-            save_path = f"uploaded_docs/{user}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        if uploaded_file and apellido and nombre:
+            empleado_folder = f"uploaded_docs/{apellido}_{nombre}"
+            os.makedirs(empleado_folder, exist_ok=True)
+            save_path = f"{empleado_folder}/{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
             with open(save_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
-            st.success(f"Documento '{uploaded_file.name}' guardado correctamente.")
+            st.success(f"Documento '{uploaded_file.name}' guardado correctamente en la carpeta de {apellido}, {nombre}.")
+        st.markdown("### Carpetas de empleados y sus documentos")
+            doc_root = "uploaded_docs"
+            if os.path.exists(doc_root):
+                empleados = [d for d in os.listdir(doc_root) if os.path.isdir(os.path.join(doc_root, d))]
+                if empleados:
+                    selected_empleado = st.selectbox("Ver documentos de:", empleados)
+                    empleado_folder = os.path.join(doc_root, selected_empleado)
+                    archivos = os.listdir(empleado_folder)
+                    if archivos:
+                        for archivo in archivos:
+                            st.write(f"📄 {archivo}")
+                            with open(os.path.join(empleado_folder, archivo), "rb") as f:
+                                st.download_button(
+                                    label="Descargar",
+                                    data=f.read(),
+                                    file_name=archivo,
+                                    mime="application/octet-stream"
+                                )
+                    else:
+                        st.info("Este empleado aún no tiene documentos.")
+                 else:
+                     st.info("No hay empleados registrados con documentos.")
+            else:
+                st.info("Aún no se han subido documentos.")
 
+        
             if uploaded_file.type == "application/pdf":
                 with st.expander("📄 Escanear PDF (extraer texto)"):
                     import PyPDF2
