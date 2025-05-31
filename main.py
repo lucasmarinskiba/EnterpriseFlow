@@ -582,6 +582,8 @@ class EnterpriseFlowApp:
                             )
                 else:
                     st.info("No hay archivos médicos para este empleado.")
+
+
         
         st.markdown("---")
         st.subheader("📋 Faltas y Permisos de Salud")
