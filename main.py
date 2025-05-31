@@ -248,7 +248,7 @@ class EnterpriseFlowApp:
             with open(save_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
             st.success(f"Documento '{uploaded_file.name}' guardado correctamente en la carpeta de {apellido}, {nombre}.")
- 
+
             # Procesamiento según el tipo de archivo
             if uploaded_file.type == "application/pdf":
                 with st.expander("📄 Escanear PDF (extraer texto)"):
@@ -293,7 +293,7 @@ class EnterpriseFlowApp:
                                 label="Descargar",
                                 data=f.read(),
                                 file_name=archivo,
-                                 mime="application/octet-stream"
+                                mime="application/octet-stream"
                             )
                 else:
                     st.info("Este empleado aún no tiene documentos.")
