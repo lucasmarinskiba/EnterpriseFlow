@@ -541,6 +541,60 @@ class EnterpriseFlowApp:
                 self.db.save_leave_request(user, tipo, fecha_inicio, fecha_fin, motivo, observaciones)
                 st.success("Permiso solicitado.")
 
+        # NUEVO: Apellido y nombre del empleado
+        apellido = st.text_input("Apellido del empleado")
+        nombre = st.text_input("Nombre del empleado")
+
+        # Obtener ficha médica previa (si existe)
+        ficha = self.db.get_medical_record(user)
+
+        # NUEVO: Adjuntar archivo a la ficha médica
+        uploaded_file = st.file_uploader("Adjunta un documento médico (PDF, imagen, Word)", type=["pdf", "png", "jpg", "jpeg", "docx"])
+
+        with st.form("ficha_medica"):
+            patologia = st.text_input("Patología principal", value=ficha.get("patologia", "") if ficha else "")
+            enfermedades = st.text_area("Otras enfermedades", value=ficha.get("enfermedades", "") if ficha else "")
+            embarazo = st.checkbox("Embarazo", value=bool(ficha.get("embarazo", 0)) if ficha else False)
+            observaciones = st.text_area("Observaciones", value=ficha.get("observaciones", "") if ficha else "")
+
+            guardar = st.form_submit_button("Guardar ficha médica")
+
+            if guardar:
+                # Guardar archivo en carpeta correspondiente si se adjuntó
+                file_path = None
+                if uploaded_file and apellido and nombre:
+                    empleado_folder = f"fichas_medicas/{apellido}_{nombre}"
+                    os.makedirs(empleado_folder, exist_ok=True)
+                    file_path = f"{empleado_folder}/{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
+                    with open(file_path, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
+
+                # Guardar en base de datos (debes agregar la columna file_path en la tabla si aún no existe)
+                self.db.save_medical_record(
+                    user, patologia, enfermedades, embarazo, observaciones,
+                    apellido=apellido, nombre=nombre, file_path=file_path
+                )
+                st.success("Ficha médica actualizada y archivo guardado correctamente.")
+
+        # Mostrar archivos/fichas guardadas de ese empleado
+        if apellido and nombre:
+            empleado_folder = f"fichas_medicas/{apellido}_{nombre}"
+            if os.path.exists(empleado_folder):
+                archivos = os.listdir(empleado_folder)
+                if archivos:
+                    st.markdown("#### Archivos médicos guardados:")
+                    for archivo in archivos:
+                        st.write(f"📄 {archivo}")
+                        with open(os.path.join(empleado_folder, archivo), "rb") as f:
+                            st.download_button(
+                                label="Descargar",
+                                data=f.read(),
+                                file_name=archivo,
+                                mime="application/octet-stream"
+                            )
+                else:
+                    st.info("No hay archivos médicos para este empleado.")
+        
         # Mostrar historial
         st.markdown("### Permisos solicitados")
         leaves = self.db.get_leave_requests(user)
