@@ -276,7 +276,7 @@ class EnterpriseFlowApp:
             st.info("Aún no se han subido documentos.")
 
         
-            if uploaded_file.type == "application/pdf":
+            if uploaded_file and uploaded_file.type == "application/pdf":
                 with st.expander("📄 Escanear PDF (extraer texto)"):
                     import PyPDF2
                     reader = PyPDF2.PdfReader(save_path)
