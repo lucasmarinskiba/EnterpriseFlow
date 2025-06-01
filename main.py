@@ -597,7 +597,7 @@ class EnterpriseFlowApp:
                         apellido=apellido, nombre=nombre, file_path=None # file_path puede ser None si no quieres forzar archivo
                     )
                     st.success("Ficha médica actualizada correctamente.")
-                 except Exception as e:
+                except Exception as e:
                     st.error(f"Error al guardar ficha médica: {e}")
         
         st.markdown("---")
