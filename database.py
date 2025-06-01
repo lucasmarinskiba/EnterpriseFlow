@@ -7,38 +7,6 @@ class DatabaseManager:
         self.conn = sqlite3.connect('enterpriseflow.db')
         self._create_tables()
 
-    def __init__(self, db_path="enterprise_flow.db"):
-        self.db_path = db_path
-        self.create_wellness_tables()
-    
-    def create_wellness_tables(self):
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        # Tabla de empleados
-        c.execute("""
-            CREATE TABLE IF NOT EXISTS employees (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_email TEXT,
-                nombre TEXT,
-                apellido TEXT,
-                fecha_nacimiento DATE,
-                documento TEXT
-            )
-        """)
-        # Documentos médicos
-        c.execute("""
-            CREATE TABLE IF NOT EXISTS medical_documents (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                employee_id INTEGER,
-                file_name TEXT,
-                file_path TEXT,
-                uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY(employee_id) REFERENCES employees(id)
-            )
-        """)
-        conn.commit()
-        conn.close()
-
     def _create_tables(self):
         tables = [
             '''CREATE TABLE IF NOT EXISTS users (
@@ -180,19 +148,7 @@ class DatabaseManager:
         self.conn.commit()
 
     # En database.py dentro de class DatabaseManager:
-    def get_all_employees_with_docs(self):
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        c.execute("""
-            SELECT DISTINCT e.id, e.nombre, e.apellido
-            FROM employees e
-            JOIN medical_documents d ON e.id = d.employee_id
-            ORDER BY e.apellido, e.nombre
-        """)
-        results = [{"id": row[0], "nombre": row[1], "apellido": row[2]} for row in c.fetchall()]
-        conn.close()
-        return results
-        
+
     def get_medical_record(self, user_email):
         conn = sqlite3.connect("enterprise_flow.db")
         c = conn.cursor()
@@ -252,71 +208,3 @@ class DatabaseManager:
             }
             for r in rows
         ]
-
-    def get_or_create_employee(self, user_email, nombre, apellido):
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        c.execute("SELECT id FROM employees WHERE user_email=? AND nombre=? AND apellido=?",
-                  (user_email, nombre, apellido))
-        row = c.fetchone()
-        if row:
-            emp_id = row[0]
-        else:
-            c.execute("INSERT INTO employees (user_email, nombre, apellido) VALUES (?, ?, ?)",
-                      (user_email, nombre, apellido))
-            emp_id = c.lastrowid
-            conn.commit()
-        conn.close()
-        return emp_id
-
-    def save_medical_document(self, employee_id, file_name, file_path):
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        c.execute(
-            "INSERT INTO medical_documents (employee_id, file_name, file_path) VALUES (?, ?, ?)",
-            (employee_id, file_name, file_path)
-        )
-        conn.commit()
-        conn.close()
-
-    def get_medical_documents_for_employee(self, employee_id):
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        c.execute(
-            "SELECT id, file_name, file_path FROM medical_documents WHERE employee_id=? ORDER BY uploaded_at DESC",
-            (employee_id,)
-        )
-        docs = [{"id": row[0], "file_name": row[1], "file_path": row[2]} for row in c.fetchall()]
-        conn.close()
-        return docs
-
-    def delete_medical_document(self, document_id):
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        c.execute("DELETE FROM medical_documents WHERE id=?", (document_id,))
-        conn.commit()
-        conn.close()
-    
-    def create_tables(self):
-        conn = sqlite3.connect("enterprise_flow.db")
-        c = conn.cursor()
-        c.execute("""
-            CREATE TABLE IF NOT EXISTS employees (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_email TEXT,
-                nombre TEXT,
-                apellido TEXT
-            )
-        """)
-        c.execute("""
-            CREATE TABLE IF NOT EXISTS medical_documents (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                employee_id INTEGER,
-                file_name TEXT,
-                file_path TEXT,
-                uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY(employee_id) REFERENCES employees(id)
-            )
-        """)
-        conn.commit()
-        conn.close()
