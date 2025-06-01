@@ -160,6 +160,7 @@ class DatabaseManager:
         results = [{"id": row[0], "nombre": row[1], "apellido": row[2]} for row in c.fetchall()]
         conn.close()
         return results
+        
     def get_medical_record(self, user_email):
         conn = sqlite3.connect("enterprise_flow.db")
         c = conn.cursor()
@@ -220,15 +221,18 @@ class DatabaseManager:
             for r in rows
         ]
 
-    def get_or_create_employee(self, nombre, apellido, user_email):
+    def get_or_create_employee(self, user_email, nombre, apellido):
         conn = sqlite3.connect("enterprise_flow.db")
         c = conn.cursor()
-        c.execute("SELECT id FROM employees WHERE nombre=? AND apellido=?", (nombre, apellido))
+        c.execute("SELECT id FROM employees WHERE user_email=? AND nombre=? AND apellido=?", (user_email, nombre, apellido))
         row = c.fetchone()
         if row:
             emp_id = row[0]
         else:
-            c.execute("INSERT INTO employees (nombre, apellido, user_email) VALUES (?, ?, ?)", (nombre, apellido, user_email))
+            c.execute(
+                "INSERT INTO employees (user_email, nombre, apellido) VALUES (?, ?, ?)",
+                (user_email, nombre, apellido)
+            )
             emp_id = c.lastrowid
             conn.commit()
         conn.close()
@@ -237,10 +241,31 @@ class DatabaseManager:
     def save_medical_document(self, employee_id, file_name, file_path):
         conn = sqlite3.connect("enterprise_flow.db")
         c = conn.cursor()
-        c.execute("INSERT INTO medical_documents (employee_id, file_name, file_path) VALUES (?, ?, ?)", (employee_id, file_name, file_path))
+        c.execute(
+            "INSERT INTO medical_documents (employee_id, file_name, file_path) VALUES (?, ?, ?)",
+            (employee_id, file_name, file_path)
+        )
         conn.commit()
         conn.close()
 
+    def get_medical_documents_for_employee(self, employee_id):
+        conn = sqlite3.connect("enterprise_flow.db")
+        c = conn.cursor()
+        c.execute(
+            "SELECT id, file_name, file_path FROM medical_documents WHERE employee_id=? ORDER BY uploaded_at DESC",
+            (employee_id,)
+        )
+        docs = [{"id": row[0], "file_name": row[1], "file_path": row[2]} for row in c.fetchall()]
+        conn.close()
+        return docs
+
+    def delete_medical_document(self, document_id):
+        conn = sqlite3.connect("enterprise_flow.db")
+        c = conn.cursor()
+        c.execute("DELETE FROM medical_documents WHERE id=?", (document_id,))
+        conn.commit()
+        conn.close()
+    
     def create_tables(self):
         conn = sqlite3.connect("enterprise_flow.db")
         c = conn.cursor()
