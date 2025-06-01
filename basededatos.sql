@@ -93,3 +93,21 @@ CREATE TABLE IF NOT EXISTS employees (
 ALTER TABLE medical_records ADD COLUMN apellido TEXT;
 ALTER TABLE medical_records ADD COLUMN nombre TEXT;
 ALTER TABLE medical_records ADD COLUMN file_path TEXT;
+
+CREATE TABLE IF NOT EXISTS employees (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    nombre TEXT,
+    apellido TEXT,
+    fecha_nacimiento DATE,
+    documento TEXT
+);
+
+CREATE TABLE IF NOT EXISTS medical_documents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id INTEGER,
+    file_name TEXT,
+    file_path TEXT,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(employee_id) REFERENCES employees(id)
+);
