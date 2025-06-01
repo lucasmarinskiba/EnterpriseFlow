@@ -519,60 +519,57 @@ class EnterpriseFlowApp:
         st.subheader("🩺 Ficha Médica del Empleado")
         user = st.session_state.current_user
 
-        # 1. Listar empleados con documentos o ficha médica
-        empleados = self.db.get_all_employees_with_docs()  # Debe retornar lista de dicts: [{'id':1, 'nombre':'Juan', 'apellido':'Perez'}, ...]
+        # LISTA DE EMPLEADOS CON DOCS
+        empleados = self.db.get_all_employees_with_docs()
         if not empleados:
-            st.info("No hay empleados registrados con documentos.")
+            st.info("No hay empleados con documentos.")
             return
 
-        # 2. Seleccionar empleado
-        empleado_opciones = [f"{e['nombre']} {e['apellido']}" for e in empleados]
-        idx = st.selectbox("Selecciona un empleado para ver sus documentos:", range(len(empleados)), format_func=lambda i: empleado_opciones[i])
+        # SELECCIONAR EMPLEADO
+        nombres = [f"{e['nombre']} {e['apellido']}" for e in empleados]
+        idx = st.selectbox("Selecciona empleado:", range(len(empleados)), format_func=lambda i: nombres[i])
         empleado = empleados[idx]
 
-        # 3. Mostrar y gestionar archivos del empleado seleccionado
-        docs = self.db.get_medical_documents_for_employee(empleado['id'])  # Lista de dicts: [{'file_name':..., 'file_path':...}, ...]
+        # DOCUMENTOS
+        docs = self.db.get_medical_documents_for_employee(empleado['id'])
         st.markdown(f"#### Archivos de {empleado['nombre']} {empleado['apellido']}:")
-        if docs:
-            for doc in docs:
-                col1, col2 = st.columns([8,2])
-                with col1:
-                    st.write(f"📄 {doc['file_name']}")
-                    with open(doc['file_path'], "rb") as f:
-                        st.download_button(
-                            label="Descargar",
-                            data=f.read(),
-                            file_name=doc['file_name'],
-                            mime="application/octet-stream",
-                            key=f"descargar_{doc['id']}"
-                        )
-                with col2:
-                    if st.button("Eliminar", key=f"eliminar_{doc['id']}"):
+        for doc in docs:
+            col1, col2 = st.columns([8,2])
+            with col1:
+                st.write(f"📄 {doc['file_name']}")
+                with open(doc['file_path'], "rb") as f:
+                    st.download_button(
+                        label="Descargar",
+                        data=f.read(),
+                        file_name=doc['file_name'],
+                        mime="application/octet-stream",
+                        key=f"descargar_{doc['id']}"
+                    )
+            with col2:
+                if st.button("Eliminar", key=f"eliminar_{doc['id']}"):
+                    try:
                         os.remove(doc['file_path'])
-                        self.db.delete_medical_document(doc['id'])
-                        st.success("Archivo eliminado.")
-                        st.experimental_rerun()
-        else:
-            st.info("No hay archivos médicos para este empleado.")
-
-        # 4. Permitir subir documentos para el empleado seleccionado
+                    except Exception: pass
+                    self.db.delete_medical_document(doc['id'])
+                    st.experimental_rerun()
+        # SUBIDA DE DOCUMENTOS
         uploaded_file = st.file_uploader(
-            f"Adjunta un documento médico para {empleado['nombre']} {empleado['apellido']}", 
+            f"Adjunta un documento médico para {empleado['nombre']} {empleado['apellido']}",
             type=["pdf", "png", "jpg", "jpeg", "docx"],
             key=f"adjunto_{empleado['id']}"
-        )
+       )
         if st.button("Guardar Documento", key=f"guardar_doc_{empleado['id']}"):
             if uploaded_file:
-                empleado_folder = f"fichas_medicas/{empleado['apellido']}_{empleado['nombre']}"
-                os.makedirs(empleado_folder, exist_ok=True)
-                save_path = f"{empleado_folder}/{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
-                with open(save_path, "wb") as f:
+                folder = f"fichas_medicas/{empleado['apellido']}_{empleado['nombre']}"
+                os.makedirs(folder, exist_ok=True)
+                path = f"{folder}/{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
+                with open(path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
-                self.db.save_medical_document(empleado['id'], uploaded_file.name, save_path)
-                st.success(f"Documento '{uploaded_file.name}' guardado en la carpeta del empleado.")
+                self.db.save_medical_document(empleado['id'], uploaded_file.name, path)
+                st.success(f"Documento '{uploaded_file.name}' guardado.")
                 st.experimental_rerun()
             else:
-                st.error("Debes seleccionar un archivo para guardar.")
+                st.error("Selecciona un archivo.")
 
         # FICHA MÉDICA
         ficha = self.db.get_medical_record(user)
