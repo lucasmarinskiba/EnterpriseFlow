@@ -229,3 +229,27 @@ class DatabaseManager:
         c.execute("INSERT INTO medical_documents (employee_id, file_name, file_path) VALUES (?, ?, ?)", (employee_id, file_name, file_path))
         conn.commit()
         conn.close()
+
+   def create_tables(self):
+       conn = sqlite3.connect("enterprise_flow.db")
+       c = conn.cursor()
+       c.execute("""
+           CREATE TABLE IF NOT EXISTS employees (
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               user_email TEXT,
+               nombre TEXT,
+               apellido TEXT
+           )
+       """)
+       c.execute("""
+           CREATE TABLE IF NOT EXISTS medical_documents (
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               employee_id INTEGER,
+               file_name TEXT,
+               file_path TEXT,
+               uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+               FOREIGN KEY(employee_id) REFERENCES employees(id)
+           )
+       """)
+       conn.commit()
+       conn.close()
