@@ -519,18 +519,17 @@ class EnterpriseFlowApp:
         st.subheader("🩺 Ficha Médica del Empleado")
         user = st.session_state.current_user
 
-        # LISTA DE EMPLEADOS CON DOCS
+        # 1. Listar empleados con documentos
         empleados = self.db.get_all_employees_with_docs()
         if not empleados:
-            st.info("No hay empleados con documentos.")
+            st.info("No hay empleados con documentos médicos.")
             return
 
-        # SELECCIONAR EMPLEADO
         nombres = [f"{e['nombre']} {e['apellido']}" for e in empleados]
         idx = st.selectbox("Selecciona empleado:", range(len(empleados)), format_func=lambda i: nombres[i])
         empleado = empleados[idx]
 
-        # DOCUMENTOS
+        # 2. Mostrar documentos médicos
         docs = self.db.get_medical_documents_for_employee(empleado['id'])
         st.markdown(f"#### Archivos de {empleado['nombre']} {empleado['apellido']}:")
         for doc in docs:
@@ -549,15 +548,17 @@ class EnterpriseFlowApp:
                 if st.button("Eliminar", key=f"eliminar_{doc['id']}"):
                     try:
                         os.remove(doc['file_path'])
-                    except Exception: pass
+                    except Exception:
+                        pass
                     self.db.delete_medical_document(doc['id'])
                     st.experimental_rerun()
-        # SUBIDA DE DOCUMENTOS
+
+        # 3. Subir nuevo documento
         uploaded_file = st.file_uploader(
             f"Adjunta un documento médico para {empleado['nombre']} {empleado['apellido']}",
             type=["pdf", "png", "jpg", "jpeg", "docx"],
             key=f"adjunto_{empleado['id']}"
-       )
+        )
         if st.button("Guardar Documento", key=f"guardar_doc_{empleado['id']}"):
             if uploaded_file:
                 folder = f"fichas_medicas/{empleado['apellido']}_{empleado['nombre']}"
