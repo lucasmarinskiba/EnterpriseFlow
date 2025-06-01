@@ -519,61 +519,86 @@ class EnterpriseFlowApp:
         st.subheader("🩺 Ficha Médica del Empleado")
         user = st.session_state.current_user
 
-        # Inputs principales fuera del form
         apellido = st.text_input("Apellido del empleado", key=f"apellido_ficha_medica_{user}")
         nombre = st.text_input("Nombre del empleado", key=f"nombre_ficha_medica_{user}")
+
+        # Uploader y botón guardar documento
         uploaded_file = st.file_uploader(
             "Adjunta un documento médico (PDF, imagen, Word)",
             type=["pdf", "png", "jpg", "jpeg", "docx"],
             key=f"adjunto_ficha_{user}"
         )
+        guardar_doc = st.button("Guardar Documento", key=f"guardar_doc_{user}")
 
-        # Obtener ficha médica previa (si existe)
-        ficha = self.db.get_medical_record(user)
-
-        # Formulario único, con submit button SIN key
-        with st.form(key=f"ficha_medica_form_{user}"):
-            patologia = st.text_input("Patología principal", value=ficha.get("patologia", "") if ficha else "", key=f"patologia_{user}")
-            enfermedades = st.text_area("Otras enfermedades", value=ficha.get("enfermedades", "") if ficha else "", key=f"enfermedades_{user}")
-            embarazo = st.checkbox("Embarazo", value=bool(ficha.get("embarazo", 0)) if ficha else False, key=f"embarazo_{user}")
-            observaciones = st.text_area("Observaciones", value=ficha.get("observaciones", "") if ficha else "", key=f"observaciones_{user}")
-
-            # Submit button (sin key, solo label)
-            guardar = st.form_submit_button("Guardar ficha médica")
-
-            if guardar:
-                file_path = None
-                if uploaded_file and apellido and nombre:
-                    empleado_folder = f"fichas_medicas/{apellido}_{nombre}"
-                    os.makedirs(empleado_folder, exist_ok=True)
-                    file_path = f"{empleado_folder}/{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
-                    with open(file_path, "wb") as f:
-                        f.write(uploaded_file.getbuffer())
-
-                self.db.save_medical_record(
-                    user, patologia, enfermedades, embarazo, observaciones,
-                    apellido=apellido, nombre=nombre, file_path=file_path
-                )
-                st.success("Ficha médica actualizada y archivo guardado correctamente.")
-
-        # Mostrar archivos/fichas guardadas de ese empleado
+        # Carpeta del empleado
+        mostrar_archivos = False
+        empleado_folder = None
         if apellido and nombre:
             empleado_folder = f"fichas_medicas/{apellido}_{nombre}"
-            if os.path.exists(empleado_folder):
-                archivos = os.listdir(empleado_folder)
-                if archivos:
-                    st.markdown("#### Archivos médicos guardados:")
-                    for archivo in archivos:
+
+        if guardar_doc:
+            if uploaded_file and empleado_folder:
+                os.makedirs(empleado_folder, exist_ok=True)
+                save_path = f"{empleado_folder}/{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
+                with open(save_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                st.success(f"Documento '{uploaded_file.name}' guardado en la carpeta del empleado.")
+                mostrar_archivos = True
+            elif not uploaded_file:
+                st.error("Debes seleccionar un archivo para guardar.")
+            elif not (apellido and nombre):
+                st.error("Debes ingresar Apellido y Nombre para guardar el documento.")
+
+        # Mostrar archivos si hay carpeta disponible
+        if empleado_folder and os.path.exists(empleado_folder):
+            archivos = os.listdir(empleado_folder)
+            if archivos:
+                st.markdown(f"#### Archivos de {apellido} {nombre}:")
+                for archivo in archivos:
+                    col1, col2 = st.columns([8,2])
+                    with col1:
                         st.write(f"📄 {archivo}")
                         with open(os.path.join(empleado_folder, archivo), "rb") as f:
                             st.download_button(
                                 label="Descargar",
                                 data=f.read(),
                                 file_name=archivo,
-                                mime="application/octet-stream"
+                                mime="application/octet-stream",
+                                key=f"descargar_{archivo}_{user}"
                             )
-                else:
-                    st.info("No hay archivos médicos para este empleado.")
+                    with col2:
+                        if st.button("Eliminar", key=f"eliminar_{archivo}_{user}"):
+                            try:
+                                os.remove(os.path.join(empleado_folder, archivo))
+                                st.success(f"Archivo {archivo} eliminado.")
+                                st.experimental_rerun()
+                            except Exception as e:
+                                st.error(f"No se pudo eliminar: {e}")
+            else:
+                st.info("No hay archivos médicos para este empleado.")
+
+        # FICHA MÉDICA
+        ficha = self.db.get_medical_record(user)
+
+        with st.form(key=f"ficha_medica_form_{user}"):
+            patologia = st.text_input("Patología principal", value=ficha.get("patologia", "") if ficha else "", key=f"patologia_{user}")
+            enfermedades = st.text_area("Otras enfermedades", value=ficha.get("enfermedades", "") if ficha else "", key=f"enfermedades_{user}")
+            embarazo = st.checkbox("Embarazo", value=bool(ficha.get("embarazo", 0)) if ficha else False, key=f"embarazo_{user}")
+            observaciones = st.text_area("Observaciones", value=ficha.get("observaciones", "") if ficha else "", key=f"observaciones_{user}")
+
+            # Submit button (sin key extra, solo label)
+            guardar_ficha = st.form_submit_button("Guardar ficha médica")
+
+            if guardar_ficha:
+                # Guardar en base de datos, añade los parámetros requeridos por tu método
+                try:
+                    self.db.save_medical_record(
+                        user, patologia, enfermedades, embarazo, observaciones,
+                        apellido=apellido, nombre=nombre, file_path=None # file_path puede ser None si no quieres forzar archivo
+                    )
+                    st.success("Ficha médica actualizada correctamente.")
+                 except Exception as e:
+                    st.error(f"Error al guardar ficha médica: {e}")
         
         st.markdown("---")
         st.subheader("📋 Faltas y Permisos de Salud")
