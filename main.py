@@ -520,8 +520,9 @@ class EnterpriseFlowApp:
         user = st.session_state.current_user
         # Mostrar/actualizar ficha médica
         ficha = self.db.get_medical_record(user)
-        apellido = st.text_input("Apellido del empleado", key="apellido_ficha_medica")
-        nombre = st.text_input("Nombre del empleado", key="nombre_ficha_medica")
+        user = st.session_state.current_user
+        apellido = st.text_input("Apellido del empleado", key=f"apellido_ficha_medica_{user}")
+        nombre = st.text_input("Nombre del empleado", key=f"nombre_ficha_medica_{user}")
         with st.form(f"ficha_medica_{user}_{apellido}_{nombre}"):
             patologia = st.text_input("Patología principal", value=ficha.get("patologia", "") if ficha else "")
             enfermedades = st.text_area("Otras enfermedades", value=ficha.get("enfermedades", "") if ficha else "")
@@ -532,15 +533,17 @@ class EnterpriseFlowApp:
                 st.success("Ficha médica actualizada.")
 
         # NUEVO: Apellido y nombre del empleado
-        apellido = st.text_input("Apellido del empleado", key="apellido_ficha_medica")
-        nombre = st.text_input("Nombre del empleado", key="nombre_ficha_medica")
+        user = st.session_state.current_user
+        apellido = st.text_input("Apellido del empleado", key=f"apellido_ficha_medica_{user}")
+        nombre = st.text_input("Nombre del empleado", key=f"nombre_ficha_medica_{user}")
         # Obtener ficha médica previa (si existe)
         ficha = self.db.get_medical_record(user)
 
         # NUEVO: Adjuntar archivo a la ficha médica
         uploaded_file = st.file_uploader("Adjunta un documento médico (PDF, imagen, Word)", type=["pdf", "png", "jpg", "jpeg", "docx"])
-        apellido = st.text_input("Apellido del empleado", key="apellido_ficha_medica")
-        nombre = st.text_input("Nombre del empleado", key="nombre_ficha_medica")
+        user = st.session_state.current_user
+        apellido = st.text_input("Apellido del empleado", key=f"apellido_ficha_medica_{user}")
+        nombre = st.text_input("Nombre del empleado", key=f"nombre_ficha_medica_{user}")
         with st.form(f"ficha_medica_{user}_{apellido}_{nombre}"):
             patologia = st.text_input("Patología principal", value=ficha.get("patologia", "") if ficha else "")
             enfermedades = st.text_area("Otras enfermedades", value=ficha.get("enfermedades", "") if ficha else "")
