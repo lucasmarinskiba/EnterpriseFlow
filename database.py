@@ -7,6 +7,38 @@ class DatabaseManager:
         self.conn = sqlite3.connect('enterpriseflow.db')
         self._create_tables()
 
+    def __init__(self, db_path="enterprise_flow.db"):
+        self.db_path = db_path
+        self.create_wellness_tables()
+    
+    def create_wellness_tables(self):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        # Tabla de empleados
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS employees (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_email TEXT,
+                nombre TEXT,
+                apellido TEXT,
+                fecha_nacimiento DATE,
+                documento TEXT
+            )
+        """)
+        # Documentos médicos
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS medical_documents (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                employee_id INTEGER,
+                file_name TEXT,
+                file_path TEXT,
+                uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(employee_id) REFERENCES employees(id)
+            )
+        """)
+        conn.commit()
+        conn.close()
+
     def _create_tables(self):
         tables = [
             '''CREATE TABLE IF NOT EXISTS users (
@@ -222,14 +254,16 @@ class DatabaseManager:
         ]
 
     def get_or_create_employee(self, user_email, nombre, apellido):
-        conn = sqlite3.connect("enterprise_flow.db")
+        conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
-        c.execute("SELECT id FROM employees WHERE user_email=? AND nombre=? AND apellido=?", (user_email, nombre, apellido))
+        c.execute("SELECT id FROM employees WHERE user_email=? AND nombre=? AND apellido=?",
+                  (user_email, nombre, apellido))
         row = c.fetchone()
         if row:
             emp_id = row[0]
         else:
-            c.execute("INSERT INTO employees (user_email, nombre, apellido) VALUES (?, ?, ?)", (user_email, nombre, apellido))
+            c.execute("INSERT INTO employees (user_email, nombre, apellido) VALUES (?, ?, ?)",
+                      (user_email, nombre, apellido))
             emp_id = c.lastrowid
             conn.commit()
         conn.close()
