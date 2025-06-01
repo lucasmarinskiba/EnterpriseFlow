@@ -229,10 +229,7 @@ class DatabaseManager:
         if row:
             emp_id = row[0]
         else:
-            c.execute(
-                "INSERT INTO employees (user_email, nombre, apellido) VALUES (?, ?, ?)",
-                (user_email, nombre, apellido)
-            )
+            c.execute("INSERT INTO employees (user_email, nombre, apellido) VALUES (?, ?, ?)", (user_email, nombre, apellido))
             emp_id = c.lastrowid
             conn.commit()
         conn.close()
