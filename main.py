@@ -519,29 +519,29 @@ class EnterpriseFlowApp:
         st.subheader("🩺 Ficha Médica del Empleado")
         user = st.session_state.current_user
 
-        # Campos principales una sola vez
+        # Inputs principales fuera del form
         apellido = st.text_input("Apellido del empleado", key=f"apellido_ficha_medica_{user}")
         nombre = st.text_input("Nombre del empleado", key=f"nombre_ficha_medica_{user}")
+        uploaded_file = st.file_uploader(
+            "Adjunta un documento médico (PDF, imagen, Word)",
+            type=["pdf", "png", "jpg", "jpeg", "docx"],
+            key=f"adjunto_ficha_{user}"
+        )
 
         # Obtener ficha médica previa (si existe)
         ficha = self.db.get_medical_record(user)
 
-        # Adjuntar archivo a la ficha médica
-        uploaded_file = st.file_uploader("Adjunta un documento médico (PDF, imagen, Word)", 
-                                         type=["pdf", "png", "jpg", "jpeg", "docx"], 
-                                         key=f"adjunto_ficha_{user}")
-
-        # Formulario de ficha médica
+        # Formulario único, con submit button SIN key
         with st.form(key=f"ficha_medica_form_{user}"):
             patologia = st.text_input("Patología principal", value=ficha.get("patologia", "") if ficha else "", key=f"patologia_{user}")
             enfermedades = st.text_area("Otras enfermedades", value=ficha.get("enfermedades", "") if ficha else "", key=f"enfermedades_{user}")
             embarazo = st.checkbox("Embarazo", value=bool(ficha.get("embarazo", 0)) if ficha else False, key=f"embarazo_{user}")
             observaciones = st.text_area("Observaciones", value=ficha.get("observaciones", "") if ficha else "", key=f"observaciones_{user}")
 
-            guardar = st.form_submit_button("Guardar ficha médica", key=f"guardar_ficha_{user}")
+            # Submit button (sin key, solo label)
+            guardar = st.form_submit_button("Guardar ficha médica")
 
             if guardar:
-                # Guardar archivo en carpeta correspondiente si se adjuntó
                 file_path = None
                 if uploaded_file and apellido and nombre:
                     empleado_folder = f"fichas_medicas/{apellido}_{nombre}"
@@ -550,7 +550,6 @@ class EnterpriseFlowApp:
                     with open(file_path, "wb") as f:
                         f.write(uploaded_file.getbuffer())
 
-                # Guardar en base de datos (agrega la columna file_path en la tabla si aún no existe)
                 self.db.save_medical_record(
                     user, patologia, enfermedades, embarazo, observaciones,
                     apellido=apellido, nombre=nombre, file_path=file_path
