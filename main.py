@@ -520,6 +520,8 @@ class EnterpriseFlowApp:
         user = st.session_state.current_user
         # Mostrar/actualizar ficha médica
         ficha = self.db.get_medical_record(user)
+        apellido = st.text_input("Apellido del empleado")
+        nombre = st.text_input("Nombre del empleado")
         with st.form(f"ficha_medica_{user}_{apellido}_{nombre}"):
             patologia = st.text_input("Patología principal", value=ficha.get("patologia", "") if ficha else "")
             enfermedades = st.text_area("Otras enfermedades", value=ficha.get("enfermedades", "") if ficha else "")
@@ -538,7 +540,8 @@ class EnterpriseFlowApp:
 
         # NUEVO: Adjuntar archivo a la ficha médica
         uploaded_file = st.file_uploader("Adjunta un documento médico (PDF, imagen, Word)", type=["pdf", "png", "jpg", "jpeg", "docx"])
-
+        apellido = st.text_input("Apellido del empleado")
+        nombre = st.text_input("Nombre del empleado")
         with st.form(f"ficha_medica_{user}_{apellido}_{nombre}"):
             patologia = st.text_input("Patología principal", value=ficha.get("patologia", "") if ficha else "")
             enfermedades = st.text_area("Otras enfermedades", value=ficha.get("enfermedades", "") if ficha else "")
