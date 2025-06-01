@@ -148,7 +148,18 @@ class DatabaseManager:
         self.conn.commit()
 
     # En database.py dentro de class DatabaseManager:
-
+    def get_all_employees_with_docs(self):
+        conn = sqlite3.connect("enterprise_flow.db")
+        c = conn.cursor()
+        c.execute("""
+            SELECT DISTINCT e.id, e.nombre, e.apellido
+            FROM employees e
+            JOIN medical_documents d ON e.id = d.employee_id
+            ORDER BY e.apellido, e.nombre
+        """)
+        results = [{"id": row[0], "nombre": row[1], "apellido": row[2]} for row in c.fetchall()]
+        conn.close()
+        return results
     def get_medical_record(self, user_email):
         conn = sqlite3.connect("enterprise_flow.db")
         c = conn.cursor()
