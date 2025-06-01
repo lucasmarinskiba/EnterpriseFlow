@@ -181,7 +181,7 @@ class DatabaseManager:
 
     # En database.py dentro de class DatabaseManager:
     def get_all_employees_with_docs(self):
-        conn = sqlite3.connect("enterprise_flow.db")
+        conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         c.execute("""
             SELECT DISTINCT e.id, e.nombre, e.apellido
@@ -270,7 +270,7 @@ class DatabaseManager:
         return emp_id
 
     def save_medical_document(self, employee_id, file_name, file_path):
-        conn = sqlite3.connect("enterprise_flow.db")
+        conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         c.execute(
             "INSERT INTO medical_documents (employee_id, file_name, file_path) VALUES (?, ?, ?)",
@@ -280,7 +280,7 @@ class DatabaseManager:
         conn.close()
 
     def get_medical_documents_for_employee(self, employee_id):
-        conn = sqlite3.connect("enterprise_flow.db")
+        conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         c.execute(
             "SELECT id, file_name, file_path FROM medical_documents WHERE employee_id=? ORDER BY uploaded_at DESC",
@@ -291,7 +291,7 @@ class DatabaseManager:
         return docs
 
     def delete_medical_document(self, document_id):
-        conn = sqlite3.connect("enterprise_flow.db")
+        conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         c.execute("DELETE FROM medical_documents WHERE id=?", (document_id,))
         conn.commit()
