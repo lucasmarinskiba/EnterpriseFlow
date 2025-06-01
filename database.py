@@ -208,3 +208,24 @@ class DatabaseManager:
             }
             for r in rows
         ]
+
+   def get_or_create_employee(self, nombre, apellido, user_email):
+       conn = sqlite3.connect("enterprise_flow.db")
+       c = conn.cursor()
+       c.execute("SELECT id FROM employees WHERE nombre=? AND apellido=?", (nombre, apellido))
+       row = c.fetchone()
+       if row:
+           emp_id = row[0]
+       else:
+           c.execute("INSERT INTO employees (nombre, apellido, user_email) VALUES (?, ?, ?)", (nombre, apellido, user_email))
+           emp_id = c.lastrowid
+           conn.commit()
+       conn.close()
+       return emp_id
+
+   def save_medical_document(self, employee_id, file_name, file_path):
+       conn = sqlite3.connect("enterprise_flow.db")
+       c = conn.cursor()
+       c.execute("INSERT INTO medical_documents (employee_id, file_name, file_path) VALUES (?, ?, ?)", (employee_id, file_name, file_path))
+       conn.commit()
+       conn.close()
