@@ -565,7 +565,7 @@ class EnterpriseFlowApp:
             model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
             if st.button("Ejecutar Modelo"):
                 self._run_predictive_model(model_type)
-                    st.success("Modelo ejecutado")
+                st.success("Modelo ejecutado")
                 
         with adv_col2:
             st.markdown("**⚙️ Integración Externa**")
