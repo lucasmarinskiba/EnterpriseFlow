@@ -157,3 +157,24 @@ CREATE TABLE IF NOT EXISTS automation_task_logs (
     FOREIGN KEY(task_id) REFERENCES automation_tasks(id)
 );
 
+CREATE TABLE IF NOT EXISTS advanced_automations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT,
+    name TEXT,
+    script TEXT,
+    version INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rollback_of INTEGER,
+    status TEXT DEFAULT 'activo'
+);
+
+CREATE TABLE IF NOT EXISTS advanced_automation_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    automation_id INTEGER,
+    user_email TEXT,
+    status TEXT,
+    output TEXT,
+    error TEXT,
+    executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(automation_id) REFERENCES advanced_automations(id)
+);
