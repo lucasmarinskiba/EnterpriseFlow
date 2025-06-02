@@ -492,8 +492,73 @@ class EnterpriseFlowApp:
                         st.success("Sincronización configurada")
 
             with st.container():
-                st.subheader("Automatizaciones Avanzadas")
-                adv_col1, adv_col2 = st.columns(2)
+                st.subheader("Automatizaciones Avanzadas Mejoradas")
+                st.markdown("**Carga tu propio script Python para automatización avanzada:**")
+                name = st.text_input("Nombre de la automatización")
+                script = st.text_area("Script Python (función run())")
+                if st.button("Guardar Script"):
+                    self.db.save_advanced_automation(st.session_state.current_user, name, script)
+                    st.success("Script guardado.")
+
+                    st.markdown("### Tus Automatizaciones Avanzadas")
+                    advs = self.db.get_advanced_automations(st.session_state.current_user)
+                    for adv in advs:
+                        st.markdown(f"**{adv['name']}** (v{adv['version']})")
+                        if st.button(f"Ejecutar {adv['name']}"):
+                        try:
+                            # Seguridad: nunca uses eval en producción real sin sandboxing
+                            local_env = {}
+                            exec(adv['script'], {}, local_env)
+                            output = local_env['run']()
+                            self.db.log_advanced_automation_run(adv['id'], "exitoso", str(output), "")
+                            st.success(f"Resultado: {output}")
+                        except Exception as e:
+                            self.db.log_advanced_automation_run(adv['id'], "fallo", "", str(e))
+                            st.error(f"Error: {str(e)}")
+                            if st.button(f"Rollback {adv['name']} (v{adv['version']})"):
+                                self.db.rollback_advanced_automation(adv['id'])
+                                st.info("Rollback realizado.")
+
+             # Métodos para database.py
+             def save_advanced_automation(self, user_email, name, script):
+                 conn = sqlite3.connect(self.db_path)
+                 c = conn.cursor()
+                 c.execute("SELECT MAX(version) FROM advanced_automations WHERE user_email=? AND name=?", (user_email, name))
+                 last_version = c.fetchone()[0] or 0
+                 c.execute("""
+                     INSERT INTO advanced_automations (user_email, name, script, version)
+                     VALUES (?, ?, ?, ?)
+                 """, (user_email, name, script, last_version+1))
+                 conn.commit()
+                 conn.close()
+
+            def get_advanced_automations(self, user_email):
+                conn = sqlite3.connect(self.db_path)
+                c = conn.cursor()
+                c.execute("""
+                    SELECT id, name, script, version FROM advanced_automations
+                    WHERE user_email=? AND status='activo' ORDER BY created_at DESC
+                """, (user_email,))
+                rows = c.fetchall()
+                conn.close()
+                return [{"id": r[0], "name": r[1], "script": r[2], "version": r[3]} for r in rows]
+
+    def log_advanced_automation_run(self, automation_id, status, output, error):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO advanced_automation_logs (automation_id, status, output, error)
+            VALUES (?, ?, ?, ?)
+        """, (automation_id, status, output, error))
+        conn.commit()
+        conn.close()
+
+    def rollback_advanced_automation(self, automation_id):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("UPDATE advanced_automations SET status='rollback' WHERE id=?", (automation_id,))
+        conn.commit()
+        conn.close()
                 
                 with adv_col1:
                     st.markdown("**🔮 Análisis Predictivo**")
