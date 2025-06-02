@@ -3,9 +3,9 @@ import hashlib
 from datetime import datetime
 
 class DatabaseManager:
-    def __init__(self):
-        self.conn = sqlite3.connect('enterpriseflow.db')
-        self._create_tables()
+    def __init__(self, db_path="enterprise_flow.db"):
+        self.db_path = db_path
+
 
     def _create_tables(self):
         tables = [
