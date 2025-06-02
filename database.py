@@ -5,7 +5,24 @@ from datetime import datetime
 class DatabaseManager:
     def __init__(self, db_path="enterprise_flow.db"):
         self.db_path = db_path
+        ensure_tables(db_path)  # <-- Esto asegura que la tabla users y otras existan
 
+    def ensure_tables(db_path="enterprise_flow.db"):
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            nombre TEXT,
+            apellido TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """)
+        # Agrega aquí otras tablas necesarias si no existen (por ejemplo invoices, automation_tasks, etc)
+        conn.commit()
+        conn.close()
 
     def _create_tables(self):
         tables = [
