@@ -1,46 +1,13 @@
 import sqlite3
 import hashlib
-from datetime import datetime
 
-def ensure_tables(db_path="enterprise_flow.db"):
-    conn = sqlite3.connect(db_path)
-    c = conn.cursor()
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,
-        nombre TEXT,
-        apellido TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    """)
-    # Agrega aquí otras tablas necesarias
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS invoices (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_email TEXT NOT NULL,
-        client_name TEXT,
-        client_email TEXT,
-        client_address TEXT,
-        subtotal REAL,
-        iva REAL,
-        total REAL,
-        invoice_number TEXT,
-        pdf_file BLOB,
-        status TEXT DEFAULT 'pendiente',
-        sent_at TIMESTAMP,
-        paid_at TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    """)
-    conn.commit()
-    conn.close()
+def hash_password(password):
+    return hashlib.sha256(password.encode('utf-8')).hexdigest()
 
 class DatabaseManager:
     def __init__(self, db_path="enterprise_flow.db"):
         self.db_path = db_path
-        ensure_tables(db_path)  # <-- Esto asegura que la tabla users y otras existan
+        self.ensure_tables()
 
     def _create_tables(self):
         tables = [
@@ -80,6 +47,50 @@ class DatabaseManager:
             self.conn.execute(table)
         self.conn.commit()
 
+    def ensure_tables(self):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            nombre TEXT,
+            apellido TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """)
+        conn.commit()
+        conn.close()
+    
+    def create_user(self, email, password, nombre="", apellido=""):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        hashed = hash_password(password)
+        try:
+            c.execute(
+                "INSERT INTO users (email, password, nombre, apellido) VALUES (?, ?, ?, ?)",
+                (email.strip(), hashed, nombre, apellido)
+            )
+            conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            return False
+        finally:
+            conn.close()
+
+    def verify_user(self, email, password):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        hashed = hash_password(password)
+        c.execute(
+            "SELECT * FROM users WHERE email=? AND password=?",
+            (email.strip(), hashed)
+        )
+        user = c.fetchone()
+        conn.close()
+        return user is not None
+    
     def save_personal_goal(self, user, goal):
         self.conn.execute(
             'INSERT INTO personal_goals (user_email, goal) VALUES (?, ?)',
@@ -108,27 +119,6 @@ class DatabaseManager:
         )
         self.conn.commit()
     
-    def verify_user(self, email, password):
-        import sqlite3
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.execute(
-            "SELECT * FROM users WHERE email=? AND password=?",
-            (email, password)
-        )
-        user = cursor.fetchone()
-        conn.close()
-        return user is not None
-
-    def create_user(self, email, password):
-        hashed_pw = hashlib.sha256(password.encode()).hexdigest()
-        try:
-            self.conn.execute(
-                'INSERT INTO users (email, password) VALUES (?, ?)',
-                (email, hashed_pw)
-            )
-            self.conn.commit()
-        except sqlite3.IntegrityError as e:
-            raise e
 
     def save_automation_task(self, user_email, task_data):
         conn = sqlite3.connect(self.db_path)
