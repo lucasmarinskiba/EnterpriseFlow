@@ -413,17 +413,25 @@ class EnterpriseFlowApp:
             st.dataframe(pd.DataFrame(facturas))
 
             with col2:
-                st.subheader("Programación de Tareas")
+                st.subheader("Programación de Tareas Mejorada")
                 task_type = st.selectbox("Tipo de Tarea", ["Reporte", "Recordatorio", "Backup"])
                 schedule_time = st.time_input("Hora de Ejecución")
-                
-                if st.button("Programar Tarea"):
-                    self.db.save_automation_task(st.session_state.current_user, {
-                        'type': task_type,
-                        'schedule': schedule_time.strftime("%H:%M")
-                    })
+                responsible = st.text_input("Responsable (email)")
+                notification_method = st.selectbox("Notificación", ["Email", "Slack", "WhatsApp"])
+                if st.button("Programar Tarea Mejorada"):
+                   self.db.save_automation_task(
+                       st.session_state.current_user, {
+                           'type': task_type,
+                           'schedule': schedule_time.strftime("%H:%M"),
+                           'responsible': responsible,
+                           'notification_method': notification_method
+                        }
+                    )
                     st.success("Tarea programada exitosamente")
-
+            st.markdown("### Historial de Tareas")
+            tasks = self.db.get_automation_tasks(st.session_state.current_user)
+            st.dataframe(pd.DataFrame(tasks))
+        
             with col3:
                 st.subheader("Nuevas Automatizaciones")
                 
