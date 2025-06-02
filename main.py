@@ -368,60 +368,49 @@ class EnterpriseFlowApp:
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                st.subheader("Generador de Facturas")
+                st.subheader("Generador de Facturas Mejorado")
                 client_name = st.text_input("Nombre del Cliente")
                 subtotal = st.number_input("Subtotal", min_value=0.0)
                 client_address = st.text_input("Dirección del Cliente")
                 client_email = st.text_input("Correo Electrónico del Cliente")
-                
-                if st.button("Generar Factura"):
-                    invoice_data = {
-                        'client_name': client_name,
-                        'subtotal': subtotal,
-                        'client_address': client_address,
-                        'client_email': client_email
-                    }
-                    
-                    invoice = self._generate_invoice(invoice_data)
-                    
-                    smtp_server = st.secrets["smtp"]["server"]
-                    smtp_port = st.secrets["smtp"]["port"]
-                    sender_email = st.secrets["smtp"]["user"]
-                    sender_password = st.secrets["smtp"]["password"]
-                    
-                    msg = MIMEMultipart()
-                    msg['From'] = sender_email
-                    msg['To'] = client_email
-                    msg['Subject'] = f"Factura {invoice['invoice_number']} - {client_name}"
-                    
-                    body = f"""
-                    Hola {client_name},
-                    
-                    Adjunto encontrará su factura número {invoice['invoice_number']}.
-                    
-                    Detalles:
-                    - Total: ${invoice['total']}
-                    - Fecha: {invoice['date']}
-                    
-                    Gracias por su preferencia.
-                    """
-                    msg.attach(MIMEText(body, 'plain'))
-                    
-                    filename = f"Factura_{invoice['invoice_number']}.pdf"
-                    part = MIMEBase('application', 'octet-stream')
-                    part.set_payload(invoice['pdf_data'])
-                    encoders.encode_base64(part)
-                    part.add_header('Content-Disposition', f'attachment; filename= {filename}')
-                    msg.attach(part)
-                    
+                send_whatsapp = st.checkbox("Enviar por WhatsApp (simulado)")
+                custom_message = st.text_area("Mensaje personalizado para el cliente", value="Gracias por su compra.")
+                template = st.selectbox("Plantilla de Factura", ["Estándar", "Moderna"])  # Puedes expandir esto
+
+                if st.button("Generar y Enviar Factura"):
+                    iva_rate = 0.16 if 'MEX' in client_address else 0.21
+                    total = round(subtotal * (1 + iva_rate), 2)
+                    invoice_number = f"INV-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+                    pdf_bytes = generate_invoice_pdf(client_name, subtotal, iva_rate, total, invoice_number, template)
+
+                    # Guardar en la base de datos
+                    self.db.save_invoice(
+                        st.session_state.current_user,
+                        client_name, client_email, client_address,
+                        subtotal, iva_rate, total, invoice_number, pdf_bytes
+                    )
+
+                    # Log de acción
+                    self.db.log_invoice_action(invoice_number, st.session_state.current_user, "generada")
+
+                    # Envío por email
                     try:
-                        with smtplib.SMTP(smtp_server, smtp_port) as server:
-                            server.starttls()
-                            server.login(sender_email, sender_password)
-                            server.sendmail(sender_email, client_email, msg.as_string())
-                        st.success(f"Factura enviada a {client_email}!")
+                        send_invoice_email(client_email, invoice_number, total, pdf_bytes, custom_message)
+                        st.success(f"Factura enviada a {client_email} correctamente.")
+                        self.db.update_invoice_status(invoice_number, "enviada")
+                        self.db.log_invoice_action(invoice_number, st.session_state.current_user, "enviada por email")
                     except Exception as e:
                         st.error(f"Error enviando email: {str(e)}")
+
+                    # WhatsApp (simulado)
+                    if send_whatsapp:
+                    # Aquí iría la lógica real de WhatsApp API.
+                    st.info(f"Factura simulada enviada a WhatsApp de {client_name}")
+                    self.db.log_invoice_action(invoice_number, st.session_state.current_user, "enviada por whatsapp")
+    
+           st.markdown("### Facturas Generadas")
+           facturas = self.db.get_invoices_by_user(st.session_state.current_user)
+           st.dataframe(pd.DataFrame(facturas))
 
             with col2:
                 st.subheader("Programación de Tareas")
