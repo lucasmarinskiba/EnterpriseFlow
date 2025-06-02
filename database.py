@@ -208,3 +208,38 @@ class DatabaseManager:
             }
             for r in rows
         ]
+
+    def save_invoice(self, user_email, client_name, client_email, client_address, subtotal, iva, total, invoice_number, pdf_bytes):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO invoices (user_email, client_name, client_email, client_address, subtotal, iva, total, invoice_number, pdf_file)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (user_email, client_name, client_email, client_address, subtotal, iva, total, invoice_number, pdf_bytes))
+        conn.commit()
+        conn.close()
+
+    def log_invoice_action(self, invoice_number, user_email, action):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("SELECT id FROM invoices WHERE invoice_number=?", (invoice_number,))
+        inv = c.fetchone()
+        if inv:
+            c.execute("INSERT INTO invoice_logs (invoice_id, user_email, action) VALUES (?, ?, ?)", (inv[0], user_email, action))
+            conn.commit()
+        conn.close()
+
+    def update_invoice_status(self, invoice_number, status):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("UPDATE invoices SET status=?, sent_at=CURRENT_TIMESTAMP WHERE invoice_number=?", (status, invoice_number))
+        conn.commit()
+        conn.close()
+
+    def get_invoices_by_user(self, user_email):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("SELECT invoice_number, client_name, total, status, created_at FROM invoices WHERE user_email=? ORDER BY created_at DESC", (user_email,))
+        rows = c.fetchall()
+        conn.close()
+        return [{"Número": r[0], "Cliente": r[1], "Total": r[2], "Estado": r[3], "Fecha": r[4]} for r in rows]
