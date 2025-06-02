@@ -404,9 +404,9 @@ class EnterpriseFlowApp:
 
                     # WhatsApp (simulado)
                     if send_whatsapp:
-                    # Aquí iría la lógica real de WhatsApp API.
-                    st.info(f"Factura simulada enviada a WhatsApp de {client_name}")
-                    self.db.log_invoice_action(invoice_number, st.session_state.current_user, "enviada por whatsapp")
+                        # Aquí iría la lógica real de WhatsApp API.
+                        st.info(f"Factura simulada enviada a WhatsApp de {client_name}")
+                        self.db.log_invoice_action(invoice_number, st.session_state.current_user, "enviada por whatsapp")
     
            st.markdown("### Facturas Generadas")
            facturas = self.db.get_invoices_by_user(st.session_state.current_user)
