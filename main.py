@@ -426,8 +426,8 @@ class EnterpriseFlowApp:
                            'responsible': responsible,
                            'notification_method': notification_method
                         }
-                    )
-                    st.success("Tarea programada exitosamente")
+                   )
+                st.success("Tarea programada exitosamente")
             st.markdown("### Historial de Tareas")
             tasks = self.db.get_automation_tasks(st.session_state.current_user)
             st.dataframe(pd.DataFrame(tasks))
