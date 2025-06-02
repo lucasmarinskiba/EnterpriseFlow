@@ -572,7 +572,7 @@ class EnterpriseFlowApp:
             api_endpoint = st.text_input("URL API")
             if st.button("Conectar"):
                 self._test_api_connection(api_endpoint)
-                    st.success("Conexión exitosa")
+                st.success("Conexión exitosa")
 
     def get_smtp_settings(email):
         domain = email.split('@')[-1].lower()
