@@ -111,3 +111,29 @@ CREATE TABLE IF NOT EXISTS medical_documents (
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(employee_id) REFERENCES employees(id)
 );
+
+CREATE TABLE IF NOT EXISTS invoices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    client_name TEXT,
+    client_email TEXT,
+    client_address TEXT,
+    subtotal REAL,
+    iva REAL,
+    total REAL,
+    invoice_number TEXT,
+    pdf_file BLOB,
+    status TEXT DEFAULT 'pendiente', -- pendiente, enviada, pagada, vencida
+    sent_at TIMESTAMP,
+    paid_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS invoice_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    invoice_id INTEGER,
+    user_email TEXT,
+    action TEXT,
+    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(invoice_id) REFERENCES invoices(id)
+);
