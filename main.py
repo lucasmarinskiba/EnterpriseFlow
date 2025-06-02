@@ -442,7 +442,7 @@ class EnterpriseFlowApp:
                         "Backup semanal": ("Backup", "Domingo 03:00", "Email"),
                         "Notificar stock bajo": ("Alerta", "Inmediato", "Email"),
                     }[plantilla]
-                   st.info(f"Plantilla seleccionada: {plantilla}")
+                    st.info(f"Plantilla seleccionada: {plantilla}")
                else:
                    task_type = st.text_input("Tipo de tarea (custom)")
                    schedule = st.text_input("Horario o trigger")
