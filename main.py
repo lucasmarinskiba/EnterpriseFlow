@@ -560,19 +560,19 @@ class EnterpriseFlowApp:
         conn.commit()
         conn.close()
                 
-                with adv_col1:
-                    st.markdown("**🔮 Análisis Predictivo**")
-                    model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
-                    if st.button("Ejecutar Modelo"):
-                        self._run_predictive_model(model_type)
-                        st.success("Modelo ejecutado")
+        with adv_col1:
+            st.markdown("**🔮 Análisis Predictivo**")
+            model_type = st.selectbox("Modelo", ["Ventas", "Retención", "Inventario"])
+            if st.button("Ejecutar Modelo"):
+                self._run_predictive_model(model_type)
+                    st.success("Modelo ejecutado")
                 
-                with adv_col2:
-                    st.markdown("**⚙️ Integración Externa**")
-                    api_endpoint = st.text_input("URL API")
-                    if st.button("Conectar"):
-                        self._test_api_connection(api_endpoint)
-                        st.success("Conexión exitosa")
+        with adv_col2:
+            st.markdown("**⚙️ Integración Externa**")
+            api_endpoint = st.text_input("URL API")
+            if st.button("Conectar"):
+                self._test_api_connection(api_endpoint)
+                    st.success("Conexión exitosa")
 
     def get_smtp_settings(email):
         domain = email.split('@')[-1].lower()
