@@ -408,9 +408,9 @@ class EnterpriseFlowApp:
                         st.info(f"Factura simulada enviada a WhatsApp de {client_name}")
                         self.db.log_invoice_action(invoice_number, st.session_state.current_user, "enviada por whatsapp")
     
-           st.markdown("### Facturas Generadas")
-           facturas = self.db.get_invoices_by_user(st.session_state.current_user)
-           st.dataframe(pd.DataFrame(facturas))
+            st.markdown("### Facturas Generadas")
+            facturas = self.db.get_invoices_by_user(st.session_state.current_user)
+            st.dataframe(pd.DataFrame(facturas))
 
             with col2:
                 st.subheader("Programación de Tareas")
