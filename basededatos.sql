@@ -137,3 +137,23 @@ CREATE TABLE IF NOT EXISTS invoice_logs (
     log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(invoice_id) REFERENCES invoices(id)
 );
+
+CREATE TABLE IF NOT EXISTS automation_tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT,
+    type TEXT,
+    schedule TEXT,
+    responsible TEXT,
+    notification_method TEXT,
+    status TEXT DEFAULT 'pendiente',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS automation_task_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id INTEGER,
+    action TEXT,
+    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(task_id) REFERENCES automation_tasks(id)
+);
+
