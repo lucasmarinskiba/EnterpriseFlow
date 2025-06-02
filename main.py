@@ -519,18 +519,18 @@ class EnterpriseFlowApp:
                                    self.db.rollback_advanced_automation(adv['id'])
                                    st.info("Rollback realizado.")
 
-             # Métodos para database.py
-             def save_advanced_automation(self, user_email, name, script):
-                 conn = sqlite3.connect(self.db_path)
-                 c = conn.cursor()
-                 c.execute("SELECT MAX(version) FROM advanced_automations WHERE user_email=? AND name=?", (user_email, name))
-                 last_version = c.fetchone()[0] or 0
-                 c.execute("""
-                     INSERT INTO advanced_automations (user_email, name, script, version)
-                     VALUES (?, ?, ?, ?)
-                 """, (user_email, name, script, last_version+1))
-                 conn.commit()
-                 conn.close()
+            # Métodos para database.py
+            def save_advanced_automation(self, user_email, name, script):
+                conn = sqlite3.connect(self.db_path)
+                c = conn.cursor()
+                c.execute("SELECT MAX(version) FROM advanced_automations WHERE user_email=? AND name=?", (user_email, name))
+                last_version = c.fetchone()[0] or 0
+                c.execute("""
+                    INSERT INTO advanced_automations (user_email, name, script, version)
+                    VALUES (?, ?, ?, ?)
+                """, (user_email, name, script, last_version+1))
+                conn.commit()
+                conn.close()
 
             def get_advanced_automations(self, user_email):
                 conn = sqlite3.connect(self.db_path)
