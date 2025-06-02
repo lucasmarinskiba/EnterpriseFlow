@@ -74,12 +74,15 @@ class DatabaseManager:
         self.conn.commit()
     
     def verify_user(self, email, password):
-        hashed_pw = hashlib.sha256(password.encode()).hexdigest()
-        cursor = self.conn.execute(
-            'SELECT * FROM users WHERE email=? AND password=?',
-            (email, hashed_pw)
+        import sqlite3
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.execute(
+            "SELECT * FROM users WHERE email=? AND password=?",
+            (email, password)
         )
-        return cursor.fetchone() is not None
+        user = cursor.fetchone()
+        conn.close()
+        return user is not None
 
     def create_user(self, email, password):
         hashed_pw = hashlib.sha256(password.encode()).hexdigest()
