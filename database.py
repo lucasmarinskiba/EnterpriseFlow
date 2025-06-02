@@ -110,6 +110,10 @@ class DatabaseManager:
         conn.close()
         return [{"Tipo": r[0], "Horario": r[1], "Responsable": r[2], "Notificación": r[3], "Estado": r[4], "Creado": r[5]} for r in rows]
 
+    def log_automation_task_creation(self, user_email, task_type):
+        # Puedes enlazar esto con automation_task_logs si quieres
+        pass  # Simple placeholder, puedes expandir
+    
     def save_recognition(self, sender, receiver, message):
         self.conn.execute(
             'INSERT INTO recognitions (sender, receiver, message, date) VALUES (?, ?, ?, ?)',
