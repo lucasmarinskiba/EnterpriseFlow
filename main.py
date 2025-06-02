@@ -505,19 +505,19 @@ class EnterpriseFlowApp:
                     for adv in advs:
                         st.markdown(f"**{adv['name']}** (v{adv['version']})")
                         if st.button(f"Ejecutar {adv['name']}"):
-                        try:
-                            # Seguridad: nunca uses eval en producción real sin sandboxing
-                            local_env = {}
-                            exec(adv['script'], {}, local_env)
-                            output = local_env['run']()
-                            self.db.log_advanced_automation_run(adv['id'], "exitoso", str(output), "")
-                            st.success(f"Resultado: {output}")
-                        except Exception as e:
-                            self.db.log_advanced_automation_run(adv['id'], "fallo", "", str(e))
-                            st.error(f"Error: {str(e)}")
-                            if st.button(f"Rollback {adv['name']} (v{adv['version']})"):
-                                self.db.rollback_advanced_automation(adv['id'])
-                                st.info("Rollback realizado.")
+                            try:
+                                # Seguridad: nunca uses eval en producción real sin sandboxing
+                                local_env = {}
+                                exec(adv['script'], {}, local_env)
+                                output = local_env['run']()
+                                self.db.log_advanced_automation_run(adv['id'], "exitoso", str(output), "")
+                               st.success(f"Resultado: {output}")
+                            except Exception as e:
+                                self.db.log_advanced_automation_run(adv['id'], "fallo", "", str(e))
+                                st.error(f"Error: {str(e)}")
+                                if st.button(f"Rollback {adv['name']} (v{adv['version']})"):
+                                   self.db.rollback_advanced_automation(adv['id'])
+                                   st.info("Rollback realizado.")
 
              # Métodos para database.py
              def save_advanced_automation(self, user_email, name, script):
