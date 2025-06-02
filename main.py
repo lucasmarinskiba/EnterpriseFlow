@@ -433,19 +433,51 @@ class EnterpriseFlowApp:
             st.dataframe(pd.DataFrame(tasks))
         
             with col3:
-                st.subheader("Nuevas Automatizaciones")
+                st.subheader("Nuevas Automatizaciones Mejoradas")
+                st.markdown("**Selecciona una plantilla o crea tu automatización personalizada:**")
+                plantilla = st.selectbox("Plantillas", ["Enviar reporte diario", "Backup semanal", "Notificar stock bajo", "Personalizada"])
+                if plantilla != "Personalizada":
+                    task_type, schedule, notification = {
+                        "Enviar reporte diario": ("Reporte", "08:00", "Email"),
+                        "Backup semanal": ("Backup", "Domingo 03:00", "Email"),
+                        "Notificar stock bajo": ("Alerta", "Inmediato", "Email"),
+                    }[plantilla]
+                   st.info(f"Plantilla seleccionada: {plantilla}")
+               else:
+                   task_type = st.text_input("Tipo de tarea (custom)")
+                   schedule = st.text_input("Horario o trigger")
+                   notification = st.text_input("Método de notificación")
+
+               if st.button("Guardar Automatización"):
+                   self.db.save_automation_task(
+                       st.session_state.current_user, {
+                           'type': task_type,
+                           'schedule': schedule,
+                           'responsible': st.session_state.current_user,
+                           'notification_method': notification
+                       }
+                   )
+                   self.db.log_automation_task_creation(st.session_state.current_user, task_type)
+                   st.success("Automatización guardada")
+
+               st.markdown("### Vista previa del flujo")
+               show_automation_preview({
+                   "trigger": schedule,
+                   "action": task_type,
+                   "notification": notification
+               })
                 
-                with st.container(border=True):
-                    st.markdown("**📧 Email Masivo**")
-                    email_subject = st.text_input("Asunto del Email")
-                    email_template = st.text_area("Plantilla HTML")
-                    if st.button("Programar Envío"):
-                        self.db.save_automation_task(st.session_state.current_user, {
-                            'type': 'email_masivo',
-                            'subject': email_subject,
-                            'template': email_template
-                        })
-                        st.success("Envío programado!")
+               with st.container(border=True):
+                   st.markdown("**📧 Email Masivo**")
+                   email_subject = st.text_input("Asunto del Email")
+                   email_template = st.text_area("Plantilla HTML")
+                   if st.button("Programar Envío"):
+                       self.db.save_automation_task(st.session_state.current_user, {
+                           'type': 'email_masivo',
+                           'subject': email_subject,
+                           'template': email_template
+                       })
+                       st.success("Envío programado!")
                 
                 with st.container(border=True):
                     st.markdown("**🔄 Sync CRM**")
