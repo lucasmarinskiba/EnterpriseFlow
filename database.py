@@ -93,11 +93,22 @@ class DatabaseManager:
             raise e
 
     def save_automation_task(self, user_email, task_data):
-        self.conn.execute(
-            'INSERT INTO automation_tasks (user_email, task_type, schedule) VALUES (?, ?, ?)',
-            (user_email, task_data['type'], task_data['schedule'])
-        )
-        self.conn.commit()
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO automation_tasks (user_email, type, schedule, responsible, notification_method)
+            VALUES (?, ?, ?, ?, ?)
+        """, (user_email, task_data['type'], task_data['schedule'], task_data['responsible'], task_data['notification_method']))
+        conn.commit()
+        conn.close()
+
+    def get_automation_tasks(self, user_email):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("SELECT type, schedule, responsible, notification_method, status, created_at FROM automation_tasks WHERE user_email=? ORDER BY created_at DESC", (user_email,))
+        rows = c.fetchall()
+        conn.close()
+        return [{"Tipo": r[0], "Horario": r[1], "Responsable": r[2], "Notificación": r[3], "Estado": r[4], "Creado": r[5]} for r in rows]
 
     def save_recognition(self, sender, receiver, message):
         self.conn.execute(
