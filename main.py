@@ -511,7 +511,7 @@ class EnterpriseFlowApp:
                                 exec(adv['script'], {}, local_env)
                                 output = local_env['run']()
                                 self.db.log_advanced_automation_run(adv['id'], "exitoso", str(output), "")
-                               st.success(f"Resultado: {output}")
+                                st.success(f"Resultado: {output}")
                             except Exception as e:
                                 self.db.log_advanced_automation_run(adv['id'], "fallo", "", str(e))
                                 st.error(f"Error: {str(e)}")
