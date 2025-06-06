@@ -140,7 +140,7 @@ class EnterpriseFlowApp:
             tab1, tab2 = st.tabs(["Iniciar Sesión", "Registrarse"])
             
             with tab1:
-                email_login = st.text_input("Correo electrónico")
+                email_login = st.text_input("Correo electrónico").strip().lower()
                 password_login = st.text_input("Contraseña", type="password")
                 if st.button("Ingresar"):
                     if self.db.verify_user(email_login, password_login):
@@ -151,7 +151,7 @@ class EnterpriseFlowApp:
                         st.error("Credenciales incorrectas")
             
             with tab2:
-                email_register = st.text_input("Correo para registro")
+                email_register = st.text_input("Correo para registro").strip().lower()
                 password_register = st.text_input("Contraseña nueva", type="password")
                 if st.button("Crear Cuenta"):
                     try:
