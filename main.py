@@ -146,7 +146,7 @@ class EnterpriseFlowApp:
                 email_register = st.text_input("Correo para registro")
                 password_register = st.text_input("Contraseña nueva", type="password")
                 if st.button("Crear Cuenta"):
-                    if create_user(email_register, password_register):
+                    if self.db.create_user(email_register, password_register):
                         st.success("¡Cuenta creada exitosamente!")
                 else:
                     st.error("Este correo ya está registrado")
