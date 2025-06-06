@@ -40,22 +40,11 @@ st.set_page_config(
 
 class EnterpriseFlowApp:
     def __init__(self):
-        try:
-            self.nlp = spacy.load("es_core_news_sm")
-        except Exception as e:
-            st.error(f"Error cargando modelos de NLP: {str(e)}")
-            st.info("Ejecuta: python -m spacy download es_core_news_sm")
-            st.stop()
-        
         self.db = DatabaseManager()
-        self.payment = PaymentHandler()
-        
-        if 'logged_in' not in st.session_state:
-            st.session_state.logged_in = False
-        if 'current_user' not in st.session_state:
-            st.session_state.current_user = None
-            
         self._setup_ui()
+
+    def _setup_ui(self):
+        self._show_login()
 
     def _setup_ui(self):
         st.sidebar.image("https://via.placeholder.com/200x50.png?text=EnterpriseFlow", width=200)
