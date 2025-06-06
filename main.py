@@ -143,22 +143,21 @@ class EnterpriseFlowApp:
                 email_login = st.text_input("Correo electrónico")
                 password_login = st.text_input("Contraseña", type="password")
                 if st.button("Ingresar"):
-                    if self.db.verify_user(email_login, password_login):
+                    if verify_user(email_login, password_login):
                         st.session_state.logged_in = True
                         st.session_state.current_user = email_login
                         st.rerun()
-                    else:
-                        st.error("Credenciales incorrectas")
+                   else:
+                       st.error("Credenciales incorrectas")
             
             with tab2:
                 email_register = st.text_input("Correo para registro")
                 password_register = st.text_input("Contraseña nueva", type="password")
                 if st.button("Crear Cuenta"):
-                    try:
-                        self.db.create_user(email_register, password_register)
-                        st.success("¡Cuenta creada exitosamente!")
-                    except sqlite3.IntegrityError:
-                        st.error("Este correo ya está registrado")
+                    if create_user(email_register, password_register):
+                    st.success("¡Cuenta creada exitosamente!")
+                else:
+                    st.error("Este correo ya está registrado")
 
     def _show_main_interface(self):
         menu = st.sidebar.radio(
