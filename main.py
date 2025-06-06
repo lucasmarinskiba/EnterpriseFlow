@@ -143,7 +143,7 @@ class EnterpriseFlowApp:
                 email_login = st.text_input("Correo electrónico")
                 password_login = st.text_input("Contraseña", type="password")
                 if st.button("Ingresar"):
-                    if verify_user(email_login, password_login):
+                    if self.db.verify_user(email_login, password_login):
                         st.session_state.logged_in = True
                         st.session_state.current_user = email_login
                         st.rerun()
