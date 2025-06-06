@@ -40,23 +40,31 @@ st.set_page_config(
 
 class EnterpriseFlowApp:
     def __init__(self):
+        try:
+            self.nlp = spacy.load("es_core_news_sm")
+        except Exception as e:
+            st.error(f"Error cargando modelos de NLP: {str(e)}")
+            st.info("Ejecuta: python -m spacy download es_core_news_sm")
+            st.stop()
+        
         self.db = DatabaseManager()
+        self.payment = PaymentHandler()
+        
+        if 'logged_in' not in st.session_state:
+            st.session_state.logged_in = False
+        if 'current_user' not in st.session_state:
+            st.session_state.current_user = None
+            
         self._setup_ui()
 
     def _setup_ui(self):
-        # Esta inicialización también es válida aquí si prefieres hacerlo por método
-        if "logged_in" not in st.session_state:
-            st.session_state.logged_in = False
-        if "current_user" not in st.session_state:
-            st.session_state.current_user = None
-
         st.sidebar.image("https://via.placeholder.com/200x50.png?text=EnterpriseFlow", width=200)
         if not st.session_state.logged_in:
             self._show_login()
         else:
             self._rewards_header()
             self._show_main_interface()
-        
+
     def _rewards_header(self):
         user = st.session_state.current_user
 
@@ -147,11 +155,11 @@ class EnterpriseFlowApp:
                 password_register = st.text_input("Contraseña nueva", type="password")
                 if st.button("Crear Cuenta"):
                     try:
-                        if self.db.create_user(email_register, password_register):
-                            st.success("¡Cuenta creada exitosamente!")
-                        else:
-                            st.error("Este correo ya está registrado")
-                    
+                        self.db.create_user(email_register, password_register)
+                        st.success("¡Cuenta creada exitosamente!")
+                    except sqlite3.IntegrityError:
+                        st.error("Este correo ya está registrado")
+
     def _show_main_interface(self):
         menu = st.sidebar.radio(
             "Menú Principal",
@@ -1381,5 +1389,7 @@ conn.close()
 
 if __name__ == "__main__":
     EnterpriseFlowApp()
+    
+    
     
     
