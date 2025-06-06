@@ -80,13 +80,13 @@ class DatabaseManager:
         conn.commit()
         conn.close()
 
-    def verify_user(self, email, password):
-        conn = sqlite3.connect(self.db_path)
+    def verify_user(email, password, db_path="enterprise_flow.db"):
+        conn = sqlite3.connect(db_path)
         c = conn.cursor()
         hashed = hash_password(password)
         c.execute(
             "SELECT * FROM users WHERE email=? AND password=?",
-            (email.strip(), hashed)
+            (email, hashed)
         )
         user = c.fetchone()
         conn.close()
