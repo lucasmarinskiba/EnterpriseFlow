@@ -151,7 +151,7 @@ class EnterpriseFlowApp:
                             st.success("¡Cuenta creada exitosamente!")
                         else:
                             st.error("Este correo ya está registrado")
-                except sqlite3.IntegrityError:
+                    except sqlite3.IntegrityError:
             st.error("Este correo ya está registrado")
 
     def _show_main_interface(self):
