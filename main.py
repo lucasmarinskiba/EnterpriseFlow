@@ -152,7 +152,7 @@ class EnterpriseFlowApp:
                         else:
                             st.error("Este correo ya está registrado")
                     except sqlite3.IntegrityError:
-            st.error("Este correo ya está registrado")
+                        st.error("Este correo ya está registrado")
 
     def _show_main_interface(self):
         menu = st.sidebar.radio(
