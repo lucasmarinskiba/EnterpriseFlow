@@ -2,13 +2,39 @@ import sqlite3
 import hashlib
 
 def hash_password(password):
-    # Puedes cambiar a bcrypt si prefieres aún más seguridad
     return hashlib.sha256(password.encode('utf-8')).hexdigest()
 
 class DatabaseManager:
     def __init__(self, db_path="enterprise_flow.db"):
         self.db_path = db_path
-        self.ensure_tables()
+
+    def create_user(self, email, password, nombre="", apellido=""):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        hashed = hash_password(password)
+        try:
+            c.execute(
+                "INSERT INTO users (email, password, nombre, apellido) VALUES (?, ?, ?, ?)",
+                (email.strip(), hashed, nombre, apellido)
+            )
+            conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            return False
+        finally:
+            conn.close()
+
+    def verify_user(self, email, password):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        hashed = hash_password(password)
+        c.execute(
+            "SELECT * FROM users WHERE email=? AND password=?",
+            (email.strip(), hashed)
+        )
+        user = c.fetchone()
+        conn.close()
+        return user is not None
 
     def _create_tables(self):
         tables = [
@@ -64,33 +90,7 @@ class DatabaseManager:
         conn.commit()
         conn.close()
 
-    def create_user(self, email, password, nombre="", apellido=""):
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        hashed = hash_password(password)
-        try:
-            c.execute(
-                "INSERT INTO users (email, password, nombre, apellido) VALUES (?, ?, ?, ?)",
-                (email.strip(), hashed, nombre, apellido)
-            )
-            conn.commit()
-            return True
-        except sqlite3.IntegrityError:
-            return False  # El email ya existe
-        finally:
-            conn.close()
-
-    def verify_user(self, email, password):
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        hashed = hash_password(password)
-        c.execute(
-            "SELECT * FROM users WHERE email=? AND password=?",
-            (email.strip(), hashed)
-        )
-        user = c.fetchone()
-        conn.close()
-        return user is not None
+   
     
     def save_personal_goal(self, user, goal):
         self.conn.execute(
