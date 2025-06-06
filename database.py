@@ -93,11 +93,14 @@ class DatabaseManager:
    
     
     def save_personal_goal(self, user, goal):
-        self.conn.execute(
-            'INSERT INTO personal_goals (user_email, goal) VALUES (?, ?)',
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute(
+            'INSERT INTO personal_goals (user_email, goal_text) VALUES (?, ?)',
             (user, goal)
         )
-        self.conn.commit()
+        conn.commit()
+        conn.close()
 
     def get_user(self, email):
         conn = sqlite3.connect(self.db_path)
@@ -108,18 +111,25 @@ class DatabaseManager:
         return user
 
     def get_personal_goals(self, user):
-        cursor = self.conn.execute(
-            'SELECT id, goal FROM personal_goals WHERE user_email=? ORDER BY created_at DESC',
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute(
+           'SELECT id, goal_text FROM personal_goals WHERE user_email=? ORDER BY created_at DESC',
             (user,)
         )
-        return cursor.fetchall()
+        rows = c.fetchall()
+        conn.close()
+        return rows
 
     def edit_personal_goal(self, goal_id, new_goal):
-        self.conn.execute(
-            'UPDATE personal_goals SET goal=? WHERE id=?',
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute(
+            'UPDATE personal_goals SET goal_text=? WHERE id=?',
             (new_goal, goal_id)
         )
-        self.conn.commit()
+        conn.commit()
+        conn.close()
 
     def delete_personal_goal(self, goal_id):
         self.conn.execute(
