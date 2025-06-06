@@ -43,12 +43,12 @@ class EnterpriseFlowApp:
         self.db = DatabaseManager()
         self._setup_ui()
 
-   def _setup_ui(self):
-    # Inicializa session_state si aún no existe la clave
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-    if "current_user" not in st.session_state:
-        st.session_state.current_user = None
+    def _setup_ui(self):
+        # Inicializa session_state si aún no existe la clave
+        if "logged_in" not in st.session_state:
+            st.session_state.logged_in = False
+        if "current_user" not in st.session_state:
+            st.session_state.current_user = None
 
     st.sidebar.image("https://via.placeholder.com/200x50.png?text=EnterpriseFlow", width=200)
     if not st.session_state.logged_in:
