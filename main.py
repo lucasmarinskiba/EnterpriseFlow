@@ -146,10 +146,13 @@ class EnterpriseFlowApp:
                 email_register = st.text_input("Correo para registro")
                 password_register = st.text_input("Contraseña nueva", type="password")
                 if st.button("Crear Cuenta"):
-                    if self.db.create_user(email_register, password_register):
-                        st.success("¡Cuenta creada exitosamente!")
-                else:
-                    st.error("Este correo ya está registrado")
+                    try:
+                        if self.db.create_user(email_register, password_register):
+                            st.success("¡Cuenta creada exitosamente!")
+                        else:
+                            st.error("Este correo ya está registrado")
+                except sqlite3.IntegrityError:
+            st.error("Este correo ya está registrado")
 
     def _show_main_interface(self):
         menu = st.sidebar.radio(
