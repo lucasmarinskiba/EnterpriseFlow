@@ -44,18 +44,18 @@ class EnterpriseFlowApp:
         self._setup_ui()
 
     def _setup_ui(self):
-        # Inicializa session_state si aún no existe la clave
+        # Esta inicialización también es válida aquí si prefieres hacerlo por método
         if "logged_in" not in st.session_state:
             st.session_state.logged_in = False
         if "current_user" not in st.session_state:
             st.session_state.current_user = None
 
-    st.sidebar.image("https://via.placeholder.com/200x50.png?text=EnterpriseFlow", width=200)
-    if not st.session_state.logged_in:
-        self._show_login()
-    else:
-        self._rewards_header()
-        self._show_main_interface()
+        st.sidebar.image("https://via.placeholder.com/200x50.png?text=EnterpriseFlow", width=200)
+        if not st.session_state.logged_in:
+            self._show_login()
+        else:
+            self._rewards_header()
+            self._show_main_interface()
         
     def _rewards_header(self):
         user = st.session_state.current_user
