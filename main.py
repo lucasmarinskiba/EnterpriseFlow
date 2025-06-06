@@ -139,8 +139,8 @@ class EnterpriseFlowApp:
                         st.session_state.logged_in = True
                         st.session_state.current_user = email_login
                         st.rerun()
-                   else:
-                       st.error("Credenciales incorrectas")
+                    else:
+                        st.error("Credenciales incorrectas")
             
             with tab2:
                 email_register = st.text_input("Correo para registro")
