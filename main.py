@@ -9,7 +9,6 @@ import os
 import stripe
 from fpdf import FPDF  # Importación corregida aquí
 from database import DatabaseManager
-from database import verify_user
 from pathlib import Path
 from payment_handler import PaymentHandler
 from tensorflow.keras.models import load_model
