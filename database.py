@@ -15,7 +15,7 @@ class DatabaseManager:
         try:
             c.execute(
                 "INSERT INTO users (email, password, nombre, apellido) VALUES (?, ?, ?, ?)",
-                (email.strip(), hashed, nombre, apellido)
+                (email.strip().lower(), hashed, nombre, apellido)
             )
             conn.commit()
             return True
