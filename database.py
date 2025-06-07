@@ -20,6 +20,10 @@ class DatabaseManager:
             conn.commit()
             return True
         except sqlite3.IntegrityError:
+            print(f"Email {email.strip()} already exists.")
+            return False
+        except sqlite3.Error as e:
+            print(f"SQLite Error: {e}")
             return False
         finally:
             conn.close()
