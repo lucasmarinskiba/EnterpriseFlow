@@ -1,5 +1,7 @@
 PRAGMA table_info(users);
 SELECT * FROM users WHERE email='test@example.com' AND password='hashed_password';
+INSERT INTO users (email, password, nombre, apellido)
+VALUES ('test@example.com', 'hashed_password', 'Test', 'User');
 
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
