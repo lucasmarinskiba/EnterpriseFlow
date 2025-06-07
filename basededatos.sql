@@ -1,4 +1,3 @@
-PRAGMA table_info(users);
 SELECT * FROM users WHERE email='test@example.com' AND password='hashed_password';
 INSERT INTO users (email, password, nombre, apellido)
 VALUES ('test@example.com', 'hashed_password', 'Test', 'User');
@@ -192,3 +191,5 @@ CREATE TABLE IF NOT EXISTS advanced_automation_logs (
     executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(automation_id) REFERENCES advanced_automations(id)
 );
+
+PRAGMA table_info(users);
