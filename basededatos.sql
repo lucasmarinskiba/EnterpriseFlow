@@ -1,4 +1,5 @@
 PRAGMA table_info(users);
+SELECT * FROM users WHERE email='test@example.com' AND password='hashed_password';
 
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
