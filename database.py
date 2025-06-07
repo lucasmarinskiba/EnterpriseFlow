@@ -25,17 +25,21 @@ class DatabaseManager:
             conn.close()
 
     def verify_user(self, email, password):
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        hashed = hash_password(password)
-        c.execute(
-            "SELECT * FROM users WHERE email=? AND password=?",
-            (email.strip(), hashed)
-        )
-        user = c.fetchone()
-        conn.close()
-        return user is not None
-
+        try:
+            conn = sqlite3.connect(self.db_path)
+            c = conn.cursor()
+            hashed = hash_password(password)
+            c.execute(
+                "SELECT * FROM users WHERE email=? AND password=?",
+                (email.strip(), hashed)
+            )
+            user = c.fetchone()
+            conn.close()
+            return user is not None
+        except sqlite3.Error as e:
+            print(f"SQLite Error: {e}")
+            return False
+        
     def _create_tables(self):
         tables = [
             '''CREATE TABLE IF NOT EXISTS users (
