@@ -29,13 +29,15 @@ class DatabaseManager:
             conn.close()
 
     def verify_user(self, email, password):
+        if not email.strip() or not password.strip():
+            return False
         try:
             conn = sqlite3.connect(self.db_path)
             c = conn.cursor()
             hashed = hash_password(password)
             c.execute(
                 "SELECT * FROM users WHERE email=? AND password=?",
-                (email.strip(), hashed)
+                (email.strip().lower(), hashed)
             )
             user = c.fetchone()
             conn.close()
