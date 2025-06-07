@@ -151,8 +151,8 @@ class EnterpriseFlowApp:
                         st.error("Credenciales incorrectas")
             
             with tab2:
-                email_register = st.text_input("Correo para registro").strip().lower()
-                password_register = st.text_input("Contraseña nueva", type="password")
+                email_register = st.text_input("Correo para registro").email_register.strip().lower()
+                password_register = st.text_input("Contraseña nueva", type="password").password_register.strip()
                 if st.button("Crear Cuenta"):
                     try:
                         self.db.create_user(email_register, password_register)
